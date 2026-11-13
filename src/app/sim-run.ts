@@ -108,7 +108,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     }
     const { api, workspace } = target;
     const agent = target.agent!;
-    output.progress(`Workspace: ${workspace.name} · Agent: ${agent.remote_identifier}`);
+    output.progress(`Workspace: ${workspace.name} · Agent: ${agent.name} (${agent.id})`);
 
     let started;
     try {

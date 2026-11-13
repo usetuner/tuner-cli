@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `tuner sim run` names the agent and its numeric ID in the start banner, e.g. `Agent: booking-staging (616)`.
+
 ### Added
 
 - `tuner sim run`: start a simulation run for an agent, wait for it, and exit with a code that reflects the server's verdict.

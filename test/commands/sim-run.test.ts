@@ -73,7 +73,7 @@ describe("sim run: results and exit codes", () => {
     const api = happyApi();
     const rt = makeRuntime(api);
     expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(0);
-    expect(rt.err()).toContain("Workspace: Acme · Agent: booking-staging");
+    expect(rt.err()).toContain("Workspace: Acme · Agent: Booking (staging) (77)");
     expect(rt.err()).toContain(`Running 1 scenarios (run ${RUN})`);
     expect(rt.out()).toContain("✓ passed");
     expect(rt.out()).toContain("Reschedule an existing booking");

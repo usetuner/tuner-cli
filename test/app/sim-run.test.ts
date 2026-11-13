@@ -28,7 +28,7 @@ describe("runSimulation", () => {
     expect(r).toMatchObject({ kind: "finished", reason: null, exitCode: 0, runId: 4821 });
     expect(f.api.called("startRun")).toEqual([[12, 77, { tag: "smoke" }]]);
     expect(f.output.lines).toEqual([
-      "Workspace: Acme · Agent: booking-staging",
+      "Workspace: Acme · Agent: Booking (staging) (77)",
       "Running 2 scenarios (run 4821)...",
     ]);
     expect(f.output.runs).toHaveLength(1);
