@@ -24,6 +24,9 @@ node dist/cli/main.js --help
 | `npm test`                        | Vitest                                                                 |
 | `npm run test:coverage`           | Vitest with coverage; fails below the thresholds in `vitest.config.ts` |
 | `npm run gen:types`               | Regenerate `src/generated/api.ts` from `openapi/openapi.json`          |
+| `npm run gen:openapi`             | Download the public schema to `openapi/openapi.json`                   |
+| `npm run gen`                     | `gen:openapi`, then `gen:types`                                        |
+| `npm run openapi:check`           | Compare the public schema with `openapi/openapi.json`; exit 1 on drift |
 
 Before you open a PR, run:
 
@@ -35,9 +38,13 @@ npm ci && npm run lint && npm run format:check && npm run typecheck && npm run t
 
 `src/generated/` is generated from the backend's public OpenAPI schema. Never edit it by hand.
 
-1. Update `openapi/openapi.json`. Today `npm run gen:openapi` builds it from a local backend checkout; a step that fetches the public `/public/openapi.json` is coming.
-2. Run `npm run gen:types`.
-3. Commit both files together.
+1. Run `npm run gen`. It downloads `/public/openapi.json` from staging (no auth), sorts its keys, writes `openapi/openapi.json`, then regenerates `src/generated/api.ts`. Set `TUNER_OPENAPI_URL` to use another server, for example a local backend: `TUNER_OPENAPI_URL=http://localhost:8000 npm run gen`.
+2. Commit both files together.
+
+CI checks this two ways:
+
+- The `openapi-drift` job in `ci.yml` runs on every PR, offline. It regenerates the types from the committed `openapi/openapi.json` and fails if `src/generated/` differs, which catches hand edits and a stale generated file.
+- The `openapi-drift` workflow runs daily (and on demand) against staging. It fails when staging's schema differs from the committed file and lists the changed paths and schemas in the job summary. A removed or renamed field the CLI uses is a real alarm; an added field is a reminder to run `npm run gen`.
 
 ## Layering
 
