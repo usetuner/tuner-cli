@@ -1,4 +1,4 @@
-import { ApiError, GaveUpError, NetworkError, isRetryable } from "../domain/errors.js";
+import { ApiError, NetworkError } from "../domain/errors.js";
 import type { Runtime, TunerApi } from "../ports.js";
 import type {
   Agent,
@@ -174,51 +174,4 @@ function retryAfter(headers: Headers): number | undefined {
   const date = Date.parse(value);
   if (Number.isNaN(date)) return undefined;
   return Math.max(0, (date - Date.now()) / 1000);
-}
-
-export const POLL_GIVE_UP_MS = 5 * 60_000;
-const BACKOFF_MS = [3_000, 6_000, 12_000, 24_000];
-const BACKOFF_CAP_MS = 30_000;
-
-export function backoffMs(attempt: number): number {
-  return Math.min(BACKOFF_MS[attempt] ?? BACKOFF_CAP_MS, BACKOFF_CAP_MS);
-}
-
-export interface RetryOptions {
-  runtime: Runtime;
-  giveUpMs: number;
-  signal?: AbortSignal;
-  onRetry?: (err: ApiError | NetworkError, delayMs: number) => void;
-}
-
-/**
- * Retries 429, 5xx and network errors with backoff 3, 6, 12 s capped at 30 s, honoring
- * Retry-After, until `giveUpMs` of consecutive failures. Resolves `undefined` if aborted.
- */
-export async function withRetry<T>(
-  fn: (signal?: AbortSignal) => Promise<T>,
-  opts: RetryOptions,
-): Promise<T | undefined> {
-  let firstFailureAt: number | undefined;
-  let attempt = 0;
-  for (;;) {
-    if (opts.signal?.aborted) return undefined;
-    try {
-      return await fn(opts.signal);
-    } catch (err) {
-      if (opts.signal?.aborted) return undefined;
-      if (!isRetryable(err)) throw err;
-      const now = opts.runtime.now();
-      firstFailureAt ??= now;
-      if (now - firstFailureAt >= opts.giveUpMs) throw new GaveUpError(err);
-      const fromHeader =
-        err instanceof ApiError && err.retryAfterSeconds !== undefined
-          ? err.retryAfterSeconds * 1000
-          : undefined;
-      const delay = fromHeader ?? backoffMs(attempt);
-      attempt += 1;
-      opts.onRetry?.(err, delay);
-      await opts.runtime.sleep(delay, opts.signal);
-    }
-  }
 }

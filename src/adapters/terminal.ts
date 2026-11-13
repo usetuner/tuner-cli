@@ -1,5 +1,5 @@
 import { scenarioName } from "../domain/document.js";
-import type { Summary } from "../domain/run-summary.js";
+import { type Summary, summarize } from "../domain/run-summary.js";
 import type { Run, SimCall, Verdict } from "../domain/types.js";
 import type { Output, Runtime, Stream } from "../ports.js";
 
@@ -74,4 +74,23 @@ export function terminalOutput(runtime: Runtime, json: boolean): Output {
       }
     },
   };
+}
+
+/** `runs get` in text. */
+export function writeRun(runtime: Pick<Runtime, "stdout" | "env">, run: Run): void {
+  const { stdout } = runtime;
+  const paint = painter(useColor(stdout, runtime));
+  const reason = run.reason ? ` (${run.reason})` : "";
+  stdout.write(`Run ${run.id} · ${run.status} · result ${run.result}${reason}\n\n`);
+  for (const call of run.simulation_calls) stdout.write(scenarioLine(call, paint) + "\n");
+  stdout.write(`\n${summaryLine(summarize(run))}\n${run.dashboard_url}\n`);
+}
+
+/** `runs cancel` in text. */
+export function cancelText(run: Run): string {
+  if (run.status === "canceled") return `Run ${run.id} canceled.\n${run.dashboard_url}\n`;
+  if (run.is_terminal) {
+    return `Run ${run.id} already finished: status ${run.status}, result ${run.result}.\n${run.dashboard_url}\n`;
+  }
+  return `Run ${run.id} is ${run.status}: its calls are done and analysis continues.\n${run.dashboard_url}\n`;
 }

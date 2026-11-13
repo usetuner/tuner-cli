@@ -1,15 +1,15 @@
-import { POLL_GIVE_UP_MS, type TunerClient, withRetry } from "./adapters/http-client.js";
-import { ApiError, GaveUpError, NetworkError } from "./domain/errors.js";
-import type { Signal } from "./domain/exit.js";
-import type { Runtime } from "./ports.js";
-import type { Run } from "./domain/types.js";
+import { POLL_GIVE_UP_MS, withRetry } from "./retry.js";
+import { ApiError, GaveUpError, NetworkError } from "../domain/errors.js";
+import type { Signal } from "../domain/exit.js";
+import type { Clock, TunerApi } from "../ports.js";
+import type { Run } from "../domain/types.js";
 
 export const POLL_INTERVAL_MS = 3_000;
 export const CANCEL_WAIT_MS = 10_000;
 const CANCEL_POLL_MS = 2_000;
 
 export interface RunRef {
-  client: TunerClient;
+  api: TunerApi;
   workspaceId: number;
   agentId: number;
   runId: number;
@@ -49,7 +49,7 @@ export type PollOutcome =
   | { kind: "error"; run?: Run; error: unknown };
 
 export interface PollOptions extends RunRef {
-  runtime: Runtime;
+  clock: Clock;
   stop: StopController;
   onUpdate(run: Run): void;
   onRetry?(err: ApiError | NetworkError, delayMs: number): void;
@@ -59,16 +59,16 @@ export interface PollOptions extends RunRef {
 
 /** Polls Get a run until it is terminal, stopped, or retries run out. */
 export async function pollRun(opts: PollOptions): Promise<PollOutcome> {
-  const { runtime, stop } = opts;
+  const { clock, stop } = opts;
   let last: Run | undefined;
   for (;;) {
     if (stop.stopped) return { kind: "stopped", run: last };
     let run: Run | undefined;
     try {
       run = await withRetry(
-        (signal) => opts.client.getRun(opts.workspaceId, opts.agentId, opts.runId, signal),
+        (signal) => opts.api.getRun(opts.workspaceId, opts.agentId, opts.runId, signal),
         {
-          runtime,
+          clock,
           giveUpMs: opts.giveUpMs ?? POLL_GIVE_UP_MS,
           signal: stop.abortSignal,
           onRetry: opts.onRetry,
@@ -82,7 +82,7 @@ export async function pollRun(opts: PollOptions): Promise<PollOutcome> {
     last = run;
     opts.onUpdate(run);
     if (run.is_terminal) return { kind: "terminal", run };
-    await runtime.sleep(opts.intervalMs ?? POLL_INTERVAL_MS, stop.abortSignal);
+    await clock.sleep(opts.intervalMs ?? POLL_INTERVAL_MS, stop.abortSignal);
   }
 }
 
@@ -95,17 +95,17 @@ export interface CancelOutcome {
 
 /** Cancels the run, then waits up to 10 s for a terminal state. `analyzing` returns at once. */
 export async function cancelAndWait(
-  ref: RunRef & { runtime: Runtime; waitMs?: number },
+  ref: RunRef & { clock: Clock; waitMs?: number },
 ): Promise<CancelOutcome> {
-  const { runtime } = ref;
-  const deadline = runtime.now() + (ref.waitMs ?? CANCEL_WAIT_MS);
+  const { clock } = ref;
+  const deadline = clock.now() + (ref.waitMs ?? CANCEL_WAIT_MS);
   const budget = new AbortController();
-  const timer = setTimeout(() => budget.abort(), Math.max(0, deadline - runtime.now()));
+  const timer = setTimeout(() => budget.abort(), Math.max(0, deadline - clock.now()));
   try {
     let run: Run | undefined;
     try {
-      run = await withRetry(() => ref.client.cancelRun(ref.workspaceId, ref.agentId, ref.runId), {
-        runtime,
+      run = await withRetry(() => ref.api.cancelRun(ref.workspaceId, ref.agentId, ref.runId), {
+        clock,
         giveUpMs: ref.waitMs ?? CANCEL_WAIT_MS,
         signal: budget.signal,
       });
@@ -113,11 +113,11 @@ export async function cancelAndWait(
       return { terminal: false, error: err };
     }
     if (!run) return { terminal: false };
-    while (!run.is_terminal && run.status !== "analyzing" && runtime.now() < deadline) {
-      await runtime.sleep(Math.min(CANCEL_POLL_MS, deadline - runtime.now()), budget.signal);
+    while (!run.is_terminal && run.status !== "analyzing" && clock.now() < deadline) {
+      await clock.sleep(Math.min(CANCEL_POLL_MS, deadline - clock.now()), budget.signal);
       if (budget.signal.aborted) break;
       try {
-        run = await ref.client.getRun(ref.workspaceId, ref.agentId, ref.runId, budget.signal);
+        run = await ref.api.getRun(ref.workspaceId, ref.agentId, ref.runId, budget.signal);
       } catch {
         // keep the last known state; the deadline bounds the loop
       }

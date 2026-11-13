@@ -1,9 +1,9 @@
-import { resolveTarget } from "../context.js";
-import { EXIT } from "../domain/exit.js";
-import { type OutputFormat, listDocument } from "../domain/document.js";
-import { table } from "../adapters/terminal.js";
 import { writeJson } from "../adapters/json.js";
-import { type CommandContext, SHORT_GIVE_UP_MS, guard, isJson } from "./shared.js";
+import { table } from "../adapters/terminal.js";
+import { listAgents, listLanguages, listNoise, listProfiles, listScenarios } from "../app/lists.js";
+import { type OutputFormat, listDocument } from "../domain/document.js";
+import { EXIT } from "../domain/exit.js";
+import { type CommandContext, guard, isJson } from "./shared.js";
 
 interface ListOptions {
   output?: OutputFormat;
@@ -11,98 +11,85 @@ interface ListOptions {
   tag?: string;
 }
 
-function emit(
+function emit<T>(
   ctx: CommandContext,
   output: OutputFormat | undefined,
   key: string,
-  items: unknown[],
+  items: T[],
   headers: string[],
-  rows: string[][],
+  row: (item: T) => string[],
 ): number {
   if (isJson(output)) {
     writeJson(ctx.runtime.stdout, listDocument(key, items));
-  } else if (rows.length === 0) {
+  } else if (items.length === 0) {
     ctx.runtime.stderr.write(`No ${key} found.\n`);
   } else {
-    ctx.runtime.stdout.write(table(headers, rows));
+    ctx.runtime.stdout.write(table(headers, items.map(row)));
   }
   return EXIT.OK;
 }
 
-const target = (ctx: CommandContext, needAgent: boolean, agent?: string) =>
-  resolveTarget({ ...ctx, agent, needAgent, giveUpMs: SHORT_GIVE_UP_MS });
-
 export function agentsList(ctx: CommandContext, opts: ListOptions): Promise<number> {
-  return guard(ctx.runtime, async () => {
-    const t = await target(ctx, false);
-    const agents = await t.client.listAgents(t.workspace.id);
-    return emit(
+  return guard(ctx.runtime, async () =>
+    emit(
       ctx,
       opts.output,
       "agents",
-      agents,
+      await listAgents(ctx.deps, ctx.flags),
       ["ID", "AGENT ID", "NAME", "DIRECTION"],
-      agents.map((a) => [String(a.id), a.remote_identifier, a.name, a.call_direction]),
-    );
-  });
+      (a) => [String(a.id), a.remote_identifier, a.name, a.call_direction],
+    ),
+  );
 }
 
 export function scenariosList(ctx: CommandContext, opts: ListOptions): Promise<number> {
-  return guard(ctx.runtime, async () => {
-    const t = await target(ctx, true, opts.agent);
-    const { scenarios = [] } = await t.client.listScenarios(t.workspace.id, t.agent!.id, opts.tag);
-    return emit(
+  return guard(ctx.runtime, async () =>
+    emit(
       ctx,
       opts.output,
       "scenarios",
-      scenarios,
+      await listScenarios(ctx.deps, ctx.flags, opts.agent, opts.tag),
       ["ID", "NAME", "TYPE", "TAGS"],
-      scenarios.map((s) => [String(s.id), s.name, s.type, (s.tags ?? []).join(", ")]),
-    );
-  });
+      (s) => [String(s.id), s.name, s.type, (s.tags ?? []).join(", ")],
+    ),
+  );
 }
 
 export function languagesList(ctx: CommandContext, opts: ListOptions): Promise<number> {
-  return guard(ctx.runtime, async () => {
-    const t = await target(ctx, false);
-    const { personas } = await t.client.listCallerPersonas(t.workspace.id);
-    return emit(
+  return guard(ctx.runtime, async () =>
+    emit(
       ctx,
       opts.output,
       "languages",
-      personas,
+      await listLanguages(ctx.deps, ctx.flags),
       ["CODE", "NAME"],
-      personas.map((p) => [p.code, p.name]),
-    );
-  });
+      (p) => [p.code, p.name],
+    ),
+  );
 }
 
 export function noiseList(ctx: CommandContext, opts: ListOptions): Promise<number> {
-  return guard(ctx.runtime, async () => {
-    const t = await target(ctx, false);
-    const { environments } = await t.client.listNoiseEnvironments(t.workspace.id);
-    return emit(
+  return guard(ctx.runtime, async () =>
+    emit(
       ctx,
       opts.output,
       "noise_environments",
-      environments,
+      await listNoise(ctx.deps, ctx.flags),
       ["SLUG", "NAME"],
-      environments.map((n) => [n.slug, n.name]),
-    );
-  });
+      (n) => [n.slug, n.name],
+    ),
+  );
 }
 
 export function profilesList(ctx: CommandContext, opts: ListOptions): Promise<number> {
-  return guard(ctx.runtime, async () => {
-    const t = await target(ctx, true, opts.agent);
-    const { simulation_profiles = [] } = await t.client.listProfiles(t.workspace.id, t.agent!.id);
-    return emit(
+  return guard(ctx.runtime, async () =>
+    emit(
       ctx,
       opts.output,
       "profiles",
-      simulation_profiles,
+      await listProfiles(ctx.deps, ctx.flags, opts.agent),
       ["ID", "NAME"],
-      simulation_profiles.map((p) => [String(p.id), p.name]),
-    );
-  });
+      (p) => [String(p.id), p.name],
+    ),
+  );
 }

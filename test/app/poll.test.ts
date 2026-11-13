@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TunerClient } from "../src/adapters/http-client.js";
-import { StopController, cancelAndWait, pollRun } from "../src/poller.js";
-import type { Run } from "../src/domain/types.js";
+import { TunerClient } from "../../src/adapters/http-client.js";
+import { StopController, cancelAndWait, pollRun } from "../../src/app/poll.js";
+import type { Run } from "../../src/domain/types.js";
 import {
   AGENT,
   AGENT_PATH,
@@ -15,7 +15,7 @@ import {
   makeRuntime,
   networkError,
   pendingRun,
-} from "./helpers.js";
+} from "../helpers.js";
 
 const GET = `${AGENT_PATH}/simulation-runs/${RUN}`;
 const CANCEL = `${GET}/cancel`;
@@ -26,7 +26,11 @@ afterEach(() => vi.useRealTimers());
 function setup(api: FakeApi) {
   const runtime = makeRuntime(api);
   const client = new TunerClient({ baseUrl: BASE, apiKey: "k", runtime });
-  return { runtime, client, ref: { client, workspaceId: WS, agentId: AGENT, runId: RUN, runtime } };
+  return {
+    runtime,
+    client,
+    ref: { api: client, workspaceId: WS, agentId: AGENT, runId: RUN, clock: runtime },
+  };
 }
 
 describe("pollRun", () => {

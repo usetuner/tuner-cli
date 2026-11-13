@@ -1,15 +1,13 @@
 import type { GlobalFlags } from "../domain/config.js";
+import type { OutputFormat } from "../domain/document.js";
 import { toCliError } from "../domain/error-message.js";
 import { EXIT } from "../domain/exit.js";
-import type { OutputFormat } from "../domain/document.js";
-import type { Runtime } from "../ports.js";
-
-/** Retry budget for commands other than `sim run`. */
-export const SHORT_GIVE_UP_MS = 30_000;
+import type { AppDeps, Runtime } from "../ports.js";
 
 export interface CommandContext {
   flags: GlobalFlags;
   runtime: Runtime;
+  deps: AppDeps;
 }
 
 export function printError(runtime: Runtime, message: string): void {

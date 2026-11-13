@@ -11,6 +11,7 @@ import {
 import { runsCancel, runsGet } from "./commands/runs.js";
 import type { CommandContext } from "./commands/shared.js";
 import { simRun } from "./commands/sim-run.js";
+import { makeDeps } from "./cli/compose.js";
 import { DEFAULT_TIMEOUT } from "./domain/inputs.js";
 import { EXIT } from "./domain/exit.js";
 import type { Runtime } from "./ports.js";
@@ -30,10 +31,10 @@ const collect = (value: string, previous: string[] = []) => [...previous, value]
 export async function runCli(argv: string[], runtime: Runtime): Promise<number> {
   let exitCode: number = EXIT.OK;
   const program = new Command();
-  const ctx = (cmd: Command): CommandContext => ({
-    flags: cmd.optsWithGlobals() as GlobalFlags,
-    runtime,
-  });
+  const ctx = (cmd: Command): CommandContext => {
+    const flags = cmd.optsWithGlobals() as GlobalFlags;
+    return { flags, runtime, deps: makeDeps(runtime, flags) };
+  };
   const action =
     <A extends unknown[]>(fn: (cmd: Command, ...args: A) => Promise<number>) =>
     async (...args: unknown[]) => {
