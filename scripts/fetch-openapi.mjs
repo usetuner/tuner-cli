@@ -22,9 +22,20 @@ const serialize = (spec) => `${JSON.stringify(sortKeys(spec), null, 2)}\n`;
 
 async function download(baseUrl) {
   const url = `${baseUrl.replace(/\/+$/, "")}/public/openapi.json`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  let res;
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  } catch (err) {
+    const cause = err?.cause?.message ?? err?.cause?.code ?? err?.message ?? String(err);
+    throw new Error(`GET ${url} failed: ${cause}`);
+  }
   if (!res.ok) throw new Error(`GET ${url} answered ${res.status}`);
-  const spec = await res.json();
+  let spec;
+  try {
+    spec = JSON.parse(await res.text());
+  } catch {
+    throw new Error(`GET ${url} did not return JSON`);
+  }
   const isObject = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   const badComponents = spec?.components !== undefined && !isObject(spec.components);
   if (typeof spec?.openapi !== "string" || !isObject(spec.paths) || badComponents) {
