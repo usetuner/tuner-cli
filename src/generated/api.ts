@@ -605,7 +605,8 @@ export interface paths {
          * @description List the background-noise environments a simulation run can play under the caller.
          *
          *     Use an environment's `id` as `noise_environment_id` when you use Run
-         *     AI-Generated Scenarios or Run Saved Scenarios.
+         *     AI-Generated Scenarios or Run Saved Scenarios, and an intensity `name` (or its `value`)
+         *     as `noise_intensity`.
          */
         get: operations["list_noise_environments_api_v1_workspaces__workspace_id__noise_environments_get"];
         put?: never;
@@ -1431,8 +1432,7 @@ export interface paths {
          *
          *     A rule tests a condition against each analyzed call and, when it matches,
          *     applies a tag. `output_type` determines whether the tag is a label or a red
-         *     flag. `condition_tree` always holds the rule's conditions; the single-condition
-         *     fields are filled only for a rule with one.
+         *     flag. `condition_tree` holds the rule's conditions.
          */
         get: operations["list_rules_api_v1_workspaces__workspace_id__agents__agent_id__settings_rules_get"];
         put?: never;
@@ -1441,8 +1441,7 @@ export interface paths {
          * @description Create a rule that labels or red-flags matching calls.
          *
          *     Describe the condition with `condition_tree`: AND/OR groups of conditions, nested as
-         *     deep as you need. For one condition you can send the single-condition fields instead.
-         *     Get valid condition sources from List Rule Conditions.
+         *     deep as you need. Get valid condition sources from List Rule Conditions.
          */
         post: operations["create_rule_api_v1_workspaces__workspace_id__agents__agent_id__settings_rules_post"];
         delete?: never;
@@ -1467,10 +1466,7 @@ export interface paths {
          * Update Rule
          * @description Update an existing rule.
          *
-         *     Only the fields you send are changed. `condition_tree` replaces the whole condition. The
-         *     single-condition fields work only on a rule with one condition: if you send any of them,
-         *     the whole condition is checked again with the rule's current values for the ones you
-         *     leave out, so changing the source can require a new `operator` or `condition_value`.
+         *     Only the fields you send are changed. `condition_tree` replaces the whole condition.
          *     Sending `state` pauses or resumes the rule; a rule is always checked when it is set back
          *     to `active`.
          *     Sending `null` for any field except `output_description` is the same as leaving it out.
@@ -2791,7 +2787,7 @@ export interface components {
         AvailableConditionSourceItem: {
             /**
              * Id
-             * @description ID of the item. Latency percentiles use a string key such as 'p90_latency'; numeric latency IDs from earlier versions are still accepted when saving a rule.
+             * @description ID of the item. Latency percentiles use a string key such as 'p90_latency'.
              * @example 12
              * @example p90_latency
              */
@@ -4214,10 +4210,11 @@ export interface components {
             noise_environment_id?: number | null;
             /**
              * Noise Intensity
-             * @description Gain applied to the background noise: 0.5, 1.0 or 1.5. Must be sent together with `noise_environment_id`.
+             * @description Loudness of the background noise, as an intensity name (`low`, `medium`, `high`) or its gain (`0.5`, `1.0`, `1.5`). Names are listed per environment by List Noise Environments. A name is stored and returned as its gain. Must be sent together with `noise_environment_id`.
+             * @example medium
              * @example 1
              */
-            noise_intensity?: number | null;
+            noise_intensity?: ("low" | "medium" | "high") | (0.5 | 1 | 1.5) | null;
             /**
              * Selected Scenario Ids
              * @description IDs of the library scenarios to run, 1 to 20, in the order they are queued. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.
@@ -4248,7 +4245,7 @@ export interface components {
             profile?: string | null;
             /**
              * Noise
-             * @description Background-noise environment by `slug`. Use instead of `noise_environment_id`. `noise_intensity` defaults to 1.0.
+             * @description Background-noise environment by `slug`. Use instead of `noise_environment_id`. `noise_intensity` defaults to `medium` (1.0).
              * @example cafe
              */
             noise?: string | null;
@@ -4296,10 +4293,11 @@ export interface components {
             noise_environment_id?: number | null;
             /**
              * Noise Intensity
-             * @description Gain applied to the background noise: 0.5, 1.0 or 1.5. Must be sent together with `noise_environment_id`.
+             * @description Loudness of the background noise, as an intensity name (`low`, `medium`, `high`) or its gain (`0.5`, `1.0`, `1.5`). Names are listed per environment by List Noise Environments. A name is stored and returned as its gain. Must be sent together with `noise_environment_id`.
+             * @example medium
              * @example 1
              */
-            noise_intensity?: number | null;
+            noise_intensity?: ("low" | "medium" | "high") | (0.5 | 1 | 1.5) | null;
             /**
              * Functional Count
              * @description Number of functional (routine) scenarios to generate.
@@ -5174,6 +5172,49 @@ export interface components {
             total: number;
         };
         /**
+         * NoiseEnvironmentListItem
+         * @description One selectable background environment, with the intensities it can play at.
+         */
+        NoiseEnvironmentListItem: {
+            /**
+             * Id
+             * @description Environment ID. Pass as `noise_environment_id` when creating a simulation run.
+             * @example 1
+             */
+            id: number;
+            /**
+             * Name
+             * @description Display name of the environment.
+             * @example Café
+             */
+            name: string;
+            /**
+             * Slug
+             * @description Stable text identifier of the environment.
+             * @example cafe
+             */
+            slug: string;
+            /**
+             * Intensities
+             * @description Intensities this environment can play at, quietest first. Send a `name` or its `value` as `noise_intensity`. `medium` is the default when a run selects noise by `noise` slug without `noise_intensity`.
+             * @example [
+             *       {
+             *         "name": "low",
+             *         "value": 0.5
+             *       },
+             *       {
+             *         "name": "medium",
+             *         "value": 1
+             *       },
+             *       {
+             *         "name": "high",
+             *         "value": 1.5
+             *       }
+             *     ]
+             */
+            intensities?: components["schemas"]["NoiseIntensityResponse"][];
+        };
+        /**
          * NoiseEnvironmentResponse
          * @description One selectable background environment.
          */
@@ -5206,7 +5247,25 @@ export interface components {
              * Environments
              * @description Available environments. Use `id` as `noise_environment_id`.
              */
-            environments: components["schemas"]["NoiseEnvironmentResponse"][];
+            environments: components["schemas"]["NoiseEnvironmentListItem"][];
+        };
+        /**
+         * NoiseIntensityResponse
+         * @description One named loudness level for a background environment.
+         */
+        NoiseIntensityResponse: {
+            /**
+             * Name
+             * @description Intensity name. Pass as `noise_intensity` when creating a simulation run.
+             * @example medium
+             */
+            name: string;
+            /**
+             * Value
+             * @description Gain applied to the background noise. Also accepted as `noise_intensity`, and what a run reports back.
+             * @example 1
+             */
+            value: number;
         };
         /**
          * NotificationChannel
@@ -6390,9 +6449,7 @@ export interface components {
          * RuleCreate
          * @description Schema for creating a rule.
          *
-         *     Describe the condition with `condition_tree`. For one condition you can instead send
-         *     `condition_source_type`, `condition_source_id`, `operator` and `condition_value` together.
-         *     Send one form or the other, not both.
+         *     Describe the condition with `condition_tree`.
          * @example {
          *       "condition_tree": {
          *         "children": [
@@ -6420,7 +6477,7 @@ export interface components {
          */
         RuleCreate: {
             /**
-             * @description The condition a call must match. The root is always a group (`AND` or `OR`) of predicates and nested groups, even for a single condition, and every node needs a `type` (`group` or `predicate`). Build each predicate from an item in List Rule Conditions: for an eval, a data extraction field or a voice metric, `lhs` is the item's name, `source` its `source_type` and `field_id` its `id`; for a latency percentile, `lhs` is the item's `id` (such as `"p90_latency"`); for Call Outcome, Call Intent, Call Duration, Call Cost, Call Outcome Type and Call Ended Reason, `lhs` is `call_outcome`, `call_intent`, `call_duration`, `call_cost`, `call_outcome_type` or `call_ended_reason`; for Extra Metadata, `lhs` is `metadata.<key>`. `op` is a word (`eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `exists`, `not_exists`, `contains`, `starts_with`), not the symbol List Rule Conditions returns. `eq`, `neq`, `contains` and `starts_with` on text ignore case. `exists` and `not_exists` work on any field, even where List Rule Conditions doesn't list them. A field with no value for the call counts as not existing. A field the analysis skipped, such as an eval that didn't run or the intent of a call whose outcome stopped the analysis, matches only `not_exists`, not even `neq`. Groups nest at most 10 levels deep, and a tree holds at most 50 conditions. Send this or the four single-condition fields, not both.
+             * @description The condition a call must match. The root is always a group (`AND` or `OR`) of predicates and nested groups, even for a single condition, and every node needs a `type` (`group` or `predicate`). Build each predicate from an item in List Rule Conditions: for an eval, a data extraction field or a voice metric, `lhs` is the item's name, `source` its `source_type` and `field_id` its `id`; for a latency percentile, `lhs` is the item's `id` (such as `"p90_latency"`); for Call Outcome, Call Intent, Call Duration, Call Cost, Call Outcome Type and Call Ended Reason, `lhs` is `call_outcome`, `call_intent`, `call_duration`, `call_cost`, `call_outcome_type` or `call_ended_reason`; for Extra Metadata, `lhs` is `metadata.<key>`. `op` is a word (`eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `exists`, `not_exists`, `contains`, `starts_with`), not the symbol List Rule Conditions returns. `eq`, `neq`, `contains` and `starts_with` on text ignore case. `exists` and `not_exists` work on any field, even where List Rule Conditions doesn't list them. A field with no value for the call counts as not existing. A field the analysis skipped, such as an eval that didn't run or the intent of a call whose outcome stopped the analysis, matches only `not_exists`, not even `neq`. Groups nest at most 10 levels deep, and a tree holds at most 50 conditions.
              * @example {
              *       "children": [
              *         {
@@ -6507,41 +6564,7 @@ export interface components {
              *       "type": "group"
              *     }
              */
-            condition_tree?: components["schemas"]["RuleConditionGroup"] | null;
-            /**
-             * Condition Source Type
-             * @description Part of the single-condition form: send all four of `condition_source_type`, `condition_source_id`, `operator` and `condition_value`, or send `condition_tree` instead. Category of call data the condition tests: `eval` (an eval's result), `voice_metric` (a voice metric or latency percentile), `data_extraction_field` (a field extracted from the transcript), or `call_metadata` (the call's outcome, intent, duration, cost or outcome type, or a value from its metadata). Any other value returns a 422.
-             * @example eval
-             * @enum {unknown}
-             */
-            condition_source_type?: "eval" | "voice_metric" | "data_extraction_field" | "call_metadata";
-            /**
-             * Condition Source Id
-             * @description Part of the single-condition form: send all four of `condition_source_type`, `condition_source_id`, `operator` and `condition_value`, or send `condition_tree` instead. ID of the item within `condition_source_type`, from List Rule Conditions: an eval ID, a voice metric ID, or a data extraction field ID. Latency percentiles use their key, such as `"p90_latency"` (numeric latency IDs from earlier versions are still accepted). For `call_metadata`: `0` Call Outcome, `1` Call Intent, `2` Call Duration, `3` Call Cost, `4` Call Outcome Type, `5` Extra Metadata (its key goes in `condition_value`), or `12` Call Ended Reason (how the call ended, as the provider reports it, such as `customer-ended-call`).
-             * @example 12
-             * @example p90_latency
-             * @example 5
-             */
-            condition_source_id?: number | string | null;
-            /**
-             * Operator
-             * @description Part of the single-condition form: send all four of `condition_source_type`, `condition_source_id`, `operator` and `condition_value`, or send `condition_tree` instead. How to compare. Valid operators depend on the source; List Rule Conditions returns each item's valid operators. For `call_metadata`: Call Outcome, Call Intent and Call Outcome Type take `=` and `!=`; Call Duration and Call Cost take `>`, `<`, `>=`, `<=`, `=` and `!=`; Extra Metadata takes `exists`, `not_exists`, `=`, `!=`, `contains` and `starts_with`; Call Ended Reason takes `=`, `!=`, `contains`, `starts_with`, `exists` and `not_exists`.
-             * @example =
-             * @example exists
-             * @enum {unknown}
-             */
-            operator?: "=" | "!=" | ">=" | "<=" | ">" | "<" | "exists" | "not_exists" | "contains" | "starts_with";
-            /**
-             * Condition Value
-             * @description Part of the single-condition form: send all four of `condition_source_type`, `condition_source_id`, `operator` and `condition_value`, or send `condition_tree` instead. What to compare against; the shape depends on the source. Eval: `"PASS"`/`"FAIL"`, or a score as a string (`"1"` to `"5"`). Voice metric or latency: a number. Data extraction field: text, number, boolean, or one of its options. `call_metadata`: for Call Outcome and Call Intent, text; for Call Outcome Type, `success` or `failure`; for Call Duration (milliseconds) and Call Cost (cents), a number; for Call Ended Reason, text (no value for `exists` and `not_exists`); for Extra Metadata, an object `{"key": ..., "value": ...}`; write `key` as `metadata.<key>` (dots for nested keys, case-sensitive). A bare key or a leading `call.metadata.` is still accepted, but responses always return `metadata.<key>`. A key literally named `metadata` is written `metadata.metadata.<key>`. `value` is left out for `exists` and `not_exists`. A missing key matches only `not_exists`.
-             * @example FAIL
-             * @example 1200
-             * @example {
-             *       "key": "metadata.customer_tier",
-             *       "value": "gold"
-             *     }
-             */
-            condition_value?: unknown | null;
+            condition_tree: components["schemas"]["RuleConditionGroup"];
             /**
              * Output Type
              * @description Whether a matching call gets a label or a red flag. Any other value returns a 422.
@@ -6606,33 +6629,6 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Condition Source Type
-             * @description Category of call data the condition tests. Filled only for a rule with one condition; `null` for a rule with several. `condition_tree` always holds the rule's conditions.
-             */
-            condition_source_type?: string | null;
-            /**
-             * Condition Source Id
-             * @description ID of the eval, metric, or field the condition tests. Latency percentiles are returned as their key, such as `"p90_latency"`. Filled only for a rule with one condition; `null` for a rule with several. `condition_tree` always holds the rule's conditions.
-             * @example 12
-             * @example p90_latency
-             */
-            condition_source_id?: number | string | null;
-            /**
-             * Condition Source Name
-             * @description Display name of the referenced eval, metric, or field. Filled only for a rule with one condition; `null` for a rule with several. `condition_tree` always holds the rule's conditions.
-             */
-            condition_source_name?: string | null;
-            /**
-             * Operator
-             * @description How the value is compared. Filled only for a rule with one condition; `null` for a rule with several. `condition_tree` always holds the rule's conditions.
-             */
-            operator?: string | null;
-            /**
-             * Condition Value
-             * @description Value the condition compares against. For `call_metadata`, a plain text or number value, except Extra Metadata, which is `{key, value}` with the `key` always returned as `metadata.<key>`. Filled only for a rule with one condition; `null` for a rule with several. `condition_tree` always holds the rule's conditions.
-             */
-            condition_value?: unknown | null;
-            /**
              * Output Type
              * @description Whether matching calls get a label or a red flag.
              */
@@ -6683,12 +6679,11 @@ export interface components {
          * @description Schema for updating a rule.
          *
          *     Leave a field out to keep its current value. For every field except `output_description`,
-         *     `null` is the same as leaving it out. Change the condition with `condition_tree`, or, for a
-         *     rule with one condition, with the single-condition fields; not both in one request.
+         *     `null` is the same as leaving it out.
          */
         RuleUpdate: {
             /**
-             * @description The condition a call must match. The root is always a group (`AND` or `OR`) of predicates and nested groups, even for a single condition, and every node needs a `type` (`group` or `predicate`). Build each predicate from an item in List Rule Conditions: for an eval, a data extraction field or a voice metric, `lhs` is the item's name, `source` its `source_type` and `field_id` its `id`; for a latency percentile, `lhs` is the item's `id` (such as `"p90_latency"`); for Call Outcome, Call Intent, Call Duration, Call Cost, Call Outcome Type and Call Ended Reason, `lhs` is `call_outcome`, `call_intent`, `call_duration`, `call_cost`, `call_outcome_type` or `call_ended_reason`; for Extra Metadata, `lhs` is `metadata.<key>`. `op` is a word (`eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `exists`, `not_exists`, `contains`, `starts_with`), not the symbol List Rule Conditions returns. `eq`, `neq`, `contains` and `starts_with` on text ignore case. `exists` and `not_exists` work on any field, even where List Rule Conditions doesn't list them. A field with no value for the call counts as not existing. A field the analysis skipped, such as an eval that didn't run or the intent of a call whose outcome stopped the analysis, matches only `not_exists`, not even `neq`. Groups nest at most 10 levels deep, and a tree holds at most 50 conditions. Replaces the rule's whole condition. Leave it out to keep the current condition. Not allowed together with the single-condition fields.
+             * @description The condition a call must match. The root is always a group (`AND` or `OR`) of predicates and nested groups, even for a single condition, and every node needs a `type` (`group` or `predicate`). Build each predicate from an item in List Rule Conditions: for an eval, a data extraction field or a voice metric, `lhs` is the item's name, `source` its `source_type` and `field_id` its `id`; for a latency percentile, `lhs` is the item's `id` (such as `"p90_latency"`); for Call Outcome, Call Intent, Call Duration, Call Cost, Call Outcome Type and Call Ended Reason, `lhs` is `call_outcome`, `call_intent`, `call_duration`, `call_cost`, `call_outcome_type` or `call_ended_reason`; for Extra Metadata, `lhs` is `metadata.<key>`. `op` is a word (`eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `exists`, `not_exists`, `contains`, `starts_with`), not the symbol List Rule Conditions returns. `eq`, `neq`, `contains` and `starts_with` on text ignore case. `exists` and `not_exists` work on any field, even where List Rule Conditions doesn't list them. A field with no value for the call counts as not existing. A field the analysis skipped, such as an eval that didn't run or the intent of a call whose outcome stopped the analysis, matches only `not_exists`, not even `neq`. Groups nest at most 10 levels deep, and a tree holds at most 50 conditions. Replaces the rule's whole condition. Leave it out to keep the current condition.
              * @example {
              *       "children": [
              *         {
@@ -6776,39 +6771,6 @@ export interface components {
              *     }
              */
             condition_tree?: components["schemas"]["RuleConditionGroup"] | null;
-            /**
-             * Condition Source Type
-             * @description Category of call data the condition tests: `eval` (an eval's result), `voice_metric` (a voice metric or latency percentile), `data_extraction_field` (a field extracted from the transcript), or `call_metadata` (the call's outcome, intent, duration, cost or outcome type, or a value from its metadata). Any other value returns a 422. Only for a rule with one condition; use `condition_tree` to change a rule with several.
-             * @example eval
-             * @enum {unknown}
-             */
-            condition_source_type?: "eval" | "voice_metric" | "data_extraction_field" | "call_metadata";
-            /**
-             * Condition Source Id
-             * @description ID of the item within `condition_source_type`, from List Rule Conditions: an eval ID, a voice metric ID, or a data extraction field ID. Latency percentiles use their key, such as `"p90_latency"` (numeric latency IDs from earlier versions are still accepted). For `call_metadata`: `0` Call Outcome, `1` Call Intent, `2` Call Duration, `3` Call Cost, `4` Call Outcome Type, `5` Extra Metadata (its key goes in `condition_value`), or `12` Call Ended Reason (how the call ended, as the provider reports it, such as `customer-ended-call`).
-             * @example 12
-             * @example p90_latency
-             * @example 5
-             */
-            condition_source_id?: number | string | null;
-            /**
-             * Operator
-             * @description How to compare. Valid operators depend on the source; List Rule Conditions returns each item's valid operators. For `call_metadata`: Call Outcome, Call Intent and Call Outcome Type take `=` and `!=`; Call Duration and Call Cost take `>`, `<`, `>=`, `<=`, `=` and `!=`; Extra Metadata takes `exists`, `not_exists`, `=`, `!=`, `contains` and `starts_with`; Call Ended Reason takes `=`, `!=`, `contains`, `starts_with`, `exists` and `not_exists`.
-             * @example =
-             * @enum {unknown}
-             */
-            operator?: "=" | "!=" | ">=" | "<=" | ">" | "<" | "exists" | "not_exists" | "contains" | "starts_with";
-            /**
-             * Condition Value
-             * @description What to compare against; the shape depends on the source. Eval: `"PASS"`/`"FAIL"`, or a score as a string (`"1"` to `"5"`). Voice metric or latency: a number. Data extraction field: text, number, boolean, or one of its options. `call_metadata`: for Call Outcome and Call Intent, text; for Call Outcome Type, `success` or `failure`; for Call Duration (milliseconds) and Call Cost (cents), a number; for Call Ended Reason, text (no value for `exists` and `not_exists`); for Extra Metadata, an object `{"key": ..., "value": ...}`; write `key` as `metadata.<key>` (dots for nested keys, case-sensitive). A bare key or a leading `call.metadata.` is still accepted, but responses always return `metadata.<key>`. A key literally named `metadata` is written `metadata.metadata.<key>`. `value` is left out for `exists` and `not_exists`. A missing key matches only `not_exists`.
-             * @example FAIL
-             * @example 1200
-             * @example {
-             *       "key": "metadata.customer_tier",
-             *       "value": "gold"
-             *     }
-             */
-            condition_value?: unknown | null;
             /**
              * Output Type
              * @description Whether a matching call gets a label or a red flag. Any other value returns a 422.
@@ -9918,7 +9880,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "code": "validation_error",
+                     *       "code": "agent_not_found",
                      *       "detail": "Agent with remote identifier agent_abc123 not found"
                      *     }
                      */
@@ -17379,7 +17341,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent does not exist, it has no settings record, or, in the single-condition form, the condition source ID does not exist for this agent. The source ID is checked against `condition_source_type`. */
+            /** @description The agent does not exist, or it has no settings record. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17388,7 +17350,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The rule is not valid. `detail` is a list, and each item's `loc` points at what failed. A rule needs either `condition_tree` or all four single-condition fields, not both. Other causes: `output_type` is not `label` or `red_flag`; in `condition_tree`, a condition that names no field of this agent, an operator the field doesn't accept, or a value that doesn't fit it; in the single-condition form, a `condition_source_type` that is not a known source type, an `operator` the source doesn't accept, or a `condition_value` that doesn't fit it or could never match. The message says what is accepted; List Rule Conditions shows the operators and values each source accepts. */
+            /** @description The rule is not valid. `detail` is a list, and each item's `loc` points at what failed. `condition_tree` is required. `condition_source_type`, `condition_source_id`, `operator` and `condition_value` are no longer accepted; each one sent gets its own item. Other causes: `output_type` is not `label` or `red_flag`; in `condition_tree`, a condition that names no field of this agent, an operator the field doesn't accept, or a value that doesn't fit it. The message says what is accepted; List Rule Conditions shows the operators and values each source accepts. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -17533,7 +17495,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent does not exist, it has no settings record, no rule with this ID exists for it, or the condition source ID does not exist for this agent. The source is checked whenever you send `condition_source_type`, `condition_source_id`, `operator` or `condition_value` (the single-condition form). */
+            /** @description The agent does not exist, it has no settings record, or no rule with this ID exists for it. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17542,7 +17504,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The change is not valid. `detail` is a list, and each item's `loc` points at what failed. `output_type` must be `label` or `red_flag`. Send `condition_tree` to replace the whole condition; it can't be sent together with the single-condition fields, and is the only way to change a rule that has several conditions or one the single-condition fields can't express. Whenever you send any of `condition_source_type`, `condition_source_id`, `operator` or `condition_value` for a rule with one condition, the whole condition is checked again, using the rule's current value for each one you leave out. A stored operator or value that no longer fits the source fails the update, and the message tells you to send a new one. Changing only the tag name, description or output type does not check the condition, and neither does pausing a rule. Setting a paused rule back to `active` always checks the whole condition. If an eval, metric or field it uses no longer exists, `loc` points at `state`; send a new condition in the same request. List Rule Conditions shows the operators and values each source accepts. */
+            /** @description The change is not valid. `detail` is a list, and each item's `loc` points at what failed. `output_type` must be `label` or `red_flag`. Send `condition_tree` to replace the whole condition. `condition_source_type`, `condition_source_id`, `operator` and `condition_value` are no longer accepted; each one sent gets its own item. Changing only the tag name, description or output type does not check the condition, and neither does pausing a rule. Setting a paused rule back to `active` always checks the whole condition. If an eval, metric or field it uses no longer exists, `loc` points at `state`; send a new condition in the same request. List Rule Conditions shows the operators and values each source accepts. */
             422: {
                 headers: {
                     [name: string]: unknown;
