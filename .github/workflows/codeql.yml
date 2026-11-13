@@ -18,8 +18,8 @@ jobs:
     name: analyze (javascript-typescript)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    # Private repos without code scanning can't upload results; don't block PRs until the repo is public.
-    continue-on-error: ${{ github.event.repository.private }}
+    # Private repos without code scanning can't upload results; runs once the repo is public.
+    if: ${{ !github.event.repository.private }}
     permissions:
       actions: read
       contents: read
