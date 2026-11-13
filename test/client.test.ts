@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TunerClient, backoffMs, withRetry } from "../src/client.js";
-import { ApiError, GaveUpError, NetworkError } from "../src/errors.js";
+import { ApiError, GaveUpError, NetworkError } from "../src/domain/errors.js";
 import { VERSION } from "../src/version.js";
 import {
   AGENT_PATH,

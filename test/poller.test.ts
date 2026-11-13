@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TunerClient } from "../src/client.js";
 import { StopController, cancelAndWait, pollRun } from "../src/poller.js";
-import type { Run } from "../src/types.js";
+import type { Run } from "../src/domain/types.js";
 import {
   AGENT,
   AGENT_PATH,

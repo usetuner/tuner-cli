@@ -1,23 +1,10 @@
 import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { CliError } from "./errors.js";
+import { type GlobalFlags, type KeySource, type ResolvedKey } from "./domain/config.js";
+import { CliError } from "./domain/errors.js";
 import type { Runtime } from "./runtime.js";
 
-export const DEFAULT_BASE_URL = "https://api.usetuner.ai";
 const CREDENTIALS_FILE = "credentials.json";
-
-export interface GlobalFlags {
-  apiKey?: string;
-  baseUrl?: string;
-  verbose?: boolean;
-}
-
-export type KeySource = "flag" | "env" | "stored";
-
-export interface ResolvedKey {
-  key: string;
-  source: KeySource;
-}
 
 export function credentialsPath(runtime: Runtime): string {
   return join(runtime.configDir, CREDENTIALS_FILE);
@@ -77,26 +64,4 @@ export function describeKeySource(source: KeySource, runtime: Runtime): string {
   if (source === "flag") return "--api-key";
   if (source === "env") return "TUNER_API_KEY";
   return credentialsPath(runtime);
-}
-
-export function resolveBaseUrl(flags: GlobalFlags, runtime: Runtime): string {
-  const raw = flags.baseUrl || runtime.env.TUNER_BASE_URL?.trim() || DEFAULT_BASE_URL;
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    throw new CliError(`Invalid base URL '${raw}'.`, "usage_error");
-  }
-  if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new CliError(`Base URL must be http or https, got '${raw}'.`, "usage_error");
-  }
-  return raw.replace(/\/+$/, "");
-}
-
-export function resolveAgentRef(
-  flagAgent: string | undefined,
-  runtime: Runtime,
-): string | undefined {
-  const value = flagAgent?.trim() || runtime.env.TUNER_AGENT_ID?.trim();
-  return value || undefined;
 }

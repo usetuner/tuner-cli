@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { Signal } from "./exit.js";
+import type { Signal } from "./domain/exit.js";
 
 export interface Stream {
   write(text: string): void;

@@ -1,5 +1,5 @@
 import { Command, CommanderError, Option } from "commander";
-import type { GlobalFlags } from "./config.js";
+import type { GlobalFlags } from "./domain/config.js";
 import { authLogin, authLogout, authStatus } from "./commands/auth.js";
 import {
   agentsList,
@@ -10,8 +10,9 @@ import {
 } from "./commands/lists.js";
 import { runsCancel, runsGet } from "./commands/runs.js";
 import type { CommandContext } from "./commands/shared.js";
-import { DEFAULT_TIMEOUT, simRun } from "./commands/sim-run.js";
-import { EXIT } from "./exit.js";
+import { simRun } from "./commands/sim-run.js";
+import { DEFAULT_TIMEOUT } from "./domain/inputs.js";
+import { EXIT } from "./domain/exit.js";
 import type { Runtime } from "./runtime.js";
 import { VERSION } from "./version.js";
 

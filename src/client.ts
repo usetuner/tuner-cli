@@ -1,4 +1,4 @@
-import { ApiError, GaveUpError, NetworkError, isRetryable } from "./errors.js";
+import { ApiError, GaveUpError, NetworkError, isRetryable } from "./domain/errors.js";
 import type { Runtime } from "./runtime.js";
 import type {
   Agent,
@@ -10,7 +10,7 @@ import type {
   StartRunRequest,
   StartRunResponse,
   Whoami,
-} from "./types.js";
+} from "./domain/types.js";
 import { CLIENT_HEADER, VERSION } from "./version.js";
 
 const REQUEST_TIMEOUT_MS = 30_000;

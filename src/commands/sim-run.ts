@@ -1,21 +1,14 @@
 import { POLL_GIVE_UP_MS, withRetry } from "../client.js";
-import { resolveAgentRef } from "../config.js";
-import { type Target, resolveTarget, toCliError } from "../context.js";
-import { parseDuration } from "../duration.js";
-import { CliError, detailText } from "../errors.js";
-import { EXIT, type RunReason, exitForRun, exitForSignal } from "../exit.js";
+import { type Target, resolveTarget } from "../context.js";
+import { resolveAgentRef } from "../domain/config.js";
+import { type OutputFormat, buildDocument } from "../domain/document.js";
+import { toCliError } from "../domain/error-message.js";
+import { DEFAULT_TIMEOUT, buildStartBody, parseTimeout } from "../domain/inputs.js";
+import { summarize } from "../domain/run-summary.js";
+import { EXIT, type RunReason, exitForRun, exitForSignal } from "../domain/exit.js";
 import { StopController, cancelAndWait, pollRun } from "../poller.js";
-import {
-  type OutputFormat,
-  buildDocument,
-  painter,
-  scenarioLine,
-  summarize,
-  summaryLine,
-  useColor,
-  writeJson,
-} from "../render.js";
-import type { Run, StartRunRequest, Verdict } from "../types.js";
+import { painter, scenarioLine, summaryLine, useColor, writeJson } from "../render.js";
+import type { Run, StartRunRequest, Verdict } from "../domain/types.js";
 import type { CommandContext } from "./shared.js";
 
 export interface SimRunOptions {
@@ -29,24 +22,6 @@ export interface SimRunOptions {
   wait?: boolean;
   timeout?: string;
   failOnInconclusive?: boolean;
-}
-
-export const DEFAULT_TIMEOUT = "60m";
-
-export function parseScenarioIds(values: string[]): number[] {
-  const ids = values
-    .flatMap((v) => v.split(","))
-    .map((v) => v.trim())
-    .filter(Boolean);
-  for (const id of ids) {
-    if (!/^\d+$/.test(id) || Number(id) <= 0) {
-      throw new CliError(
-        `Invalid scenario ID '${id}'. Use numeric IDs from \`tuner scenarios list\`.`,
-        "usage_error",
-      );
-    }
-  }
-  return ids.map(Number);
 }
 
 export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<number> {
@@ -266,26 +241,4 @@ function warnInconclusive(
 ): void {
   const hint = exitCode === EXIT.OK ? " Pass --fail-on-inconclusive to exit 1 instead." : "";
   progress(`Warning: run not conclusive (reason: ${reason}); exiting ${exitCode}.${hint}`);
-}
-
-function parseTimeout(value: string): number {
-  try {
-    return parseDuration(value);
-  } catch (err) {
-    throw new CliError(detailText((err as Error).message), "usage_error");
-  }
-}
-
-export function buildStartBody(opts: SimRunOptions): StartRunRequest {
-  const scenarios = opts.scenario ?? [];
-  if (Boolean(opts.tag) === scenarios.length > 0) {
-    throw new CliError("Pass exactly one of --tag or --scenario.", "usage_error");
-  }
-  const body: StartRunRequest = {};
-  if (opts.tag) body.tag = opts.tag;
-  else body.selected_scenario_ids = parseScenarioIds(scenarios);
-  if (opts.language) body.language = opts.language;
-  if (opts.profile) body.profile = opts.profile;
-  if (opts.noise) body.noise = opts.noise;
-  return body;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseDuration } from "../src/duration.js";
-import { detailText } from "../src/errors.js";
-import { EXIT, exitForRun, exitForSignal } from "../src/exit.js";
+import { parseDuration } from "../../src/domain/duration.js";
+import { detailText } from "../../src/domain/errors.js";
+import { EXIT, exitForRun, exitForSignal } from "../../src/domain/exit.js";
 
 describe("exitForRun", () => {
   it.each([

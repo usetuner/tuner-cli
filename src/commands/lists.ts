@@ -1,6 +1,7 @@
 import { resolveTarget } from "../context.js";
-import { EXIT } from "../exit.js";
-import { SCHEMA_VERSION, type OutputFormat, table, writeJson } from "../render.js";
+import { EXIT } from "../domain/exit.js";
+import { type OutputFormat, listDocument } from "../domain/document.js";
+import { table, writeJson } from "../render.js";
 import { type CommandContext, SHORT_GIVE_UP_MS, guard, isJson } from "./shared.js";
 
 interface ListOptions {
@@ -18,7 +19,7 @@ function emit(
   rows: string[][],
 ): number {
   if (isJson(output)) {
-    writeJson(ctx.runtime.stdout, { schema_version: SCHEMA_VERSION, [key]: items });
+    writeJson(ctx.runtime.stdout, listDocument(key, items));
   } else if (rows.length === 0) {
     ctx.runtime.stderr.write(`No ${key} found.\n`);
   } else {

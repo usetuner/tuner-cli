@@ -1,18 +1,12 @@
 import { withRetry } from "../client.js";
 import { resolveTarget } from "../context.js";
-import { EXIT } from "../exit.js";
-import {
-  type OutputFormat,
-  buildDocument,
-  painter,
-  scenarioLine,
-  summarize,
-  summaryLine,
-  useColor,
-  writeJson,
-} from "../render.js";
-import type { Run } from "../types.js";
-import { type CommandContext, SHORT_GIVE_UP_MS, guard, isJson, parseRunId } from "./shared.js";
+import { EXIT } from "../domain/exit.js";
+import { type OutputFormat, buildDocument } from "../domain/document.js";
+import { summarize } from "../domain/run-summary.js";
+import { painter, scenarioLine, summaryLine, useColor, writeJson } from "../render.js";
+import type { Run } from "../domain/types.js";
+import { parseRunId } from "../domain/inputs.js";
+import { type CommandContext, SHORT_GIVE_UP_MS, guard, isJson } from "./shared.js";
 
 interface RunsOptions {
   agent?: string;

@@ -1,15 +1,6 @@
 import { statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import {
-  DEFAULT_BASE_URL,
-  credentialsPath,
-  readStoredKey,
-  resolveAgentRef,
-  resolveApiKey,
-  resolveBaseUrl,
-  writeStoredKey,
-} from "../src/config.js";
-import { CliError } from "../src/errors.js";
+import { credentialsPath, readStoredKey, resolveApiKey, writeStoredKey } from "../src/config.js";
 import { defaultConfigDir } from "../src/runtime.js";
 import { FakeApi, makeRuntime } from "./helpers.js";
 
@@ -37,31 +28,6 @@ describe("config", () => {
     expect(path).toBe(credentialsPath(rt));
     if (process.platform !== "win32") expect(statSync(path).mode & 0o777).toBe(0o600);
     expect(await readStoredKey(rt)).toBe("tr_api_x");
-  });
-
-  it("resolves the base URL from flag, env, then production", () => {
-    const rt = makeRuntime(new FakeApi(), {
-      env: { TUNER_BASE_URL: "https://staging.example.com/" },
-    });
-    expect(resolveBaseUrl({ baseUrl: "http://127.0.0.1:8010" }, rt)).toBe("http://127.0.0.1:8010");
-    expect(resolveBaseUrl({}, rt)).toBe("https://staging.example.com");
-    rt.env.TUNER_BASE_URL = undefined;
-    expect(resolveBaseUrl({}, rt)).toBe(DEFAULT_BASE_URL);
-    expect(DEFAULT_BASE_URL).toBe("https://api.usetuner.ai");
-  });
-
-  it("rejects a non-http base URL", () => {
-    const rt = makeRuntime(new FakeApi());
-    expect(() => resolveBaseUrl({ baseUrl: "ftp://x" }, rt)).toThrow(CliError);
-    expect(() => resolveBaseUrl({ baseUrl: "not a url" }, rt)).toThrow(CliError);
-  });
-
-  it("resolves the agent from flag, then TUNER_AGENT_ID", () => {
-    const rt = makeRuntime(new FakeApi(), { env: { TUNER_AGENT_ID: "env-agent" } });
-    expect(resolveAgentRef("flag-agent", rt)).toBe("flag-agent");
-    expect(resolveAgentRef(undefined, rt)).toBe("env-agent");
-    rt.env.TUNER_AGENT_ID = "";
-    expect(resolveAgentRef(undefined, rt)).toBeUndefined();
   });
 
   it("uses the OS config dir", () => {

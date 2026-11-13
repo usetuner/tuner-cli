@@ -1,14 +1,10 @@
 import { TunerClient } from "../client.js";
-import {
-  credentialsPath,
-  deleteStoredKey,
-  describeKeySource,
-  resolveBaseUrl,
-  writeStoredKey,
-} from "../config.js";
-import { resolveTarget, toCliError } from "../context.js";
-import { CliError } from "../errors.js";
-import { EXIT } from "../exit.js";
+import { credentialsPath, deleteStoredKey, describeKeySource, writeStoredKey } from "../config.js";
+import { resolveTarget } from "../context.js";
+import { resolveBaseUrl } from "../domain/config.js";
+import { toCliError } from "../domain/error-message.js";
+import { CliError } from "../domain/errors.js";
+import { EXIT } from "../domain/exit.js";
 import { type CommandContext, SHORT_GIVE_UP_MS, guard } from "./shared.js";
 
 export function authLogin(ctx: CommandContext): Promise<number> {

@@ -1,8 +1,8 @@
 import { POLL_GIVE_UP_MS, type TunerClient, withRetry } from "./client.js";
-import { ApiError, GaveUpError, NetworkError } from "./errors.js";
-import type { Signal } from "./exit.js";
+import { ApiError, GaveUpError, NetworkError } from "./domain/errors.js";
+import type { Signal } from "./domain/exit.js";
 import type { Runtime } from "./runtime.js";
-import type { Run } from "./types.js";
+import type { Run } from "./domain/types.js";
 
 export const POLL_INTERVAL_MS = 3_000;
 export const CANCEL_WAIT_MS = 10_000;
