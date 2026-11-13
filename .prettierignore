@@ -3,3 +3,4 @@ node_modules/
 src/generated/
 openapi/
 package-lock.json
+coverage/
