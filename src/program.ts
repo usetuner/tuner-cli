@@ -50,7 +50,8 @@ export async function runCli(argv: string[], runtime: Runtime): Promise<number> 
 Environment: TUNER_API_KEY, TUNER_AGENT_ID, TUNER_WORKSPACE_ID, TUNER_BASE_URL (default https://api.usetuner.ai)
 
 Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-inconclusive),
-1 agent failed, 2 nothing ran, 130 SIGINT, 143 SIGTERM.`,
+1 agent failed, 2 your input or account stopped the run (bad key, unknown name, no credits),
+130 SIGINT, 143 SIGTERM. Tuner being unreachable is inconclusive, not 2.`,
     );
 
   const sim = program.command("sim").description("run simulations");
