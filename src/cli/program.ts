@@ -1,21 +1,21 @@
 import { Command, CommanderError, Option } from "commander";
-import type { GlobalFlags } from "./domain/config.js";
-import { authLogin, authLogout, authStatus } from "./commands/auth.js";
+import type { GlobalFlags } from "../domain/config.js";
+import { authLogin, authLogout, authStatus } from "../commands/auth.js";
 import {
   agentsList,
   languagesList,
   noiseList,
   profilesList,
   scenariosList,
-} from "./commands/lists.js";
-import { runsCancel, runsGet } from "./commands/runs.js";
-import type { CommandContext } from "./commands/shared.js";
-import { simRun } from "./commands/sim-run.js";
-import { makeDeps } from "./cli/compose.js";
-import { DEFAULT_TIMEOUT } from "./domain/inputs.js";
-import { EXIT } from "./domain/exit.js";
-import type { Runtime } from "./ports.js";
-import { VERSION } from "./adapters/version.js";
+} from "../commands/lists.js";
+import { runsCancel, runsGet } from "../commands/runs.js";
+import type { CommandContext } from "../commands/shared.js";
+import { simRun } from "../commands/sim-run.js";
+import { makeDeps } from "./compose.js";
+import { DEFAULT_TIMEOUT } from "../domain/inputs.js";
+import { EXIT } from "../domain/exit.js";
+import type { Runtime } from "../ports.js";
+import { VERSION } from "../adapters/version.js";
 
 const outputOption = () =>
   new Option("--output <format>", "output format").choices(["text", "json"]).default("text");

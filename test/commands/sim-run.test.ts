@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { VERSION } from "../src/adapters/version.js";
+import { VERSION } from "../../src/adapters/version.js";
 import {
   AGENT_PATH,
   ExitCalled,
@@ -18,7 +18,7 @@ import {
   run,
   started,
   whoami,
-} from "./helpers.js";
+} from "../helpers.js";
 
 const SELECT = `${AGENT_PATH}/simulation-runs/select`;
 const GET = `${AGENT_PATH}/simulation-runs/${RUN}`;

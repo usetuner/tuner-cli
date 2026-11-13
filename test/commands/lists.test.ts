@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AGENT_PATH, FakeApi, WS, apiError, json, makeRuntime, run, whoami } from "./helpers.js";
+import { AGENT_PATH, FakeApi, WS, apiError, json, makeRuntime, run, whoami } from "../helpers.js";
 
 const WS_PATH = `/api/v1/workspaces/${WS}`;
 const base = () => new FakeApi().on("GET", "/api/v1/whoami", json(200, whoami()));

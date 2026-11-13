@@ -10,7 +10,7 @@ Thanks for helping improve the Tuner CLI.
 ```sh
 npm ci
 npm run build
-node dist/cli.js --help
+node dist/cli/main.js --help
 ```
 
 ## Scripts

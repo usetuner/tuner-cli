@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { FileCredentialStore } from "../src/adapters/credential-store.js";
-import { FakeApi, apiError, json, makeRuntime, run, whoami } from "./helpers.js";
+import { FileCredentialStore } from "../../src/adapters/credential-store.js";
+import { FakeApi, apiError, json, makeRuntime, run, whoami } from "../helpers.js";
 
 const ok = () => new FakeApi().on("GET", "/api/v1/whoami", json(200, whoami(null)));
 

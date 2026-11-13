@@ -10,7 +10,7 @@ import {
   pendingRun,
   run,
   whoami,
-} from "./helpers.js";
+} from "../helpers.js";
 
 const GET = `${AGENT_PATH}/simulation-runs/${RUN}`;
 const CANCEL = `${GET}/cancel`;

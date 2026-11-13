@@ -1,6 +1,6 @@
 #!/usr/bin/env node
+import { nodeRuntime } from "../adapters/node-runtime.js";
 import { runCli } from "./program.js";
-import { nodeRuntime } from "./adapters/node-runtime.js";
 
 runCli(process.argv.slice(2), nodeRuntime(process)).then(
   (code) => {

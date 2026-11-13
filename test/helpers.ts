@@ -2,7 +2,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Signal } from "../src/domain/exit.js";
-import { runCli } from "../src/program.js";
+import { runCli } from "../src/cli/program.js";
 import type { Runtime } from "../src/ports.js";
 import { ExitCalled } from "./fakes/signals.js";
 

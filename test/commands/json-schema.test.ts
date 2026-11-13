@@ -12,10 +12,10 @@ import {
   makeRuntime,
   pendingRun,
   run,
-} from "./helpers.js";
+} from "../helpers.js";
 
 const schema = JSON.parse(
-  readFileSync(new URL("../schema/run-result.v1.json", import.meta.url), "utf8"),
+  readFileSync(new URL("../../schema/run-result.v1.json", import.meta.url), "utf8"),
 );
 const validate = new Ajv({ allErrors: true }).compile(schema);
 const SELECT = `${AGENT_PATH}/simulation-runs/select`;
