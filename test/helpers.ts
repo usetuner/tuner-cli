@@ -202,6 +202,7 @@ export function makeRun(overrides: Partial<Run> = {}): Run {
     },
     simulation_profile_name: null,
     noise_environment: { id: 2, name: "Café", slug: "cafe" },
+    noise_intensity: 1,
     selected_evals: [],
     selected_intents: [],
     passed_count: 1,

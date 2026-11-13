@@ -53,6 +53,14 @@ describe("buildDocument", () => {
     expect(doc.run).toMatchObject({ id: 5, status: null, is_terminal: false, agent: null });
   });
 
+  it("reports a null noise_intensity when the run has none", () => {
+    const run = makeRun({ noise_environment: null, noise_intensity: null });
+    const doc = buildDocument({ run, reason: null, exitCode: 0 });
+    expect(doc.run).toMatchObject({
+      config: { language: "en-US", profile: null, noise: null, noise_intensity: null },
+    });
+  });
+
   it("maps the run, agent and scenarios", () => {
     const doc = buildDocument({
       run: makeRun(),
@@ -64,7 +72,7 @@ describe("buildDocument", () => {
     });
     expect(doc.run).toMatchObject({
       agent: { id: defaultAgent.id, remote_id: "booking-staging", name: "Booking (staging)" },
-      config: { language: "en-US", profile: null, noise: "cafe" },
+      config: { language: "en-US", profile: null, noise: "cafe", noise_intensity: 1 },
     });
     expect(doc.scenarios).toEqual([
       {

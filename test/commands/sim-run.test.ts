@@ -73,12 +73,13 @@ describe("sim run: results and exit codes", () => {
     const api = happyApi();
     const rt = makeRuntime(api);
     expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(0);
-    expect(rt.err()).toContain("Workspace: Acme · Agent: booking-staging");
+    expect(rt.err()).toContain("Workspace: Acme · Agent: Booking (staging) (77)");
     expect(rt.err()).toContain(`Running 1 scenarios (run ${RUN})`);
     expect(rt.out()).toContain("✓ passed");
     expect(rt.out()).toContain("Reschedule an existing booking");
     expect(rt.out()).toContain("1 passed · 0 failed · 0 inconclusive");
     expect(rt.out()).toContain("https://app.usetuner.ai/simulations?agent=77&run=4821");
+    expect(rt.err()).toContain("Noise: cafe · intensity 1.0");
   });
 
   it("sends X-Tuner-Client on every request and the names in the body", async () => {
@@ -106,6 +107,22 @@ describe("sim run: results and exit codes", () => {
       language: "en-US",
       profile: "Returning customer",
       noise: "cafe",
+    });
+  });
+
+  it.each([
+    ["high", "high"],
+    ["0.5", 0.5],
+    ["loud", "loud"],
+  ])("sends --noise-intensity %s as %j without checking it", async (value, sent) => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    const argv = ["--tag", "smoke", "--noise", "office", "--noise-intensity", value];
+    expect(await run(rt, "sim", "run", ...argv)).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).toEqual({
+      tag: "smoke",
+      noise: "office",
+      noise_intensity: sent,
     });
   });
 
@@ -228,6 +245,7 @@ describe("sim run: usage errors exit 2", () => {
     [["sim", "run", "--scenario", "abc"], "Invalid scenario ID 'abc'"],
     [["sim", "run", "--tag", "a", "--timeout", "soon"], "Invalid duration 'soon'"],
     [["sim", "run", "--tag", "a", "--base-url", "ftp://x"], "Base URL must be http or https"],
+    [["sim", "run", "--tag", "a", "--noise-intensity", "high"], "--noise-intensity needs --noise"],
   ])("%j", async (argv, message) => {
     const api = happyApi();
     const rt = makeRuntime(api);
@@ -337,6 +355,20 @@ describe("sim run: start errors", () => {
       {},
       "Send exactly one of tag",
     ],
+    [
+      "validation_error",
+      422,
+      "select",
+      [
+        {
+          type: "value_error",
+          loc: ["body", "noise_intensity"],
+          msg: "Value error, noise_intensity must be one of 'low' (0.5), 'medium' (1.0), 'high' (1.5)",
+        },
+      ],
+      {},
+      "noise_intensity must be one of 'low' (0.5)",
+    ],
     ["validation_error", 400, "select", "Invalid caller persona", {}, "Invalid caller persona"],
     ["workspace_not_found", 404, "select", "Workspace not found", {}, "Workspace not found"],
     [
@@ -444,6 +476,7 @@ describe("sim run: --no-wait", () => {
     const rt = makeRuntime(api);
     expect(await run(rt, "sim", "run", "--tag", "smoke", "--no-wait")).toBe(0);
     expect(rt.out()).toBe(`${RUN}\nhttps://app.usetuner.ai/simulations?agent=77&run=${RUN}\n`);
+    expect(rt.err()).toContain("Noise: cafe · intensity 1.0");
     expect(api.calls("GET", GET)).toHaveLength(1);
     expect(api.calls("POST", CANCEL)).toHaveLength(0);
   });

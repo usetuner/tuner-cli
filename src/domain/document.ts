@@ -42,6 +42,7 @@ export function buildDocument(input: DocumentInput): Record<string, unknown> {
             language: run?.caller_persona?.code ?? null,
             profile: run?.simulation_profile_name ?? null,
             noise: run?.noise_environment?.slug ?? null,
+            noise_intensity: run?.noise_intensity ?? null,
           },
           started_at: run?.created_at ?? null,
           completed_at: run?.execution_completed_at ?? null,

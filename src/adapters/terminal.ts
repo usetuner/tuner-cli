@@ -48,6 +48,25 @@ export function summaryLine(summary: Summary): string {
   return parts.join(" · ");
 }
 
+/** A gain as the API lists it: `1` prints as `1.0`. */
+export function gainText(value: number): string {
+  return Number.isInteger(value) ? value.toFixed(1) : String(value);
+}
+
+/** `low 0.5 · medium 1.0 · high 1.5`, or `-` when the API sends none. */
+export function intensitiesText(intensities?: { name: string; value: number }[]): string {
+  if (!intensities?.length) return "-";
+  return intensities.map((i) => `${i.name} ${gainText(i.value)}`).join(" · ");
+}
+
+/** `Noise: office · intensity 1.5`, or undefined when the run plays no noise. */
+export function noiseLine(run: Run | undefined): string | undefined {
+  const slug = run?.noise_environment?.slug;
+  if (!slug) return undefined;
+  const gain = run.noise_intensity;
+  return `Noise: ${slug}${gain != null ? ` · intensity ${gainText(gain)}` : ""}`;
+}
+
 /** Left-aligned columns; the last column is not padded. */
 export function table(headers: string[], rows: string[][]): string {
   const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => (r[i] ?? "").length)));
@@ -81,7 +100,9 @@ export function writeRun(runtime: Pick<Runtime, "stdout" | "env">, run: Run): vo
   const { stdout } = runtime;
   const paint = painter(useColor(stdout, runtime));
   const reason = run.reason ? ` (${run.reason})` : "";
-  stdout.write(`Run ${run.id} · ${run.status} · result ${run.result}${reason}\n\n`);
+  stdout.write(`Run ${run.id} · ${run.status} · result ${run.result}${reason}\n`);
+  const noise = noiseLine(run);
+  stdout.write(noise ? `${noise}\n\n` : "\n");
   for (const call of run.simulation_calls) stdout.write(scenarioLine(call, paint) + "\n");
   stdout.write(`\n${summaryLine(summarize(run))}\n${run.dashboard_url}\n`);
 }

@@ -10,6 +10,7 @@ export interface StartOptions {
   language?: string;
   profile?: string;
   noise?: string;
+  noiseIntensity?: string;
 }
 
 export function parseRunId(value: string): number {
@@ -43,6 +44,11 @@ export function parseTimeout(value: string): number {
   }
 }
 
+/** A number when the value is numeric, else the name as typed; the API resolves both. */
+export function parseNoiseIntensity(value: string): string | number {
+  return /^\d+(\.\d*)?$|^\.\d+$/.test(value.trim()) ? Number(value) : value;
+}
+
 export function buildStartBody(opts: StartOptions): StartRunRequest {
   const scenarios = opts.scenario ?? [];
   if (Boolean(opts.tag) === scenarios.length > 0) {
@@ -54,5 +60,14 @@ export function buildStartBody(opts: StartOptions): StartRunRequest {
   if (opts.language) body.language = opts.language;
   if (opts.profile) body.profile = opts.profile;
   if (opts.noise) body.noise = opts.noise;
+  if (opts.noiseIntensity !== undefined) {
+    if (!opts.noise) {
+      throw new CliError("--noise-intensity needs --noise <slug>.", "usage_error");
+    }
+    // Out-of-set values still go out so the API's 422 is what people see.
+    body.noise_intensity = parseNoiseIntensity(
+      opts.noiseIntensity,
+    ) as StartRunRequest["noise_intensity"];
+  }
   return body;
 }
