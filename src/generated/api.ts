@@ -4,6 +4,29 @@
  */
 
 export interface paths {
+    "/api/v1/providers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Providers
+         * @description List the voice providers Tuner supports.
+         *
+         *     Each provider's `name` is the value to pass as `provider_name` when creating
+         *     or updating an agent.
+         */
+        get: operations["get_all_providers_api_v1_providers__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/call": {
         parameters: {
             query?: never;
@@ -22,6 +45,158 @@ export interface paths {
          *     `call_id` must be unique: re-sending an already-ingested call returns a conflict.
          */
         post: operations["create_call_api_v1_public_call_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/traces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive Traces
+         * @description Receive OpenTelemetry traces over OTLP/HTTP.
+         *
+         *     Only the protobuf encoding (`application/x-protobuf`) is accepted. A 4xx response is
+         *     permanent and should not be retried; a 5xx response is transient and safe to retry.
+         */
+        post: operations["receive_traces_api_v1_traces_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/whoami": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who Am I
+         * @description Check an API key and resolve an agent's Agent ID to the numeric IDs other routes take.
+         *
+         *     Takes a Tuner API key only. Returns the key's workspace, the key's name and last four
+         *     characters, and, when `agent_remote_identifier` is sent, that agent.
+         */
+        get: operations["whoami_api_v1_whoami_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Workspaces
+         * @description List the workspaces you have access to.
+         *
+         *     Scoped to the authenticated user. Start here — most Tuner endpoints
+         *     are workspace-scoped, and the `id` returned for each workspace is the
+         *     `workspace_id` they expect.
+         */
+        get: operations["get_user_workspaces_api_v1_workspaces__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Workspace
+         * @description Retrieve a workspace and its configured integrations.
+         */
+        get: operations["get_workspace_by_id_api_v1_workspaces__workspace_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Agents
+         * @description List all active agents in a workspace.
+         *
+         *     Each agent includes its Tuner `id`, which every other agent and call
+         *     endpoint expects. Inactive agents are excluded.
+         */
+        get: operations["get_workspace_agents_api_v1_workspaces__workspace_id__agents__get"];
+        put?: never;
+        /**
+         * Create Agent
+         * @description Create an agent and link it to a voice provider.
+         *
+         *     Tuner reuses the workspace's existing integration for the provider, so sending the same
+         *     credentials for multiple agents won't create duplicates. The integration is keyed by
+         *     provider per workspace: creating a second agent with different credentials for the same
+         *     provider overwrites the shared integration's credentials.
+         */
+        post: operations["create_agent_api_v1_workspaces__workspace_id__agents__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Agent
+         * @description Retrieve an agent with its provider integration.
+         *
+         *     Includes the linked integration and provider details.
+         */
+        get: operations["get_workspace_agent_api_v1_workspaces__workspace_id__agents__agent_id__get"];
+        /**
+         * Update Agent
+         * @description Replace an agent's configuration.
+         *
+         *     This is a full replacement: omitted fields are cleared (except `api_key`, which keeps
+         *     the stored provider key when omitted), so fetch the agent first and re-send any values you
+         *     aren't changing.
+         */
+        put: operations["update_agent_api_v1_workspaces__workspace_id__agents__agent_id__put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -111,6 +286,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/calls/{call_id}/spans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Call Spans
+         * @description Retrieve a call's OpenTelemetry spans, flat and in start-time order.
+         *
+         *     Returns an empty list when the call has no trace, which is the common case — whether
+         *     spans exist depends on how the customer's agent is instrumented.
+         */
+        get: operations["get_call_spans_api_v1_workspaces__workspace_id__agents__agent_id__calls__call_id__spans_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/calls/{call_id}/transcription-accuracy/rescore": {
         parameters: {
             query?: never;
@@ -135,7 +333,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/calls/{call_id}/spans": {
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/replay-runs": {
         parameters: {
             query?: never;
             header?: never;
@@ -143,497 +341,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Call Spans
-         * @description Retrieve a call's OpenTelemetry spans, flat and in start-time order.
+         * List Replay Runs
+         * @description List an agent's replay runs with their replayed test calls.
          *
-         *     Returns an empty list when the call has no trace, which is the common case — whether
-         *     spans exist depends on how the customer's agent is instrumented.
+         *     Each run includes its simulation calls, pass/fail counts, and the clip sets and
+         *     evals it was configured with. Filter by `status` to poll for completion.
          */
-        get: operations["get_call_spans_api_v1_workspaces__workspace_id__agents__agent_id__calls__call_id__spans_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/whoami": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Who Am I
-         * @description Check an API key and resolve an agent's Agent ID to the numeric IDs other routes take.
-         *
-         *     Takes a Tuner API key only. Returns the key's workspace, the key's name and last four
-         *     characters, and, when `agent_remote_identifier` is sent, that agent.
-         */
-        get: operations["whoami_api_v1_whoami_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Workspace
-         * @description Retrieve a workspace and its configured integrations.
-         */
-        get: operations["get_workspace_by_id_api_v1_workspaces__workspace_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Workspaces
-         * @description List the workspaces you have access to.
-         *
-         *     Scoped to the authenticated user. Start here — most Tuner endpoints
-         *     are workspace-scoped, and the `id` returned for each workspace is the
-         *     `workspace_id` they expect.
-         */
-        get: operations["get_user_workspaces_api_v1_workspaces__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/pii-redaction": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get PII Redaction
-         * @description Get a workspace's PII redaction settings.
-         *
-         *     Returns whether redaction is enabled and which categories are being redacted.
-         */
-        get: operations["get_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_get"];
-        /**
-         * Update PII Redaction
-         * @description Enable or disable PII redaction for a workspace and choose which categories
-         *     to redact.
-         *
-         *     Enabling requires a plan that includes PII redaction; disabling is always
-         *     allowed. Changes apply to calls ingested afterwards — calls already stored
-         *     aren't reprocessed.
-         */
-        put: operations["update_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/data-retention": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Data Retention
-         * @description Get a workspace's data-retention policy.
-         *
-         *     Also returns the windows and scopes the workspace's plan allows, for use with the update
-         *     endpoint.
-         */
-        get: operations["get_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_get"];
-        /**
-         * Update Data Retention
-         * @description Set a workspace's data-retention window and erasure scope.
-         *
-         *     Expired calls are erased by a nightly job, so a change takes effect on its next run.
-         *     **Erasure is irreversible**: an erased call cannot be restored. Simulation calls are never
-         *     erased.
-         */
-        put: operations["update_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/api-keys": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Workspace API Keys
-         * @description List this workspace's API keys, newest first.
-         *
-         *     Only keys that can still authenticate. Key values are never returned -- only a hash
-         *     is stored.
-         */
-        get: operations["list_workspace_api_keys_api_v1_workspaces__workspace_id__api_keys_get"];
+        get: operations["list_replay_runs_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_get"];
         put?: never;
         /**
-         * Create Workspace API Key
-         * @description Mint a new API key for this workspace.
+         * Create Replay Run
+         * @description Start a replay run against one or more voice clip sets.
          *
-         *     **The value is returned once, here, and cannot be retrieved again.** To rotate a key,
-         *     create its successor, deploy it, then revoke the old one.
+         *     Plays each clip set's recorded caller turns back byte-identical, placing one call per
+         *     clip set and repetition, for inbound and outbound agents alike. Returns 202 while the
+         *     calls run asynchronously; poll List Replay Runs for progress.
          */
-        post: operations["create_workspace_api_key_api_v1_workspaces__workspace_id__api_keys_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/api-keys/{key_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Revoke Workspace API Key
-         * @description Stop a key authenticating, immediately and permanently.
-         *
-         *     Anything still using it stops ingesting at once; the workspace's other keys are
-         *     unaffected. Idempotent.
-         */
-        delete: operations["revoke_workspace_api_key_api_v1_workspaces__workspace_id__api_keys__key_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Runs
-         * @description List an agent's simulation runs, both AI-generated and from saved scenarios.
-         *
-         *     Each run includes its test calls and results.
-         *
-         *     Replay runs are listed separately by List Replay Runs.
-         */
-        get: operations["list_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_get"];
-        put?: never;
-        /**
-         * Run AI-Generated Scenarios
-         * @description Start an AI-generated simulation run.
-         *
-         *     Tuner generates new test scenarios for your agent, a mix of functional and adversarial,
-         *     places a call for each, and grades them with the agent's `PASS_FAIL` evals. Scenarios are
-         *     generated asynchronously, so poll List Runs for progress. To re-test scenarios you've
-         *     already saved, use Run Saved Scenarios.
-         */
-        post: operations["create_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/select": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Run Saved Scenarios
-         * @description Start a run from saved scenarios.
-         *
-         *     Places a call for each scenario you pick from your scenario library, by id or by tag. No
-         *     new scenarios are generated, so you can re-test the same cases. The caller persona,
-         *     profile and noise can be given by name (`language`, `profile`, `noise`) instead of id.
-         *     Each call is scored against every `PASS_FAIL` eval on the agent. Atomic: if any id or
-         *     name is invalid, the whole request is rejected and nothing is created. To have Tuner
-         *     generate new scenarios instead, use Run AI-Generated Scenarios.
-         */
-        post: operations["create_select_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_select_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{simulation_run_id}/scenarios": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Run Scenarios
-         * @description List the generated test-call scenarios for a simulation run.
-         *
-         *     Scenarios are generated asynchronously after a run starts, so this returns an
-         *     empty list until generation completes.
-         */
-        get: operations["list_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{simulation_run_id}/scenarios/save": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Save Scenarios To Library
-         * @description Save generated scenarios from a finished run into the scenario library.
-         *
-         *     A scenario whose call failed to connect can still be saved. Atomic: if any selection
-         *     is invalid, not found, or already saved, the whole request is rejected and nothing is
-         *     created.
-         */
-        post: operations["save_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_save_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Search Runs
-         * @description Search an agent's simulation runs by status.
-         *
-         *     A lighter alternative to List Runs for polling. Returns runs newest first.
-         */
-        get: operations["search_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_search_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{run_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Run
-         * @description Get one simulation run with its test calls and results.
-         *
-         *     The same run as in List Runs, plus `is_terminal` and a `dashboard_url`. Poll this until
-         *     `is_terminal` is true.
-         */
-        get: operations["get_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{run_id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Cancel Run
-         * @description Cancel a simulation run and return it, in the same shape as Get Run.
-         *
-         *     A `pending` or `running` run becomes `canceled`: calls in progress are hung up and scenarios
-         *     not started yet never run. Scenarios that already finished keep their results. Canceling a
-         *     run that already finished, or one that is `analyzing` (every call finished, evals still
-         *     coming), changes nothing and returns the run as it is, so the call is safe to repeat.
-         */
-        post: operations["cancel_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__cancel_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-profiles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Profiles
-         * @description List an agent's simulation profiles.
-         *
-         *     A profile is a named set of details, such as names, dates and reference numbers, that
-         *     gives simulated callers concrete information to work with.
-         */
-        get: operations["list_simulation_profiles_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_get"];
-        put?: never;
-        /**
-         * Create Profile
-         * @description Create a simulation profile for an agent.
-         */
-        post: operations["create_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-profiles/{profile_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Update Profile
-         * @description Update a simulation profile.
-         */
-        put: operations["update_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__put"];
-        post?: never;
-        /**
-         * Delete Profile
-         * @description Delete a simulation profile.
-         *
-         *     Runs that already used this profile keep their snapshot of it.
-         */
-        delete: operations["delete_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/caller-personas": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Caller Personas
-         * @description List the caller personas (language and accent) a simulated caller can use.
-         *
-         *     Use a persona's `id` as `caller_persona_id` when you use Run
-         *     AI-Generated Scenarios or Run Saved Scenarios.
-         */
-        get: operations["list_caller_personas_api_v1_workspaces__workspace_id__caller_personas_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/noise-environments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Noise Environments
-         * @description List the background-noise environments a simulation run can play under the caller.
-         *
-         *     Use an environment's `id` as `noise_environment_id` when you use Run
-         *     AI-Generated Scenarios or Run Saved Scenarios, and an intensity `name` (or its `value`)
-         *     as `noise_intensity`.
-         */
-        get: operations["list_noise_environments_api_v1_workspaces__workspace_id__noise_environments_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/scenarios/preview-prompt": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Preview Scenario Prompt
-         * @description Preview the prompt that would be used for a scenario.
-         *
-         *     Excludes the caller-persona prefix, profile facts and inbound/outbound footer that are
-         *     added when the call is placed. Nothing is saved.
-         */
-        post: operations["preview_scenario_prompt_api_v1_workspaces__workspace_id__agents__agent_id__scenarios_preview_prompt_post"];
+        post: operations["create_replay_run_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -661,6 +385,29 @@ export interface paths {
          *     cannot be set.
          */
         post: operations["create_scenario_api_v1_workspaces__workspace_id__agents__agent_id__scenarios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/scenarios/preview-prompt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Scenario Prompt
+         * @description Preview the prompt that would be used for a scenario.
+         *
+         *     Excludes the caller-persona prefix, profile facts and inbound/outbound footer that are
+         *     added when the call is placed. Nothing is saved.
+         */
+        post: operations["preview_scenario_prompt_api_v1_workspaces__workspace_id__agents__agent_id__scenarios_preview_prompt_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -723,7 +470,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/source-calls": {
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/alert-definitions": {
         parameters: {
             query?: never;
             header?: never;
@@ -731,12 +478,44 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List Source Call Candidates
-         * @description List calls that can be used as the source of a voice clip set.
+         * List Alert Definitions
+         * @description List all alert definitions configured for an agent.
          *
-         *     Only calls with both a recording and a transcript are included.
+         *     Alert definitions notify a set of recipients (email) when a condition is
+         *     met on a call, based on evals, voice metrics, data extraction fields,
+         *     call metadata, or red flags.
          */
-        get: operations["list_source_calls_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_source_calls_get"];
+        get: operations["list_alert_definitions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_get"];
+        put?: never;
+        /**
+         * Create Alert Definition
+         * @description Create a new alert definition for an agent.
+         *
+         *     An alert fires when its condition matches enough calls within a rolling window.
+         */
+        post: operations["create_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/alert-definitions/available-conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Alert Conditions
+         * @description List the condition sources available for building alert definitions on this
+         *     agent.
+         *
+         *     Returns evals, voice metrics, extraction fields, call metadata, and red flags
+         *     including aggregates. Use these to build a `condition_tree`.
+         */
+        get: operations["get_alerts_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_available_conditions_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -745,7 +524,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets": {
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/alert-definitions/{alert_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -753,301 +532,24 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List Voice Clip Sets
-         * @description List an agent's active voice clip sets, newest first.
+         * Get Alert Definition
+         * @description Get a single alert definition by ID.
          */
-        get: operations["list_voice_clip_sets_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_get"];
-        put?: never;
+        get: operations["get_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__get"];
         /**
-         * Create Voice Clip Set
-         * @description Create a voice clip set from a call or an uploaded recording.
+         * Update Alert Definition
+         * @description Update an existing alert definition.
          *
-         *     The clips are cut asynchronously: the set is returned in `extracting` status. Poll Get
-         *     Voice Clip Set until it is `ready`.
+         *     Switching `threshold_type` requires sending the fields that mode needs, and
+         *     switching to `percentage` requires a single-predicate condition tree.
          */
-        post: operations["create_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/{voice_clip_set_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Voice Clip Set
-         * @description Get a voice clip set, including its clips in playback order.
-         */
-        get: operations["get_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__get"];
-        put?: never;
+        put: operations["update_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__put"];
         post?: never;
         /**
-         * Delete Voice Clip Set
-         * @description Delete a voice clip set.
+         * Delete Alert Definition
+         * @description Delete an existing alert definition.
          */
-        delete: operations["delete_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/{voice_clip_set_id}/clips/{turn_index}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Edit or Verify a Voice Clip
-         * @description Edit a clip's transcript and/or verify or unverify it.
-         *
-         *     Saving a changed transcript verifies the clip and bumps its version; saving the same
-         *     text only verifies. `verified=false` clears the verification. The set's
-         *     `transcripts_version` changes only when the clip actually changed.
-         *
-         *     Editing never re-scores anything: a real change only bumps the set's `transcripts_version`,
-         *     which makes existing transcription-accuracy scores for the set show as outdated. The user
-         *     re-scores a single call on demand.
-         */
-        patch: operations["update_voice_clip_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__clips__turn_index__patch"];
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/{voice_clip_set_id}/audio": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Voice Clip Set Audio URL
-         * @description Get a short-lived URL for a voice clip set's caller track.
-         *
-         *     Only available once the set is `ready`.
-         */
-        get: operations["get_voice_clip_set_audio_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__audio_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Start Voice Clip Upload
-         * @description Start a resumable audio upload.
-         *
-         *     Returns a presigned upload URL for every part up front. Use Get Voice Clip Upload Parts
-         *     to resume an interrupted upload or to get fresh URLs after they expire.
-         */
-        post: operations["create_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}/parts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Voice Clip Upload Parts
-         * @description Resume an interrupted upload.
-         *
-         *     Returns which parts have already been uploaded and fresh URLs for the rest, so you
-         *     don't need to restart from the first part.
-         */
-        get: operations["get_voice_clip_upload_parts_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__parts_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Complete Voice Clip Upload
-         * @description Finish an upload once every part has been sent, and queue it for analysis.
-         *
-         *     Safe to call again: an upload that is already complete is returned unchanged.
-         */
-        post: operations["complete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__complete_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}/samples/{channel_index}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Voice Clip Upload Channel Sample URL
-         * @description Get a short-lived presigned URL for one channel's preview sample.
-         *
-         *     Only available once analysis has reached `awaiting_selection`.
-         */
-        get: operations["get_voice_clip_upload_sample_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__samples__channel_index__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Voice Clip Upload
-         * @description Get an upload's status. Poll it to follow the upload through analysis.
-         */
-        get: operations["get_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__get"];
-        put?: never;
-        post?: never;
-        /**
-         * Delete Voice Clip Upload
-         * @description Delete an upload and discard its audio.
-         */
-        delete: operations["delete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/replay-runs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Replay Runs
-         * @description List an agent's replay runs with their replayed test calls.
-         *
-         *     Each run includes its simulation calls, pass/fail counts, and the clip sets and
-         *     evals it was configured with. Filter by `status` to poll for completion.
-         */
-        get: operations["list_replay_runs_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_get"];
-        put?: never;
-        /**
-         * Create Replay Run
-         * @description Start a replay run against one or more voice clip sets.
-         *
-         *     Plays each clip set's recorded caller turns back byte-identical, placing one call per
-         *     clip set and repetition, for inbound and outbound agents alike. Returns 202 while the
-         *     calls run asynchronously; poll List Replay Runs for progress.
-         */
-        post: operations["create_replay_run_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Agents
-         * @description List all active agents in a workspace.
-         *
-         *     Each agent includes its Tuner `id`, which every other agent and call
-         *     endpoint expects. Inactive agents are excluded.
-         */
-        get: operations["get_workspace_agents_api_v1_workspaces__workspace_id__agents__get"];
-        put?: never;
-        /**
-         * Create Agent
-         * @description Create an agent and link it to a voice provider.
-         *
-         *     Tuner reuses the workspace's existing integration for the provider, so sending the same
-         *     credentials for multiple agents won't create duplicates. The integration is keyed by
-         *     provider per workspace: creating a second agent with different credentials for the same
-         *     provider overwrites the shared integration's credentials.
-         */
-        post: operations["create_agent_api_v1_workspaces__workspace_id__agents__post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Agent
-         * @description Retrieve an agent with its provider integration.
-         *
-         *     Includes the linked integration and provider details.
-         */
-        get: operations["get_workspace_agent_api_v1_workspaces__workspace_id__agents__agent_id__get"];
-        /**
-         * Update Agent
-         * @description Replace an agent's configuration.
-         *
-         *     This is a full replacement: omitted fields are cleared (except `api_key`, which keeps
-         *     the stored provider key when omitted), so fetch the agent first and re-send any values you
-         *     aren't changing.
-         */
-        put: operations["update_agent_api_v1_workspaces__workspace_id__agents__agent_id__put"];
-        post?: never;
-        delete?: never;
+        delete: operations["delete_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1072,141 +574,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/intent-detection": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Update Intent Detection
-         * @description Enable or disable AI intent detection for an agent.
-         *
-         *     When disabled, calls are no longer classified into the agent's configured
-         *     call intents. Existing intents are kept and classification resumes if you
-         *     re-enable it.
-         */
-        put: operations["update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/sip-config": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get SIP Config
-         * @description Get the SIP trunk configuration for an agent.
-         */
-        get: operations["get_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_get"];
-        /**
-         * Save SIP Config
-         * @description Save the SIP trunk configuration for an agent.
-         *
-         *     Tuner connects to the trunk to verify the details before saving. The
-         *     configuration is only stored if the check succeeds, so a successful response
-         *     means the trunk is reachable.
-         */
-        put: operations["upsert_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_put"];
-        post?: never;
-        /**
-         * Delete SIP Config
-         * @description Delete the SIP trunk configuration for an agent.
-         */
-        delete: operations["delete_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/outbound-config": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Outbound Config
-         * @description Get the outbound calling configuration for an agent.
-         */
-        get: operations["get_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_get"];
-        /**
-         * Save Outbound Config
-         * @description Save the outbound calling configuration for an agent.
-         *
-         *     Tuner sends a request to the `trigger_url` to verify it's reachable before
-         *     saving. The configuration is only stored if that check succeeds.
-         */
-        put: operations["upsert_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_put"];
-        post?: never;
-        /**
-         * Delete Outbound Config
-         * @description Delete the outbound calling configuration for an agent.
-         */
-        delete: operations["delete_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/call-outcomes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Create Call Outcome
-         * @description Create a call outcome for an agent.
-         *
-         *     Call outcomes are the end-states a call can be classified into after analysis
-         *     — "resolved", "escalated", "no answer". Each carries an `outcome_type` of
-         *     success or failure, which drives the success rate on your dashboards.
-         */
-        post: operations["create_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/call-outcomes/{outcome_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Update Call Outcome
-         * @description Update an existing call outcome.
-         */
-        put: operations["update_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__put"];
-        post?: never;
-        /**
-         * Delete Call Outcome
-         * @description Delete a call outcome.
-         */
-        delete: operations["delete_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1255,6 +622,54 @@ export interface paths {
          * @description Delete a call intent.
          */
         delete: operations["delete_call_intent_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_intents__intent_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/call-outcomes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Call Outcome
+         * @description Create a call outcome for an agent.
+         *
+         *     Call outcomes are the end-states a call can be classified into after analysis
+         *     — "resolved", "escalated", "no answer". Each carries an `outcome_type` of
+         *     success or failure, which drives the success rate on your dashboards.
+         */
+        post: operations["create_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/call-outcomes/{outcome_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Call Outcome
+         * @description Update an existing call outcome.
+         */
+        put: operations["update_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__put"];
+        post?: never;
+        /**
+         * Delete Call Outcome
+         * @description Delete a call outcome.
+         */
+        delete: operations["delete_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1391,7 +806,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/rules/available-conditions": {
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/intent-detection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Intent Detection
+         * @description Enable or disable AI intent detection for an agent.
+         *
+         *     When disabled, calls are no longer classified into the agent's configured
+         *     call intents. Existing intents are kept and classification resumes if you
+         *     re-enable it.
+         */
+        put: operations["update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/outbound-config": {
         parameters: {
             query?: never;
             header?: never;
@@ -1399,21 +838,24 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List Rule Conditions
-         * @description List the condition sources available for building rules on this agent.
-         *
-         *     Returns each source with the operators and value types it accepts, grouped by
-         *     `source_type`. Use these to build a rule's `condition_tree`; Create Rule explains how an
-         *     item becomes a condition. The `call_metadata` source has seven items (IDs 0 to 5 and 12).
-         *     In a tree, Call Outcome (0), Call Intent (1), Call Duration (2), Call Cost (3), Call Outcome
-         *     Type (4) and Call Ended Reason (12) are written `call_outcome`, `call_intent`,
-         *     `call_duration`, `call_cost`, `call_outcome_type` and `call_ended_reason` in `lhs`; ID 5,
-         *     "Extra Metadata", is written `metadata.<key>`.
+         * Get Outbound Config
+         * @description Get the outbound calling configuration for an agent.
          */
-        get: operations["get_rules_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_rules_available_conditions_get"];
-        put?: never;
+        get: operations["get_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_get"];
+        /**
+         * Save Outbound Config
+         * @description Save the outbound calling configuration for an agent.
+         *
+         *     Tuner sends a request to the `trigger_url` to verify it's reachable before
+         *     saving. The configuration is only stored if that check succeeds.
+         */
+        put: operations["upsert_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_put"];
         post?: never;
-        delete?: never;
+        /**
+         * Delete Outbound Config
+         * @description Delete the outbound calling configuration for an agent.
+         */
+        delete: operations["delete_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1444,6 +886,34 @@ export interface paths {
          *     deep as you need. Get valid condition sources from List Rule Conditions.
          */
         post: operations["create_rule_api_v1_workspaces__workspace_id__agents__agent_id__settings_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/rules/available-conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Rule Conditions
+         * @description List the condition sources available for building rules on this agent.
+         *
+         *     Returns each source with the operators and value types it accepts, grouped by
+         *     `source_type`. Use these to build a rule's `condition_tree`; Create Rule explains how an
+         *     item becomes a condition. The `call_metadata` source has seven items (IDs 0 to 5 and 12).
+         *     In a tree, Call Outcome (0), Call Intent (1), Call Duration (2), Call Cost (3), Call Outcome
+         *     Type (4) and Call Ended Reason (12) are written `call_outcome`, `call_intent`,
+         *     `call_duration`, `call_cost`, `call_outcome_type` and `call_ended_reason` in `lhs`; ID 5,
+         *     "Extra Metadata", is written `metadata.<key>`.
+         */
+        get: operations["get_rules_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_rules_available_conditions_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1487,7 +957,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/alert-definitions/available-conditions": {
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/sip-config": {
         parameters: {
             query?: never;
             header?: never;
@@ -1495,14 +965,130 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List Alert Conditions
-         * @description List the condition sources available for building alert definitions on this
-         *     agent.
-         *
-         *     Returns evals, voice metrics, extraction fields, call metadata, and red flags
-         *     including aggregates. Use these to build a `condition_tree`.
+         * Get SIP Config
+         * @description Get the SIP trunk configuration for an agent.
          */
-        get: operations["get_alerts_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_available_conditions_get"];
+        get: operations["get_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_get"];
+        /**
+         * Save SIP Config
+         * @description Save the SIP trunk configuration for an agent.
+         *
+         *     Tuner connects to the trunk to verify the details before saving. The
+         *     configuration is only stored if the check succeeds, so a successful response
+         *     means the trunk is reachable.
+         */
+        put: operations["upsert_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_put"];
+        post?: never;
+        /**
+         * Delete SIP Config
+         * @description Delete the SIP trunk configuration for an agent.
+         */
+        delete: operations["delete_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Profiles
+         * @description List an agent's simulation profiles.
+         *
+         *     A profile is a named set of details, such as names, dates and reference numbers, that
+         *     gives simulated callers concrete information to work with.
+         */
+        get: operations["list_simulation_profiles_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_get"];
+        put?: never;
+        /**
+         * Create Profile
+         * @description Create a simulation profile for an agent.
+         */
+        post: operations["create_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-profiles/{profile_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Profile
+         * @description Update a simulation profile.
+         */
+        put: operations["update_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__put"];
+        post?: never;
+        /**
+         * Delete Profile
+         * @description Delete a simulation profile.
+         *
+         *     Runs that already used this profile keep their snapshot of it.
+         */
+        delete: operations["delete_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Runs
+         * @description List an agent's simulation runs, both AI-generated and from saved scenarios.
+         *
+         *     Each run includes its test calls and results.
+         *
+         *     Replay runs are listed separately by List Replay Runs.
+         */
+        get: operations["list_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_get"];
+        put?: never;
+        /**
+         * Run AI-Generated Scenarios
+         * @description Start an AI-generated simulation run.
+         *
+         *     Tuner generates new test scenarios for your agent, a mix of functional and adversarial,
+         *     places a call for each, and grades them with the agent's `PASS_FAIL` evals. Scenarios are
+         *     generated asynchronously, so poll List Runs for progress. To re-test scenarios you've
+         *     already saved, use Run Saved Scenarios.
+         */
+        post: operations["create_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Runs
+         * @description Search an agent's simulation runs by status.
+         *
+         *     A lighter alternative to List Runs for polling. Returns runs newest first.
+         */
+        get: operations["search_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_search_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1511,68 +1097,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/alert-definitions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Alert Definitions
-         * @description List all alert definitions configured for an agent.
-         *
-         *     Alert definitions notify a set of recipients (email) when a condition is
-         *     met on a call, based on evals, voice metrics, data extraction fields,
-         *     call metadata, or red flags.
-         */
-        get: operations["list_alert_definitions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_get"];
-        put?: never;
-        /**
-         * Create Alert Definition
-         * @description Create a new alert definition for an agent.
-         *
-         *     An alert fires when its condition matches enough calls within a rolling window.
-         */
-        post: operations["create_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/settings/alert-definitions/{alert_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Alert Definition
-         * @description Get a single alert definition by ID.
-         */
-        get: operations["get_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__get"];
-        /**
-         * Update Alert Definition
-         * @description Update an existing alert definition.
-         *
-         *     Switching `threshold_type` requires sending the fields that mode needs, and
-         *     switching to `percentage` requires a single-predicate condition tree.
-         */
-        put: operations["update_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__put"];
-        post?: never;
-        /**
-         * Delete Alert Definition
-         * @description Delete an existing alert definition.
-         */
-        delete: operations["delete_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/traces": {
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/select": {
         parameters: {
             query?: never;
             header?: never;
@@ -1582,20 +1107,24 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Receive Traces
-         * @description Receive OpenTelemetry traces over OTLP/HTTP.
+         * Run Saved Scenarios
+         * @description Start a run from saved scenarios.
          *
-         *     Only the protobuf encoding (`application/x-protobuf`) is accepted. A 4xx response is
-         *     permanent and should not be retried; a 5xx response is transient and safe to retry.
+         *     Places a call for each scenario you pick from your scenario library, by id or by tag. No
+         *     new scenarios are generated, so you can re-test the same cases. The caller persona,
+         *     profile and noise can be given by name (`language`, `profile`, `noise`) instead of id.
+         *     Each call is scored against every `PASS_FAIL` eval on the agent. Atomic: if any id or
+         *     name is invalid, the whole request is rejected and nothing is created. To have Tuner
+         *     generate new scenarios instead, use Run AI-Generated Scenarios.
          */
-        post: operations["receive_traces_api_v1_traces_post"];
+        post: operations["create_select_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_select_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/providers/": {
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{run_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1603,14 +1132,485 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List Providers
-         * @description List the voice providers Tuner supports.
+         * Get Run
+         * @description Get one simulation run with its test calls and results.
          *
-         *     Each provider's `name` is the value to pass as `provider_name` when creating
-         *     or updating an agent.
+         *     The same run as in List Runs, plus `is_terminal` and a `dashboard_url`. Poll this until
+         *     `is_terminal` is true.
          */
-        get: operations["get_all_providers_api_v1_providers__get"];
+        get: operations["get_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{run_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Run
+         * @description Cancel a simulation run and return it, in the same shape as Get Run.
+         *
+         *     A `pending` or `running` run becomes `canceled`: calls in progress are hung up and scenarios
+         *     not started yet never run. Scenarios that already finished keep their results. Canceling a
+         *     run that already finished, or one that is `analyzing` (every call finished, evals still
+         *     coming), changes nothing and returns the run as it is, so the call is safe to repeat.
+         */
+        post: operations["cancel_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{simulation_run_id}/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Run Scenarios
+         * @description List the generated test-call scenarios for a simulation run.
+         *
+         *     Scenarios are generated asynchronously after a run starts, so this returns an
+         *     empty list until generation completes.
+         */
+        get: operations["list_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-runs/{simulation_run_id}/scenarios/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Save Scenarios To Library
+         * @description Save generated scenarios from a finished run into the scenario library.
+         *
+         *     A scenario whose call failed to connect can still be saved. Atomic: if any selection
+         *     is invalid, not found, or already saved, the whole request is rejected and nothing is
+         *     created.
+         */
+        post: operations["save_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_save_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Voice Clip Sets
+         * @description List an agent's active voice clip sets, newest first.
+         */
+        get: operations["list_voice_clip_sets_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_get"];
+        put?: never;
+        /**
+         * Create Voice Clip Set
+         * @description Create a voice clip set from a call or an uploaded recording.
+         *
+         *     The clips are cut asynchronously: the set is returned in `extracting` status. Poll Get
+         *     Voice Clip Set until it is `ready`.
+         */
+        post: operations["create_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/source-calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Source Call Candidates
+         * @description List calls that can be used as the source of a voice clip set.
+         *
+         *     Only calls with both a recording and a transcript are included.
+         */
+        get: operations["list_source_calls_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_source_calls_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/{voice_clip_set_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Voice Clip Set
+         * @description Get a voice clip set, including its clips in playback order.
+         */
+        get: operations["get_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Voice Clip Set
+         * @description Delete a voice clip set.
+         */
+        delete: operations["delete_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/{voice_clip_set_id}/audio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Voice Clip Set Audio URL
+         * @description Get a short-lived URL for a voice clip set's caller track.
+         *
+         *     Only available once the set is `ready`.
+         */
+        get: operations["get_voice_clip_set_audio_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__audio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-sets/{voice_clip_set_id}/clips/{turn_index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit or Verify a Voice Clip
+         * @description Edit a clip's transcript and/or verify or unverify it.
+         *
+         *     Saving a changed transcript verifies the clip and bumps its version; saving the same
+         *     text only verifies. `verified=false` clears the verification. The set's
+         *     `transcripts_version` changes only when the clip actually changed.
+         *
+         *     Editing never re-scores anything: a real change only bumps the set's `transcripts_version`,
+         *     which makes existing transcription-accuracy scores for the set show as outdated. The user
+         *     re-scores a single call on demand.
+         */
+        patch: operations["update_voice_clip_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__clips__turn_index__patch"];
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Voice Clip Upload
+         * @description Start a resumable audio upload.
+         *
+         *     Returns a presigned upload URL for every part up front. Use Get Voice Clip Upload Parts
+         *     to resume an interrupted upload or to get fresh URLs after they expire.
+         */
+        post: operations["create_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Voice Clip Upload
+         * @description Get an upload's status. Poll it to follow the upload through analysis.
+         */
+        get: operations["get_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Voice Clip Upload
+         * @description Delete an upload and discard its audio.
+         */
+        delete: operations["delete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete Voice Clip Upload
+         * @description Finish an upload once every part has been sent, and queue it for analysis.
+         *
+         *     Safe to call again: an upload that is already complete is returned unchanged.
+         */
+        post: operations["complete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}/parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Voice Clip Upload Parts
+         * @description Resume an interrupted upload.
+         *
+         *     Returns which parts have already been uploaded and fresh URLs for the rest, so you
+         *     don't need to restart from the first part.
+         */
+        get: operations["get_voice_clip_upload_parts_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__parts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/voice-clip-uploads/{voice_clip_upload_id}/samples/{channel_index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Voice Clip Upload Channel Sample URL
+         * @description Get a short-lived presigned URL for one channel's preview sample.
+         *
+         *     Only available once analysis has reached `awaiting_selection`.
+         */
+        get: operations["get_voice_clip_upload_sample_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__samples__channel_index__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/api-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Workspace API Keys
+         * @description List this workspace's API keys, newest first.
+         *
+         *     Only keys that can still authenticate. Key values are never returned -- only a hash
+         *     is stored.
+         */
+        get: operations["list_workspace_api_keys_api_v1_workspaces__workspace_id__api_keys_get"];
+        put?: never;
+        /**
+         * Create Workspace API Key
+         * @description Mint a new API key for this workspace.
+         *
+         *     **The value is returned once, here, and cannot be retrieved again.** To rotate a key,
+         *     create its successor, deploy it, then revoke the old one.
+         */
+        post: operations["create_workspace_api_key_api_v1_workspaces__workspace_id__api_keys_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/api-keys/{key_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke Workspace API Key
+         * @description Stop a key authenticating, immediately and permanently.
+         *
+         *     Anything still using it stops ingesting at once; the workspace's other keys are
+         *     unaffected. Idempotent.
+         */
+        delete: operations["revoke_workspace_api_key_api_v1_workspaces__workspace_id__api_keys__key_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/caller-personas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Caller Personas
+         * @description List the caller personas (language and accent) a simulated caller can use.
+         *
+         *     Use a persona's `id` as `caller_persona_id` when you use Run
+         *     AI-Generated Scenarios or Run Saved Scenarios.
+         */
+        get: operations["list_caller_personas_api_v1_workspaces__workspace_id__caller_personas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/data-retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Data Retention
+         * @description Get a workspace's data-retention policy.
+         *
+         *     Also returns the windows and scopes the workspace's plan allows, for use with the update
+         *     endpoint.
+         */
+        get: operations["get_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_get"];
+        /**
+         * Update Data Retention
+         * @description Set a workspace's data-retention window and erasure scope.
+         *
+         *     Expired calls are erased by a nightly job, so a change takes effect on its next run.
+         *     **Erasure is irreversible**: an erased call cannot be restored. Simulation calls are never
+         *     erased.
+         */
+        put: operations["update_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/noise-environments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Noise Environments
+         * @description List the background-noise environments a simulation run can play under the caller.
+         *
+         *     Use an environment's `id` as `noise_environment_id` when you use Run
+         *     AI-Generated Scenarios or Run Saved Scenarios, and an intensity `name` (or its `value`)
+         *     as `noise_intensity`.
+         */
+        get: operations["list_noise_environments_api_v1_workspaces__workspace_id__noise_environments_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/pii-redaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get PII Redaction
+         * @description Get a workspace's PII redaction settings.
+         *
+         *     Returns whether redaction is enabled and which categories are being redacted.
+         */
+        get: operations["get_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_get"];
+        /**
+         * Update PII Redaction
+         * @description Enable or disable PII redaction for a workspace and choose which categories
+         *     to redact.
+         *
+         *     Enabling requires a plan that includes PII redaction; disabling is always
+         *     allowed. Changes apply to calls ingested afterwards — calls already stored
+         *     aren't reprocessed.
+         */
+        put: operations["update_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1634,17 +1634,17 @@ export interface components {
              */
             code: string;
             /**
-             * Label
-             * @description Short display text.
-             * @example UK
-             */
-            label: string;
-            /**
              * Country Code
              * @description ISO 3166-1 alpha-2 country code.
              * @example GB
              */
             country_code: string;
+            /**
+             * Label
+             * @description Short display text.
+             * @example UK
+             */
+            label: string;
         };
         /**
          * Agent
@@ -1652,75 +1652,75 @@ export interface components {
          */
         Agent: {
             /**
-             * Id
-             * @description Tuner's internal numeric ID for this agent. Use it in the agent-specific endpoints; it is distinct from `remote_identifier`.
+             * Call Direction
+             * @description 'inbound' for customer-initiated calls, 'outbound' for agent-initiated calls.
              */
-            id: number;
+            call_direction: string;
             /**
-             * Integration Id
-             * @description ID of the voice provider integration this agent uses.
+             * Created At
+             * Format: date-time
+             * @description ISO 8601 timestamp when the agent was created.
              */
-            integration_id: number;
+            created_at: string;
             /**
-             * Name
-             * @description Display name of the agent.
+             * Created By
+             * @description ID of the user who created this agent.
              */
-            name: string;
+            created_by?: number | null;
+            /**
+             * Deleted At
+             * @description Timestamp when the agent was deleted. Null if the agent is active.
+             */
+            deleted_at?: string | null;
             /**
              * Description
              * @description Brief description of what this agent does.
              */
             description?: string | null;
             /**
-             * Lang
-             * @description BCP 47 language tag for the agent's primary language (e.g., 'en', 'es').
+             * Id
+             * @description Tuner's internal numeric ID for this agent. Use it in the agent-specific endpoints; it is distinct from `remote_identifier`.
              */
-            lang?: string | null;
-            /** @description Nested language and accent for the agent. Null when the agent has no language configured. */
-            persona?: components["schemas"]["AgentPersona"] | null;
+            id: number;
+            integration?: components["schemas"]["IntegrationWithProvider"] | null;
             /**
-             * Call Direction
-             * @description 'inbound' for customer-initiated calls, 'outbound' for agent-initiated calls.
+             * Integration Id
+             * @description ID of the voice provider integration this agent uses.
              */
-            call_direction: string;
-            /**
-             * Remote Identifier
-             * @description Your voice provider's unique identifier for this agent (the `agent_id` sent on creation). Distinct from Tuner's `id`.
-             */
-            remote_identifier: string;
-            /**
-             * Prompt
-             * @description System prompt or instructions given to the agent.
-             */
-            prompt?: string | null;
-            /**
-             * Workflow
-             * @description Agent workflow configuration. Must be valid JSON.
-             */
-            workflow?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Webhook Url
-             * @description Destination URL for outbound webhook notifications. Null if not configured.
-             */
-            webhook_url?: string | null;
+            integration_id: number;
             /**
              * Integration Name
              * @description Name of the voice provider for this agent's integration.
              */
             integration_name?: string | null;
             /**
-             * Source Template Id
-             * @description ID of the template this agent was created from. Null if none.
+             * Is Sample
+             * @description True for the auto-provisioned demo/sample agent. Excluded from real-agent counts that drive the welcome flow and zero-agent empty state.
+             * @default false
              */
-            source_template_id?: number | null;
+            is_sample?: boolean;
             /**
-             * Setup Method
-             * @description How this agent's config was set up: 'pending', 'template', 'manual', 'mcp', or 'skipped'.
-             * @default pending
+             * Lang
+             * @description BCP 47 language tag for the agent's primary language (e.g., 'en', 'es').
              */
-            setup_method?: string;
+            lang?: string | null;
+            /**
+             * Name
+             * @description Display name of the agent.
+             */
+            name: string;
+            /** @description Nested language and accent for the agent. Null when the agent has no language configured. */
+            persona?: components["schemas"]["AgentPersona"] | null;
+            /**
+             * Prompt
+             * @description System prompt or instructions given to the agent.
+             */
+            prompt?: string | null;
+            /**
+             * Remote Identifier
+             * @description Your voice provider's unique identifier for this agent (the `agent_id` sent on creation). Distinct from Tuner's `id`.
+             */
+            remote_identifier: string;
             /**
              * Setup Code Confirmed At
              * @description Timestamp when the integration/code step of the setup wizard was confirmed. Null if not yet confirmed.
@@ -1732,22 +1732,16 @@ export interface components {
              */
             setup_completed_at?: string | null;
             /**
-             * Is Sample
-             * @description True for the auto-provisioned demo/sample agent. Excluded from real-agent counts that drive the welcome flow and zero-agent empty state.
-             * @default false
+             * Setup Method
+             * @description How this agent's config was set up: 'pending', 'template', 'manual', 'mcp', or 'skipped'.
+             * @default pending
              */
-            is_sample?: boolean;
+            setup_method?: string;
             /**
-             * Deleted At
-             * @description Timestamp when the agent was deleted. Null if the agent is active.
+             * Source Template Id
+             * @description ID of the template this agent was created from. Null if none.
              */
-            deleted_at?: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             * @description ISO 8601 timestamp when the agent was created.
-             */
-            created_at: string;
+            source_template_id?: number | null;
             /**
              * Updated At
              * Format: date-time
@@ -1755,46 +1749,28 @@ export interface components {
              */
             updated_at: string;
             /**
-             * Created By
-             * @description ID of the user who created this agent.
-             */
-            created_by?: number | null;
-            /**
              * Updated By
              * @description ID of the user who last updated this agent.
              */
             updated_by?: number | null;
-            integration?: components["schemas"]["IntegrationWithProvider"] | null;
+            /**
+             * Webhook Url
+             * @description Destination URL for outbound webhook notifications. Null if not configured.
+             */
+            webhook_url?: string | null;
+            /**
+             * Workflow
+             * @description Agent workflow configuration. Must be valid JSON.
+             */
+            workflow?: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * AgentCreateRequest
          * @description Request schema for agent creation.
          */
         AgentCreateRequest: {
-            /**
-             * Agent Name
-             * @description Display name for the agent (e.g., 'Support Bot', 'Sales Agent').
-             * @example Support Bot
-             */
-            agent_name: string;
-            /**
-             * Summary
-             * @description Brief description of what this agent does (e.g., 'Handles billing inquiries').
-             * @example Handles billing inquiries
-             */
-            summary?: string | null;
-            /**
-             * Provider Name
-             * @description Voice provider this agent is connected to (e.g., 'retell', 'vapi'). Must match a provider name supported by Tuner.
-             * @example retell
-             */
-            provider_name: string;
-            /**
-             * Api Key
-             * @description Vendor API key for your voice provider (Retell, Vapi) -- find it in that provider's account settings. Not required for the SDK providers (Custom API, LiveKit, Pipecat, Dograh): those authenticate with your workspace's Tuner API key, which Tuner already knows.
-             * @example <your-provider-api-key>
-             */
-            api_key?: string | null;
             /**
              * Agent Id
              * @description Your voice provider's unique identifier for this agent, not a Tuner ID. Find this in your provider's agent configuration. Returned as `remote_identifier`.
@@ -1808,6 +1784,18 @@ export interface components {
              */
             agent_lang?: string | null;
             /**
+             * Agent Name
+             * @description Display name for the agent (e.g., 'Support Bot', 'Sales Agent').
+             * @example Support Bot
+             */
+            agent_name: string;
+            /**
+             * Api Key
+             * @description Vendor API key for your voice provider (Retell, Vapi) -- find it in that provider's account settings. Not required for the SDK providers (Custom API, LiveKit, Pipecat, Dograh): those authenticate with your workspace's Tuner API key, which Tuner already knows.
+             * @example <your-provider-api-key>
+             */
+            api_key?: string | null;
+            /**
              * Call Direction
              * @description Whether this agent handles 'inbound' (customer-initiated) or 'outbound' (agent-initiated) calls. Defaults to 'inbound'.
              * @default inbound
@@ -1819,18 +1807,30 @@ export interface components {
              */
             prompt?: string | null;
             /**
-             * Workflow
-             * @description Agent workflow configuration as a JSON object (must be JSON-serializable).
+             * Provider Name
+             * @description Voice provider this agent is connected to (e.g., 'retell', 'vapi'). Must match a provider name supported by Tuner.
+             * @example retell
              */
-            workflow?: {
-                [key: string]: unknown;
-            } | null;
+            provider_name: string;
+            /**
+             * Summary
+             * @description Brief description of what this agent does (e.g., 'Handles billing inquiries').
+             * @example Handles billing inquiries
+             */
+            summary?: string | null;
             /**
              * Webhook Url
              * @description Destination URL for outbound webhook notifications. When set, Tuner POSTs agent events to this URL.
              * @example https://example.com/webhooks/tuner
              */
             webhook_url?: string | null;
+            /**
+             * Workflow
+             * @description Agent workflow configuration as a JSON object (must be JSON-serializable).
+             */
+            workflow?: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * AgentPersona
@@ -1838,15 +1838,15 @@ export interface components {
          */
         AgentPersona: {
             /**
-             * Language
-             * @description The agent's primary language (BCP 47 tag).
-             */
-            language?: string | null;
-            /**
              * Accent
              * @description Default accent code for the agent's language. Null if not configured.
              */
             accent?: string | null;
+            /**
+             * Language
+             * @description The agent's primary language (BCP 47 tag).
+             */
+            language?: string | null;
         };
         /**
          * AgentSetupProgressRequest
@@ -1891,35 +1891,35 @@ export interface components {
         AgentSetupResponse: {
             /** Agent Id */
             agent_id: number;
-            /** Setup Method */
-            setup_method: string;
-            /** Source Template Id */
-            source_template_id?: number | null;
             /**
-             * Intents Created
+             * Alerts Created
              * @default 0
              */
-            intents_created?: number;
-            /**
-             * Evals Created
-             * @default 0
-             */
-            evals_created?: number;
+            alerts_created?: number;
             /**
              * Data Extractions Created
              * @default 0
              */
             data_extractions_created?: number;
             /**
+             * Evals Created
+             * @default 0
+             */
+            evals_created?: number;
+            /**
+             * Intents Created
+             * @default 0
+             */
+            intents_created?: number;
+            /**
              * Rules Created
              * @default 0
              */
             rules_created?: number;
-            /**
-             * Alerts Created
-             * @default 0
-             */
-            alerts_created?: number;
+            /** Setup Method */
+            setup_method: string;
+            /** Source Template Id */
+            source_template_id?: number | null;
         };
         /**
          * AgentUpdateRequest
@@ -1927,17 +1927,11 @@ export interface components {
          */
         AgentUpdateRequest: {
             /**
-             * Agent Name
-             * @description Display name for the agent (e.g., 'Support Bot', 'Sales Agent').
-             * @example Support Bot
+             * Agent Id
+             * @description Your voice provider's unique identifier for this agent. Find this in your provider's agent configuration.
+             * @example 3f2b8c1e-5d4a-4e7b-9a6c-1d2e3f4a5b6c
              */
-            agent_name: string;
-            /**
-             * Summary
-             * @description Brief description of what this agent does (e.g., 'Handles billing inquiries').
-             * @example Handles billing inquiries
-             */
-            summary?: string | null;
+            agent_id: string;
             /**
              * Agent Lang
              * @description BCP 47 language tag for the agent's primary language (e.g., 'en', 'es', 'fr'). Omit to clear.
@@ -1945,11 +1939,28 @@ export interface components {
              */
             agent_lang?: string | null;
             /**
+             * Agent Name
+             * @description Display name for the agent (e.g., 'Support Bot', 'Sales Agent').
+             * @example Support Bot
+             */
+            agent_name: string;
+            /**
+             * Api Key
+             * @description Vendor API key for your voice provider (Retell, Vapi) -- find it in that provider's account settings. Not required for the SDK providers (Custom API, LiveKit, Pipecat, Dograh): those authenticate with your workspace's Tuner API key, which Tuner already knows. Replaces the API key stored on the workspace's integration for this provider, which is shared by all agents using that provider. Omit to keep the current key.
+             * @example <your-provider-api-key>
+             */
+            api_key?: string | null;
+            /**
              * Call Direction
              * @description Whether this agent handles 'inbound' (customer-initiated) or 'outbound' (agent-initiated) calls.
              * @default inbound
              */
             call_direction?: string;
+            /**
+             * Prompt
+             * @description System prompt or instructions given to the agent.
+             */
+            prompt?: string | null;
             /**
              * Provider Name
              * @description Voice provider this agent is connected to (e.g., 'retell', 'vapi'). Must match a provider name supported by Tuner. Changing it re-links the agent to the matching integration, creating one if none exists.
@@ -1957,23 +1968,11 @@ export interface components {
              */
             provider_name: string;
             /**
-             * Agent Id
-             * @description Your voice provider's unique identifier for this agent. Find this in your provider's agent configuration.
-             * @example 3f2b8c1e-5d4a-4e7b-9a6c-1d2e3f4a5b6c
+             * Summary
+             * @description Brief description of what this agent does (e.g., 'Handles billing inquiries').
+             * @example Handles billing inquiries
              */
-            agent_id: string;
-            /**
-             * Prompt
-             * @description System prompt or instructions given to the agent.
-             */
-            prompt?: string | null;
-            /**
-             * Workflow
-             * @description Agent workflow configuration as a JSON object (must be JSON-serializable).
-             */
-            workflow?: {
-                [key: string]: unknown;
-            } | null;
+            summary?: string | null;
             /**
              * Webhook Url
              * @description Destination URL for outbound webhook notifications. Omit or pass null to clear an existing webhook URL.
@@ -1981,11 +1980,12 @@ export interface components {
              */
             webhook_url?: string | null;
             /**
-             * Api Key
-             * @description Vendor API key for your voice provider (Retell, Vapi) -- find it in that provider's account settings. Not required for the SDK providers (Custom API, LiveKit, Pipecat, Dograh): those authenticate with your workspace's Tuner API key, which Tuner already knows. Replaces the API key stored on the workspace's integration for this provider, which is shared by all agents using that provider. Omit to keep the current key.
-             * @example <your-provider-api-key>
+             * Workflow
+             * @description Agent workflow configuration as a JSON object (must be JSON-serializable).
              */
-            api_key?: string | null;
+            workflow?: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * AiModels
@@ -2016,16 +2016,16 @@ export interface components {
          */
         AlertAvailableConditionSource: {
             /**
+             * Items
+             * @description The fields in this group.
+             */
+            items: components["schemas"]["AlertAvailableConditionSourceItem"][];
+            /**
              * Source Type
              * @description Kind of fields in this group: `eval`, `voice_metric` (includes the latency percentiles), `data_extraction_field`, `red_flag` (one item per red flag), `red_flag_aggregate` (the red flag count) or `call_metadata`. `red_flag` is left out when the agent has no red flags; the other groups are always present, and `items` may be empty for `eval` and `data_extraction_field`.
              * @example voice_metric
              */
             source_type: string;
-            /**
-             * Items
-             * @description The fields in this group.
-             */
-            items: components["schemas"]["AlertAvailableConditionSourceItem"][];
         };
         /**
          * AlertAvailableConditionSourceItem
@@ -2035,26 +2035,17 @@ export interface components {
          */
         AlertAvailableConditionSourceItem: {
             /**
-             * Id
-             * @description ID of the underlying eval, metric, extraction field or red flag, or a small fixed number for built-in fields such as latency percentiles, call metadata and the red flag count. IDs can repeat, even within one group, so identify an item by its `lhs` (together with `source_type`), not by `id`. For `eval` and `data_extraction_field` items it is that eval's or field's ID: send it as the predicate's `field_id`, with `source` set to the group's `source_type`.
-             * @example 12
-             */
-            id: number;
-            /**
              * Display Name
              * @description Human-readable name of the field.
              * @example Politeness Score
              */
             display_name: string;
             /**
-             * Op
-             * @description Operators this field accepts, written as symbols: `=`, `!=`, `>`, `>=`, `<`, `<=`, `exists`, `not_exists`, `contains` and `starts_with`. A predicate's `op` in `condition_tree` uses names instead of symbols: `=` is `eq`, `!=` is `neq`, `>` is `gt`, `>=` is `gte`, `<` is `lt` and `<=` is `lte`. The other four are the same in both. An empty list means no operator is available for this field.
-             * @example [
-             *       "=",
-             *       "!="
-             *     ]
+             * Id
+             * @description ID of the underlying eval, metric, extraction field or red flag, or a small fixed number for built-in fields such as latency percentiles, call metadata and the red flag count. IDs can repeat, even within one group, so identify an item by its `lhs` (together with `source_type`), not by `id`. For `eval` and `data_extraction_field` items it is that eval's or field's ID: send it as the predicate's `field_id`, with `source` set to the group's `source_type`.
+             * @example 12
              */
-            op: string[];
+            id: number;
             /**
              * Input Datatype
              * @description Kind of value the field holds: `list` (one of a fixed set of values), `decimal` (a number), `text` (free text) or `boolean`.
@@ -2067,6 +2058,15 @@ export interface components {
              * @example p90_latency
              */
             lhs?: string | null;
+            /**
+             * Op
+             * @description Operators this field accepts, written as symbols: `=`, `!=`, `>`, `>=`, `<`, `<=`, `exists`, `not_exists`, `contains` and `starts_with`. A predicate's `op` in `condition_tree` uses names instead of symbols: `=` is `eq`, `!=` is `neq`, `>` is `gt`, `>=` is `gte`, `<` is `lt` and `<=` is `lte`. The other four are the same in both. An empty list means no operator is available for this field.
+             * @example [
+             *       "=",
+             *       "!="
+             *     ]
+             */
+            op: string[];
             /**
              * Rhs
              * @description Values the predicate's `rhs` can take. A list means `rhs` must be one of those values (for example `["PASS", "FAIL"]`). For red flag items it is the flag's name, to use as `rhs`. Null or an empty list means any value of the field's type is accepted.
@@ -2177,83 +2177,6 @@ export interface components {
          */
         AlertDefinitionCreate: {
             /**
-             * Name
-             * @description Alert name
-             * @example Repeated failed identity checks
-             */
-            name: string;
-            /**
-             * Description
-             * @description Optional alert description
-             * @example Notify the support team when identity checks keep failing.
-             */
-            description?: string | null;
-            /**
-             * @description Alert severity level
-             * @default info
-             * @example warning
-             */
-            severity?: components["schemas"]["AlertSeverity"];
-            /**
-             * @description Alert state (active or paused)
-             * @default active
-             * @example active
-             */
-            state?: components["schemas"]["AlertState"];
-            /**
-             * Window Ms
-             * @description Rolling time window in milliseconds (e.g. 300000 for 5 minutes).
-             * @example 300000
-             */
-            window_ms: number;
-            /**
-             * Cooldown Ms
-             * @description Cooldown period in milliseconds (e.g. 900000 for 15 minutes).
-             * @default 900000
-             * @example 900000
-             */
-            cooldown_ms?: number;
-            /**
-             * Threshold N
-             * @description Number of qualifying calls to trigger alert. Required when threshold_type='count'.
-             * @example 5
-             */
-            threshold_n?: number | null;
-            /**
-             * @description Threshold mode: 'count' (absolute) or 'percentage' (ratio of evaluated calls). With 'percentage', the condition tree must be a single predicate.
-             * @default count
-             * @example count
-             */
-            threshold_type?: components["schemas"]["ThresholdType"];
-            /**
-             * Threshold Percentage
-             * @description Required when threshold_type='percentage': percentage threshold (0 < x <= 100)
-             * @example 20
-             */
-            threshold_percentage?: number | null;
-            /**
-             * Threshold Minimum
-             * @description Required when threshold_type='percentage': minimum qualifying calls before alert fires (hard gate)
-             * @example 10
-             */
-            threshold_minimum?: number | null;
-            /**
-             * Recipients
-             * @description List of email recipients
-             * @example [
-             *       "oncall@example.com"
-             *     ]
-             */
-            recipients: string[];
-            /**
-             * Notification Channels
-             * @description Channels to notify on: email and/or webhook. Selecting webhook requires the agent to have a webhook URL configured.
-             * @example [
-             *       "email"
-             *     ]
-             */
-            notification_channels: components["schemas"]["NotificationChannel"][];
-            /**
              * @description Condition a call must match. The root is always a group (`AND` or `OR`) of predicates and nested groups, even for a single condition, and every node needs a `type` (`group` or `predicate`). Groups nest at most 10 levels deep, and a tree holds at most 50 conditions.
              * @example {
              *       "children": [
@@ -2330,6 +2253,83 @@ export interface components {
              *     }
              */
             condition_tree: components["schemas"]["ConditionTreeGroup"];
+            /**
+             * Cooldown Ms
+             * @description Cooldown period in milliseconds (e.g. 900000 for 15 minutes).
+             * @default 900000
+             * @example 900000
+             */
+            cooldown_ms?: number;
+            /**
+             * Description
+             * @description Optional alert description
+             * @example Notify the support team when identity checks keep failing.
+             */
+            description?: string | null;
+            /**
+             * Name
+             * @description Alert name
+             * @example Repeated failed identity checks
+             */
+            name: string;
+            /**
+             * Notification Channels
+             * @description Channels to notify on: email and/or webhook. Selecting webhook requires the agent to have a webhook URL configured.
+             * @example [
+             *       "email"
+             *     ]
+             */
+            notification_channels: components["schemas"]["NotificationChannel"][];
+            /**
+             * Recipients
+             * @description List of email recipients
+             * @example [
+             *       "oncall@example.com"
+             *     ]
+             */
+            recipients: string[];
+            /**
+             * @description Alert severity level
+             * @default info
+             * @example warning
+             */
+            severity?: components["schemas"]["AlertSeverity"];
+            /**
+             * @description Alert state (active or paused)
+             * @default active
+             * @example active
+             */
+            state?: components["schemas"]["AlertState"];
+            /**
+             * Threshold Minimum
+             * @description Required when threshold_type='percentage': minimum qualifying calls before alert fires (hard gate)
+             * @example 10
+             */
+            threshold_minimum?: number | null;
+            /**
+             * Threshold N
+             * @description Number of qualifying calls to trigger alert. Required when threshold_type='count'.
+             * @example 5
+             */
+            threshold_n?: number | null;
+            /**
+             * Threshold Percentage
+             * @description Required when threshold_type='percentage': percentage threshold (0 < x <= 100)
+             * @example 20
+             */
+            threshold_percentage?: number | null;
+            /**
+             * @description Threshold mode: 'count' (absolute) or 'percentage' (ratio of evaluated calls). With 'percentage', the condition tree must be a single predicate.
+             * @default count
+             * @example count
+             */
+            threshold_type?: components["schemas"]["ThresholdType"];
+            /**
+             * Window Ms
+             * @description Rolling time window in milliseconds (e.g. 300000 for 5 minutes).
+             * @example 300000
+             */
+            window_ms: number;
         };
         /**
          * AlertDefinitionResponse
@@ -2337,98 +2337,11 @@ export interface components {
          */
         AlertDefinitionResponse: {
             /**
-             * Id
-             * @description Tuner's ID for this alert definition.
-             * @example 4
-             */
-            id: number;
-            /**
              * Agent Id
              * @description Agent this alert belongs to.
              * @example 17
              */
             agent_id: number;
-            /**
-             * Name
-             * @description Display name, used in notifications.
-             * @example High red-flag rate
-             */
-            name: string;
-            /**
-             * Description
-             * @description Note explaining what this alert watches for.
-             */
-            description?: string | null;
-            /**
-             * Severity
-             * @description Severity label included in notifications.
-             * @example warning
-             */
-            severity: string;
-            /**
-             * State
-             * @description `active` when the alert can fire, `paused` when it can't. An alert paused with a `paused_reason` needs its condition fixed before it can be set back to `active`.
-             * @example active
-             */
-            state: string;
-            /**
-             * Paused Reason
-             * @description Why Tuner paused this alert, such as `Eval deleted` when an eval its condition used was deleted. Null when it is active or a person paused it.
-             * @example null
-             */
-            paused_reason?: string | null;
-            /**
-             * Window Ms
-             * @description Rolling window in milliseconds. 300000 is five minutes.
-             * @example 300000
-             */
-            window_ms: number;
-            /**
-             * Cooldown Ms
-             * @description Minimum time in milliseconds before this alert can fire again.
-             * @example 900000
-             */
-            cooldown_ms: number;
-            /**
-             * Threshold Type
-             * @description `count` fires on an absolute number of matching calls, `percentage` on a share of the calls evaluated in the window.
-             * @default count
-             * @example percentage
-             */
-            threshold_type?: string;
-            /**
-             * Threshold N
-             * @description Matching calls needed to fire. Set in `count` mode.
-             */
-            threshold_n?: number | null;
-            /**
-             * Threshold Percentage
-             * @description Share of evaluated calls needed to fire. Set in `percentage` mode.
-             * @example 20
-             */
-            threshold_percentage?: number | null;
-            /**
-             * Threshold Minimum
-             * @description Minimum matching calls before the percentage is applied. Set in `percentage` mode.
-             * @example 10
-             */
-            threshold_minimum?: number | null;
-            /**
-             * Recipients
-             * @description Email addresses notified when the alert fires.
-             * @example [
-             *       "oncall@acme.com"
-             *     ]
-             */
-            recipients: string[];
-            /**
-             * Notification Channels
-             * @description Where notifications are sent.
-             * @example [
-             *       "email"
-             *     ]
-             */
-            notification_channels: string[];
             /**
              * Condition Tree
              * @description Condition a call must match to count toward the threshold. For predicates on an eval or a data extraction field, `lhs` is the field's current name.
@@ -2467,11 +2380,11 @@ export interface components {
                 [key: string]: unknown;
             };
             /**
-             * Last Triggered
-             * @description When this alert last fired. Null if it never has.
-             * @example 2026-07-31T14:05:12Z
+             * Cooldown Ms
+             * @description Minimum time in milliseconds before this alert can fire again.
+             * @example 900000
              */
-            last_triggered?: string | null;
+            cooldown_ms: number;
             /**
              * Created At
              * Format: date-time
@@ -2480,6 +2393,92 @@ export interface components {
              */
             created_at: string;
             /**
+             * Created By
+             * @description User who created the alert.
+             */
+            created_by?: number | null;
+            /**
+             * Description
+             * @description Note explaining what this alert watches for.
+             */
+            description?: string | null;
+            /**
+             * Id
+             * @description Tuner's ID for this alert definition.
+             * @example 4
+             */
+            id: number;
+            /**
+             * Last Triggered
+             * @description When this alert last fired. Null if it never has.
+             * @example 2026-07-31T14:05:12Z
+             */
+            last_triggered?: string | null;
+            /**
+             * Name
+             * @description Display name, used in notifications.
+             * @example High red-flag rate
+             */
+            name: string;
+            /**
+             * Notification Channels
+             * @description Where notifications are sent.
+             * @example [
+             *       "email"
+             *     ]
+             */
+            notification_channels: string[];
+            /**
+             * Paused Reason
+             * @description Why Tuner paused this alert, such as `Eval deleted` when an eval its condition used was deleted. Null when it is active or a person paused it.
+             * @example null
+             */
+            paused_reason?: string | null;
+            /**
+             * Recipients
+             * @description Email addresses notified when the alert fires.
+             * @example [
+             *       "oncall@acme.com"
+             *     ]
+             */
+            recipients: string[];
+            /**
+             * Severity
+             * @description Severity label included in notifications.
+             * @example warning
+             */
+            severity: string;
+            /**
+             * State
+             * @description `active` when the alert can fire, `paused` when it can't. An alert paused with a `paused_reason` needs its condition fixed before it can be set back to `active`.
+             * @example active
+             */
+            state: string;
+            /**
+             * Threshold Minimum
+             * @description Minimum matching calls before the percentage is applied. Set in `percentage` mode.
+             * @example 10
+             */
+            threshold_minimum?: number | null;
+            /**
+             * Threshold N
+             * @description Matching calls needed to fire. Set in `count` mode.
+             */
+            threshold_n?: number | null;
+            /**
+             * Threshold Percentage
+             * @description Share of evaluated calls needed to fire. Set in `percentage` mode.
+             * @example 20
+             */
+            threshold_percentage?: number | null;
+            /**
+             * Threshold Type
+             * @description `count` fires on an absolute number of matching calls, `percentage` on a share of the calls evaluated in the window.
+             * @default count
+             * @example percentage
+             */
+            threshold_type?: string;
+            /**
              * Updated At
              * Format: date-time
              * @description When the alert was last updated.
@@ -2487,72 +2486,22 @@ export interface components {
              */
             updated_at: string;
             /**
-             * Created By
-             * @description User who created the alert.
-             */
-            created_by?: number | null;
-            /**
              * Updated By
              * @description User who last updated it.
              */
             updated_by?: number | null;
+            /**
+             * Window Ms
+             * @description Rolling window in milliseconds. 300000 is five minutes.
+             * @example 300000
+             */
+            window_ms: number;
         };
         /**
          * AlertDefinitionUpdate
          * @description Schema for updating an alert definition.
          */
         AlertDefinitionUpdate: {
-            /**
-             * Name
-             * @description Alert name
-             */
-            name?: string | null;
-            /**
-             * Description
-             * @description Optional alert description
-             */
-            description?: string | null;
-            /** @description Alert severity level */
-            severity?: components["schemas"]["AlertSeverity"] | null;
-            /** @description Alert state (active or paused). Setting a paused alert back to `active` checks its whole condition, so an alert whose eval or field was deleted needs a new condition in the same request. */
-            state?: components["schemas"]["AlertState"] | null;
-            /**
-             * Window Ms
-             * @description Rolling time window in milliseconds (e.g. 300000 for 5 minutes). Client must send ms.
-             */
-            window_ms?: number | null;
-            /**
-             * Cooldown Ms
-             * @description Cooldown period in milliseconds (e.g. 900000 for 15 minutes). Client must send ms.
-             */
-            cooldown_ms?: number | null;
-            /**
-             * Threshold N
-             * @description Number of qualifying calls to trigger alert
-             */
-            threshold_n?: number | null;
-            /** @description Threshold mode: 'count' or 'percentage'. With 'percentage', the condition tree must be a single predicate. */
-            threshold_type?: components["schemas"]["ThresholdType"] | null;
-            /**
-             * Threshold Percentage
-             * @description Required when threshold_type='percentage': percentage threshold (0 < x <= 100)
-             */
-            threshold_percentage?: number | null;
-            /**
-             * Threshold Minimum
-             * @description Required when threshold_type='percentage': minimum qualifying calls (hard gate)
-             */
-            threshold_minimum?: number | null;
-            /**
-             * Recipients
-             * @description List of email recipients
-             */
-            recipients?: string[] | null;
-            /**
-             * Notification Channels
-             * @description Channels to notify on: email and/or webhook. Selecting webhook requires the agent to have a webhook URL configured.
-             */
-            notification_channels?: components["schemas"]["NotificationChannel"][] | null;
             /**
              * @description Condition a call must match. The root is always a group (`AND` or `OR`) of predicates and nested groups, even for a single condition, and every node needs a `type` (`group` or `predicate`). Groups nest at most 10 levels deep, and a tree holds at most 50 conditions. Omit to leave unchanged.
              * @example {
@@ -2630,6 +2579,57 @@ export interface components {
              *     }
              */
             condition_tree?: components["schemas"]["ConditionTreeGroup"] | null;
+            /**
+             * Cooldown Ms
+             * @description Cooldown period in milliseconds (e.g. 900000 for 15 minutes). Client must send ms.
+             */
+            cooldown_ms?: number | null;
+            /**
+             * Description
+             * @description Optional alert description
+             */
+            description?: string | null;
+            /**
+             * Name
+             * @description Alert name
+             */
+            name?: string | null;
+            /**
+             * Notification Channels
+             * @description Channels to notify on: email and/or webhook. Selecting webhook requires the agent to have a webhook URL configured.
+             */
+            notification_channels?: components["schemas"]["NotificationChannel"][] | null;
+            /**
+             * Recipients
+             * @description List of email recipients
+             */
+            recipients?: string[] | null;
+            /** @description Alert severity level */
+            severity?: components["schemas"]["AlertSeverity"] | null;
+            /** @description Alert state (active or paused). Setting a paused alert back to `active` checks its whole condition, so an alert whose eval or field was deleted needs a new condition in the same request. */
+            state?: components["schemas"]["AlertState"] | null;
+            /**
+             * Threshold Minimum
+             * @description Required when threshold_type='percentage': minimum qualifying calls (hard gate)
+             */
+            threshold_minimum?: number | null;
+            /**
+             * Threshold N
+             * @description Number of qualifying calls to trigger alert
+             */
+            threshold_n?: number | null;
+            /**
+             * Threshold Percentage
+             * @description Required when threshold_type='percentage': percentage threshold (0 < x <= 100)
+             */
+            threshold_percentage?: number | null;
+            /** @description Threshold mode: 'count' or 'percentage'. With 'percentage', the condition tree must be a single predicate. */
+            threshold_type?: components["schemas"]["ThresholdType"] | null;
+            /**
+             * Window Ms
+             * @description Rolling time window in milliseconds (e.g. 300000 for 5 minutes). Client must send ms.
+             */
+            window_ms?: number | null;
         };
         /**
          * AlertSeverity
@@ -2648,22 +2648,22 @@ export interface components {
          * @description Input schema for allowed capability.
          */
         AllowedCapabilityInput: {
-            /** Name */
-            name: string;
             /** Description */
             description?: string | null;
+            /** Name */
+            name: string;
         };
         /**
          * AllowedCapabilityResponse
          * @description Response schema for allowed capability.
          */
         AllowedCapabilityResponse: {
+            /** Description */
+            description?: string | null;
             /** Id */
             id: number;
             /** Name */
             name: string;
-            /** Description */
-            description?: string | null;
         };
         /**
          * AllowedRetentionPolicy
@@ -2693,24 +2693,24 @@ export interface components {
          * @description Body for POST /attach.
          */
         AttachRequest: {
-            /** Plan Id */
-            plan_id: string;
-            /** Success Url */
-            success_url?: string | null;
-            /**
-             * Force Checkout
-             * @default false
-             */
-            force_checkout?: boolean;
-            /** Promo Code */
-            promo_code?: string | null;
             /**
              * Confirm Replace
              * @default false
              */
             confirm_replace?: boolean;
+            /**
+             * Force Checkout
+             * @default false
+             */
+            force_checkout?: boolean;
+            /** Plan Id */
+            plan_id: string;
+            /** Promo Code */
+            promo_code?: string | null;
             /** Replace Discount Ids */
             replace_discount_ids?: string[] | null;
+            /** Success Url */
+            success_url?: string | null;
         };
         /**
          * AttachResponseSchema
@@ -2775,16 +2775,22 @@ export interface components {
          * @description Available condition source group schema.
          */
         AvailableConditionSource: {
-            /** Source Type */
-            source_type: string;
             /** Items */
             items: components["schemas"]["AvailableConditionSourceItem"][];
+            /** Source Type */
+            source_type: string;
         };
         /**
          * AvailableConditionSourceItem
          * @description Available condition source item schema.
          */
         AvailableConditionSourceItem: {
+            /** Available Operators */
+            available_operators: components["schemas"]["Operator"][];
+            /** Available Values */
+            available_values: unknown[] | null;
+            /** Display Name */
+            display_name: string;
             /**
              * Id
              * @description ID of the item. Latency percentiles use a string key such as 'p90_latency'.
@@ -2792,13 +2798,7 @@ export interface components {
              * @example p90_latency
              */
             id: number | string;
-            /** Display Name */
-            display_name: string;
-            /** Available Operators */
-            available_operators: components["schemas"]["Operator"][];
             input_datatype: components["schemas"]["InputDataType"];
-            /** Available Values */
-            available_values: unknown[] | null;
             /**
              * Unit
              * @description Unit of measurement for the value (e.g. 'ms', 's', 'usd'). Null for non-numeric or unitless.
@@ -2826,18 +2826,18 @@ export interface components {
             feature_id: string;
             /** Granted */
             granted: number;
-            /** Remaining */
-            remaining: number;
-            /** Usage */
-            usage: number;
-            /** Unlimited */
-            unlimited: boolean;
-            /** Overage Allowed */
-            overage_allowed: boolean;
             /** Max Purchase */
             max_purchase?: number | null;
             /** Next Reset At */
             next_reset_at?: number | null;
+            /** Overage Allowed */
+            overage_allowed: boolean;
+            /** Remaining */
+            remaining: number;
+            /** Unlimited */
+            unlimited: boolean;
+            /** Usage */
+            usage: number;
         };
         /**
          * BillingFeature
@@ -2906,27 +2906,27 @@ export interface components {
          */
         CallAiModelsResponse: {
             /**
-             * Stt
-             * @description Speech-to-text (ASR) model identifier used during the call
-             */
-            stt?: string | null;
-            /**
-             * Llm
-             * @description LLM model identifier used during the call
-             */
-            llm?: string | null;
-            /**
-             * Tts
-             * @description Text-to-speech model identifier used during the call
-             */
-            tts?: string | null;
-            /**
              * Extra
              * @description Any other key in the customer-supplied ai_models object we don't recognize by name.
              */
             extra?: {
                 [key: string]: unknown;
             };
+            /**
+             * Llm
+             * @description LLM model identifier used during the call
+             */
+            llm?: string | null;
+            /**
+             * Stt
+             * @description Speech-to-text (ASR) model identifier used during the call
+             */
+            stt?: string | null;
+            /**
+             * Tts
+             * @description Text-to-speech model identifier used during the call
+             */
+            tts?: string | null;
         };
         /**
          * CallAiUsageResponse
@@ -2934,47 +2934,47 @@ export interface components {
          */
         CallAiUsageResponse: {
             /**
-             * Input Tokens
-             * @description LLM input (prompt) token count
-             */
-            input_tokens?: number | null;
-            /**
-             * Output Tokens
-             * @description LLM output (completion) token count
-             */
-            output_tokens?: number | null;
-            /**
-             * Llm Cost
-             * @description LLM cost in cents (canonical unit, matching CallDetailsResponse.cost).
-             */
-            llm_cost?: number | null;
-            /**
-             * Voice Cost
-             * @description Combined STT + TTS cost in cents (canonical unit). Covers both directions of speech; None only when neither component cost is available.
-             */
-            voice_cost?: number | null;
-            /**
-             * Stt Duration Seconds
-             * @description Speech-to-text audio duration processed, in seconds. Sent by non-Vapi providers (custom API, LiveKit, Dograh, Pipecat, some Retell-labeled integrations) that do not populate llm_cost/voice_cost.
-             */
-            stt_duration_seconds?: number | null;
-            /**
-             * Llm Tokens
-             * @description Total LLM token count for the call. Sent by non-Vapi providers as a single total rather than the input_tokens/output_tokens split Vapi provides.
-             */
-            llm_tokens?: number | null;
-            /**
-             * Tts Characters
-             * @description Number of characters synthesized by text-to-speech during the call. Sent by non-Vapi providers in place of a per-direction voice cost breakdown.
-             */
-            tts_characters?: number | null;
-            /**
              * Extra
              * @description Any other key in the customer-supplied usage_token object we don't recognize by name.
              */
             extra?: {
                 [key: string]: unknown;
             };
+            /**
+             * Input Tokens
+             * @description LLM input (prompt) token count
+             */
+            input_tokens?: number | null;
+            /**
+             * Llm Cost
+             * @description LLM cost in cents (canonical unit, matching CallDetailsResponse.cost).
+             */
+            llm_cost?: number | null;
+            /**
+             * Llm Tokens
+             * @description Total LLM token count for the call. Sent by non-Vapi providers as a single total rather than the input_tokens/output_tokens split Vapi provides.
+             */
+            llm_tokens?: number | null;
+            /**
+             * Output Tokens
+             * @description LLM output (completion) token count
+             */
+            output_tokens?: number | null;
+            /**
+             * Stt Duration Seconds
+             * @description Speech-to-text audio duration processed, in seconds. Sent by non-Vapi providers (custom API, LiveKit, Dograh, Pipecat, some Retell-labeled integrations) that do not populate llm_cost/voice_cost.
+             */
+            stt_duration_seconds?: number | null;
+            /**
+             * Tts Characters
+             * @description Number of characters synthesized by text-to-speech during the call. Sent by non-Vapi providers in place of a per-direction voice cost breakdown.
+             */
+            tts_characters?: number | null;
+            /**
+             * Voice Cost
+             * @description Combined STT + TTS cost in cents (canonical unit). Covers both directions of speech; None only when neither component cost is available.
+             */
+            voice_cost?: number | null;
         };
         /**
          * CallAnalysisResponse
@@ -2984,15 +2984,15 @@ export interface components {
          */
         CallAnalysisResponse: {
             /**
-             * Call Outcomes
-             * @default []
-             */
-            call_outcomes?: components["schemas"]["CallOutcomeResponse"][];
-            /**
              * Call Intents
              * @default []
              */
             call_intents?: components["schemas"]["CallIntentResponse"][];
+            /**
+             * Call Outcomes
+             * @default []
+             */
+            call_outcomes?: components["schemas"]["CallOutcomeResponse"][];
             /**
              * Data Extraction Fields
              * @default []
@@ -3010,10 +3010,10 @@ export interface components {
          */
         CallDetailsResponse: {
             /**
-             * Id
-             * @description Tuner call ID
+             * Call Id
+             * @description Provider call ID
              */
-            id: number;
+            call_id: string;
             /**
              * Call Intent
              * @description Call intent
@@ -3022,25 +3022,15 @@ export interface components {
             /** @description Call outcome with value and type */
             call_outcome?: components["schemas"]["CallOutcome"] | null;
             /**
-             * Date
-             * @description Call start date in ISO 8601 format
-             */
-            date: string;
-            /**
-             * Duration Ms
-             * @description Call duration in milliseconds
-             */
-            duration_ms?: number | null;
-            /**
              * Call Status
              * @description Call status
              */
             call_status?: string | null;
             /**
-             * Disconnection Reason
-             * @description Disconnection reason
+             * Caller Phone Number
+             * @description Caller phone number (for phone_call type)
              */
-            disconnection_reason?: string | null;
+            caller_phone_number?: string | null;
             /**
              * Cost
              * @description Call cost in cents (e.g. 125 for $1.25).
@@ -3048,42 +3038,32 @@ export interface components {
              */
             cost?: number;
             /**
-             * Latency
-             * @description Raw latency payload with top-level keys (for example: e2e/llm/stt/tts/eou). Any metadata key is excluded.
-             */
-            latency?: {
-                [key: string]: unknown;
-            } | null;
-            /** @description Aggregated voice metrics derived from call latency + transcript */
-            voice_metrics?: components["schemas"]["VoiceMetricsSummary"] | null;
-            /**
              * Customer Number
              * @description Customer phone number
              * @default
              */
             customer_number?: string;
             /**
-             * Caller Phone Number
-             * @description Caller phone number (for phone_call type)
+             * Date
+             * @description Call start date in ISO 8601 format
              */
-            caller_phone_number?: string | null;
+            date: string;
             /**
-             * Call Id
-             * @description Provider call ID
+             * Disconnection Reason
+             * @description Disconnection reason
              */
-            call_id: string;
+            disconnection_reason?: string | null;
             /**
-             * Recording Url
-             * @description URL to call recording
+             * Duration Ms
+             * @description Call duration in milliseconds
              */
-            recording_url?: string | null;
+            duration_ms?: number | null;
             /**
-             * Extracted Fields
-             * @description Extracted data fields from LLM
+             * End Goal
+             * @deprecated
+             * @description Deprecated: use `scenario.goal`. Simulation scenario end goal.
              */
-            extracted_fields?: {
-                [key: string]: string;
-            };
+            end_goal?: string | null;
             /**
              * Evaluations
              * @description Call evaluations (placeholder)
@@ -3092,18 +3072,31 @@ export interface components {
                 [key: string]: unknown;
             };
             /**
-             * Transcript With Tool Calls
-             * @description Raw transcript segments as stored, including agent/user messages, node transitions, and tool calls.
+             * Extracted Fields
+             * @description Extracted data fields from LLM
              */
-            transcript_with_tool_calls?: {
-                [key: string]: unknown;
-            }[] | null;
+            extracted_fields?: {
+                [key: string]: string;
+            };
             /**
-             * End Goal
-             * @deprecated
-             * @description Deprecated: use `scenario.goal`. Simulation scenario end goal.
+             * Failed Analysis Steps
+             * @description AI analysis steps that failed after all retries for this call (values: outcome, call_intent, data_extraction, eval_boolean, eval_score); empty when everything succeeded or is still running.
              */
-            end_goal?: string | null;
+            failed_analysis_steps?: string[];
+            /**
+             * Id
+             * @description Tuner call ID
+             */
+            id: number;
+            /**
+             * Latency
+             * @description Raw latency payload with top-level keys (for example: e2e/llm/stt/tts/eou). Any metadata key is excluded.
+             */
+            latency?: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Call-level metadata: AI models, AI usage, and remaining customer-supplied keys. Null when the call has none. */
+            metadata?: components["schemas"]["CallMetadataResponse"] | null;
             /**
              * Persona
              * @deprecated
@@ -3111,11 +3104,33 @@ export interface components {
              */
             persona?: string | null;
             /**
+             * Pii Redaction Status
+             * @description PII redaction outcome. Null when redaction was not attempted (disabled workspace, simulation call, or pre-feature call); otherwise one of 'redacted', 'partial_failure', or 'failed'.
+             */
+            pii_redaction_status?: ("redacted" | "partial_failure" | "failed") | null;
+            /**
              * Prompt
              * @deprecated
              * @description Deprecated: use `scenario.situation`. Simulation scenario prompt.
              */
             prompt?: string | null;
+            /**
+             * Recording Url
+             * @description URL to call recording
+             */
+            recording_url?: string | null;
+            /**
+             * Retention Erased At
+             * @description When retention erasure ran for this call, ISO 8601. Null when never erased.
+             */
+            retention_erased_at?: string | null;
+            /**
+             * Retention Erased Scope
+             * @description Retention erasure scope applied to this call. Null when the call was never erased. The 'full' scope never appears here -- it deletes the call row entirely, so those calls 404 instead.
+             */
+            retention_erased_scope?: ("transcript_recording" | "caller_data") | null;
+            /** @description Scenario content and context. Null for non-simulation calls and for replay calls (see simulation_replay instead). */
+            scenario?: components["schemas"]["SimulationScenarioDetails"] | null;
             /**
              * Scenario Type
              * @deprecated
@@ -3127,32 +3142,17 @@ export interface components {
              * @description 'scenario' for a generated/library simulation call (see `scenario`), 'replay' for a deterministic recorded-clips replay call (see `simulation_replay`). Null for a non-simulation call.
              */
             simulation_kind?: ("scenario" | "replay") | null;
-            /** @description Scenario content and context. Null for non-simulation calls and for replay calls (see simulation_replay instead). */
-            scenario?: components["schemas"]["SimulationScenarioDetails"] | null;
             /** @description Deterministic-replay context -- non-null only for calls produced by a recorded-clips replay run. Null for generated simulation calls and non-simulation calls. */
             simulation_replay?: components["schemas"]["SimulationReplayInfo"] | null;
             /**
-             * Pii Redaction Status
-             * @description PII redaction outcome. Null when redaction was not attempted (disabled workspace, simulation call, or pre-feature call); otherwise one of 'redacted', 'partial_failure', or 'failed'.
+             * Transcript With Tool Calls
+             * @description Raw transcript segments as stored, including agent/user messages, node transitions, and tool calls.
              */
-            pii_redaction_status?: ("redacted" | "partial_failure" | "failed") | null;
-            /**
-             * Retention Erased Scope
-             * @description Retention erasure scope applied to this call. Null when the call was never erased. The 'full' scope never appears here -- it deletes the call row entirely, so those calls 404 instead.
-             */
-            retention_erased_scope?: ("transcript_recording" | "caller_data") | null;
-            /**
-             * Retention Erased At
-             * @description When retention erasure ran for this call, ISO 8601. Null when never erased.
-             */
-            retention_erased_at?: string | null;
-            /** @description Call-level metadata: AI models, AI usage, and remaining customer-supplied keys. Null when the call has none. */
-            metadata?: components["schemas"]["CallMetadataResponse"] | null;
-            /**
-             * Failed Analysis Steps
-             * @description AI analysis steps that failed after all retries for this call (values: outcome, call_intent, data_extraction, eval_boolean, eval_score); empty when everything succeeded or is still running.
-             */
-            failed_analysis_steps?: string[];
+            transcript_with_tool_calls?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** @description Aggregated voice metrics derived from call latency + transcript */
+            voice_metrics?: components["schemas"]["VoiceMetricsSummary"] | null;
         };
         /**
          * CallIntentInput
@@ -3160,23 +3160,29 @@ export interface components {
          */
         CallIntentInput: {
             /**
-             * Label
-             * @description Display name for this intent, shown on call records and filters.
-             * @example Billing question
-             */
-            label: string;
-            /**
              * Description
              * @description What the AI matches against when classifying calls. Be specific — vague descriptions produce unreliable classification.
              * @example The caller has a question about a charge on their invoice.
              */
             description: string;
+            /**
+             * Label
+             * @description Display name for this intent, shown on call records and filters.
+             * @example Billing question
+             */
+            label: string;
         };
         /**
          * CallIntentResponse
          * @description Response schema for call intent.
          */
         CallIntentResponse: {
+            /**
+             * Description
+             * @description What the AI matches against when classifying calls. Be specific — vague descriptions produce unreliable classification.
+             * @example The caller has a question about a charge on their invoice.
+             */
+            description: string;
             /**
              * Id
              * @description Unique identifier for the call intent.
@@ -3189,66 +3195,12 @@ export interface components {
              * @example Billing question
              */
             label: string;
-            /**
-             * Description
-             * @description What the AI matches against when classifying calls. Be specific — vague descriptions produce unreliable classification.
-             * @example The caller has a question about a charge on their invoice.
-             */
-            description: string;
         };
         /**
          * CallLogResponse
          * @description Individual call log entry response.
          */
         CallLogResponse: {
-            /**
-             * Id
-             * @description Tuner call ID
-             */
-            id: number;
-            /**
-             * Provider Call Id
-             * @description Provider's call ID
-             */
-            provider_call_id: string;
-            /**
-             * Intent
-             * @description Call intent
-             */
-            intent?: string | null;
-            /** @description Call outcome with value and type */
-            outcome?: components["schemas"]["CallOutcome"] | null;
-            /**
-             * Tags
-             * @description List of call tags with value and type
-             */
-            tags?: components["schemas"]["CallTag"][];
-            /**
-             * Sentiment
-             * @description User sentiment
-             */
-            sentiment?: string | null;
-            /**
-             * Ended Reason
-             * @description Disconnection reason
-             */
-            ended_reason?: string | null;
-            /**
-             * Duration Ms
-             * @description Call duration in milliseconds.
-             */
-            duration_ms?: number | null;
-            /**
-             * Cost
-             * @description Call cost in cents (e.g. 125 for $1.25).
-             * @default 0
-             */
-            cost?: number;
-            /**
-             * Start Time
-             * @description Formatted timestamp (M/D HH:MM)
-             */
-            start_time: string;
             /**
              * Agent Id
              * @description Tuner agent ID
@@ -3260,16 +3212,64 @@ export interface components {
              */
             caller_phone_number?: string | null;
             /**
+             * Cost
+             * @description Call cost in cents (e.g. 125 for $1.25).
+             * @default 0
+             */
+            cost?: number;
+            /**
+             * Duration Ms
+             * @description Call duration in milliseconds.
+             */
+            duration_ms?: number | null;
+            /**
+             * Ended Reason
+             * @description Disconnection reason
+             */
+            ended_reason?: string | null;
+            /**
+             * Id
+             * @description Tuner call ID
+             */
+            id: number;
+            /**
+             * Intent
+             * @description Call intent
+             */
+            intent?: string | null;
+            /**
              * Is Simulated
              * @description True if this call is a simulation call
              * @default false
              */
             is_simulated?: boolean;
+            /** @description Call outcome with value and type */
+            outcome?: components["schemas"]["CallOutcome"] | null;
             /**
              * Pii Redaction Status
              * @description PII redaction outcome. Null when redaction was not attempted (disabled workspace, simulation call, or pre-feature call); otherwise one of 'redacted', 'partial_failure', or 'failed'.
              */
             pii_redaction_status?: ("redacted" | "partial_failure" | "failed") | null;
+            /**
+             * Provider Call Id
+             * @description Provider's call ID
+             */
+            provider_call_id: string;
+            /**
+             * Sentiment
+             * @description User sentiment
+             */
+            sentiment?: string | null;
+            /**
+             * Start Time
+             * @description Formatted timestamp (M/D HH:MM)
+             */
+            start_time: string;
+            /**
+             * Tags
+             * @description List of call tags with value and type
+             */
+            tags?: components["schemas"]["CallTag"][];
         };
         /**
          * CallLogsFilterOptionsResponse
@@ -3287,15 +3287,15 @@ export interface components {
              */
             call_outcomes?: components["schemas"]["FilterOption"][];
             /**
-             * Sentiments
-             * @description List of available sentiment values
-             */
-            sentiments?: string[];
-            /**
              * Labels And Redflags
              * @description List of available labels and red flags from rules
              */
             labels_and_redflags?: components["schemas"]["FilterOption"][];
+            /**
+             * Sentiments
+             * @description List of available sentiment values
+             */
+            sentiments?: string[];
         };
         /**
          * CallLogsListResponse
@@ -3308,11 +3308,6 @@ export interface components {
              */
             calls: components["schemas"]["CallLogResponse"][];
             /**
-             * Total
-             * @description Total count of matching calls
-             */
-            total: number;
-            /**
              * Page
              * @description Current page number
              */
@@ -3322,6 +3317,11 @@ export interface components {
              * @description Items per page
              */
             page_size: number;
+            /**
+             * Total
+             * @description Total count of matching calls
+             */
+            total: number;
             /**
              * Total Pages
              * @description Total number of pages
@@ -3363,15 +3363,15 @@ export interface components {
          */
         CallOutcome: {
             /**
-             * Value
-             * @description Call outcome value/label
-             */
-            value: string;
-            /**
              * Type
              * @description Call outcome type (e.g., 'success', 'failure')
              */
             type?: string | null;
+            /**
+             * Value
+             * @description Call outcome value/label
+             */
+            value: string;
         };
         /**
          * CallOutcomeInput
@@ -3385,18 +3385,18 @@ export interface components {
              */
             label: string;
             /**
-             * Prompt Definition
-             * @description Instruction the AI uses to decide whether a call ended this way.
-             * @example The caller confirmed their issue was resolved before ending the call.
-             */
-            prompt_definition: string;
-            /**
              * Outcome Type
              * @description Whether this outcome counts as a success or a failure. Drives the success rate on dashboards and alerts.
              * @example success
              * @enum {string}
              */
             outcome_type: "success" | "failure";
+            /**
+             * Prompt Definition
+             * @description Instruction the AI uses to decide whether a call ended this way.
+             * @example The caller confirmed their issue was resolved before ending the call.
+             */
+            prompt_definition: string;
             /**
              * Stop Analysis
              * @description Skip the remaining analysis steps when a call matches this outcome. Use for outcomes where further grading isn't meaningful, such as a call that never connected.
@@ -3423,18 +3423,6 @@ export interface components {
              */
             label: string;
             /**
-             * Ui Description
-             * @description Optional longer description of the outcome, shown alongside the outcome.
-             * @example The caller's issue was fully resolved on this call.
-             */
-            ui_description?: string | null;
-            /**
-             * Prompt Definition
-             * @description Instruction the AI uses to decide whether a call ended this way.
-             * @example The caller confirmed their issue was resolved before ending the call.
-             */
-            prompt_definition: string;
-            /**
              * Outcome Type
              * @description Whether this outcome counts as a success or a failure. Drives the success rate on dashboards and alerts.
              * @example success
@@ -3442,33 +3430,45 @@ export interface components {
              */
             outcome_type: "success" | "failure";
             /**
+             * Prompt Definition
+             * @description Instruction the AI uses to decide whether a call ended this way.
+             * @example The caller confirmed their issue was resolved before ending the call.
+             */
+            prompt_definition: string;
+            /**
              * Stop Analysis
              * @description Skip the remaining analysis steps when a call matches this outcome. Use for outcomes where further grading isn't meaningful, such as a call that never connected.
              * @example false
              */
             stop_analysis: boolean;
+            /**
+             * Ui Description
+             * @description Optional longer description of the outcome, shown alongside the outcome.
+             * @example The caller's issue was fully resolved on this call.
+             */
+            ui_description?: string | null;
         };
         /**
          * CallOutcomeSeedResponse
          * @description Response schema for call outcome seed.
          */
         CallOutcomeSeedResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
             /** Category */
             category: string;
+            /** Id */
+            id: number;
             /** Is Preloaded */
             is_preloaded: boolean;
+            /** Name */
+            name: string;
             /** Outcome Type */
             outcome_type: string;
+            /** Prompt Definition */
+            prompt_definition: string;
             /** Stop Analysis */
             stop_analysis: boolean;
             /** Ui Description */
             ui_description: string;
-            /** Prompt Definition */
-            prompt_definition: string;
         };
         /**
          * CallSpanResponse
@@ -3483,36 +3483,17 @@ export interface components {
          */
         CallSpanResponse: {
             /**
-             * Span Id
-             * @description This span's id, hex
+             * Attributes
+             * @description Allowlisted span attributes
              */
-            span_id: string;
+            attributes?: {
+                [key: string]: unknown;
+            };
             /**
-             * Parent Span Id
-             * @description Owning span's id, hex. Null on the root span.
+             * Duration Ms
+             * @description Duration in milliseconds
              */
-            parent_span_id?: string | null;
-            /**
-             * Trace Id
-             * @description Id of the trace this span belongs to, hex
-             */
-            trace_id: string;
-            /**
-             * Name
-             * @description Operation name, e.g. 'llm' or 'agent_turn'
-             */
-            name: string;
-            /**
-             * Kind
-             * @description OpenTelemetry span kind
-             */
-            kind?: number | null;
-            /**
-             * Start Time
-             * Format: date-time
-             * @description When the operation started
-             */
-            start_time: string;
+            duration_ms?: number | null;
             /**
              * End Time
              * Format: date-time
@@ -3520,20 +3501,27 @@ export interface components {
              */
             end_time: string;
             /**
-             * Duration Ms
-             * @description Duration in milliseconds
+             * Kind
+             * @description OpenTelemetry span kind
              */
-            duration_ms?: number | null;
+            kind?: number | null;
             /**
-             * Status Code
-             * @description OpenTelemetry status: 0 unset, 1 ok, 2 error
+             * Name
+             * @description Operation name, e.g. 'llm' or 'agent_turn'
              */
-            status_code: number;
+            name: string;
             /**
-             * Status Message
-             * @description Status detail, when the span failed
+             * Parent Span Id
+             * @description Owning span's id, hex. Null on the root span.
              */
-            status_message?: string | null;
+            parent_span_id?: string | null;
+            /**
+             * Resource Attributes
+             * @description Allowlisted attributes describing the emitting process
+             */
+            resource_attributes?: {
+                [key: string]: unknown;
+            };
             /**
              * Scope Name
              * @description Library that emitted the span
@@ -3545,19 +3533,31 @@ export interface components {
              */
             service_name?: string | null;
             /**
-             * Attributes
-             * @description Allowlisted span attributes
+             * Span Id
+             * @description This span's id, hex
              */
-            attributes?: {
-                [key: string]: unknown;
-            };
+            span_id: string;
             /**
-             * Resource Attributes
-             * @description Allowlisted attributes describing the emitting process
+             * Start Time
+             * Format: date-time
+             * @description When the operation started
              */
-            resource_attributes?: {
-                [key: string]: unknown;
-            };
+            start_time: string;
+            /**
+             * Status Code
+             * @description OpenTelemetry status: 0 unset, 1 ok, 2 error
+             */
+            status_code: number;
+            /**
+             * Status Message
+             * @description Status detail, when the span failed
+             */
+            status_message?: string | null;
+            /**
+             * Trace Id
+             * @description Id of the trace this span belongs to, hex
+             */
+            trace_id: string;
         };
         /**
          * CallTag
@@ -3565,15 +3565,15 @@ export interface components {
          */
         CallTag: {
             /**
-             * Value
-             * @description Tag value/key
-             */
-            value: string;
-            /**
              * Type
              * @description Tag type (e.g., 'red_flag', 'label')
              */
             type?: string | null;
+            /**
+             * Value
+             * @description Tag value/key
+             */
+            value: string;
         };
         /**
          * CallerOptionsResponse
@@ -3599,17 +3599,35 @@ export interface components {
          */
         CallerPersonaResponse: {
             /**
+             * Accent
+             * @description Accent identifier.
+             * @example British
+             */
+            accent: string;
+            /**
+             * Code
+             * @description Persona code, `<language_code>-<country_code>`. Accepted as `language` when starting a run.
+             * @example en-GB
+             */
+            readonly code: string;
+            /**
+             * Country Code
+             * @description ISO 3166-1 alpha-2 country code of the accent.
+             * @example GB
+             */
+            country_code: string;
+            /**
              * Id
              * @description Persona ID. Pass as `caller_persona_id` when creating a simulation run.
              * @example 1
              */
             id: number;
             /**
-             * Name
-             * @description Display name of the persona.
-             * @example English (British)
+             * Label
+             * @description Short accent label for display.
+             * @example UK
              */
-            name: string;
+            label: string;
             /**
              * Language
              * @description Language name.
@@ -3623,43 +3641,25 @@ export interface components {
              */
             language_code: string;
             /**
-             * Accent
-             * @description Accent identifier.
-             * @example British
+             * Name
+             * @description Display name of the persona.
+             * @example English (British)
              */
-            accent: string;
-            /**
-             * Label
-             * @description Short accent label for display.
-             * @example UK
-             */
-            label: string;
-            /**
-             * Country Code
-             * @description ISO 3166-1 alpha-2 country code of the accent.
-             * @example GB
-             */
-            country_code: string;
-            /**
-             * Code
-             * @description Persona code, `<language_code>-<country_code>`. Accepted as `language` when starting a run.
-             * @example en-GB
-             */
-            readonly code: string;
+            name: string;
         };
         /**
          * CancelRequest
          * @description Body for POST /cancel.
          */
         CancelRequest: {
-            /** Plan Id */
-            plan_id: string;
             /**
              * Cancel Action
              * @default cancel_immediately
              * @enum {string}
              */
             cancel_action?: "cancel_immediately" | "cancel_end_of_cycle" | "uncancel";
+            /** Plan Id */
+            plan_id: string;
         };
         /**
          * CancelResponseSchema
@@ -3696,19 +3696,19 @@ export interface components {
          * @description Body for POST /checkout — always forces a checkout URL, unlike /attach.
          */
         CheckoutRequest: {
-            /** Plan Id */
-            plan_id: string;
-            /** Success Url */
-            success_url?: string | null;
-            /** Promo Code */
-            promo_code?: string | null;
             /**
              * Confirm Replace
              * @default false
              */
             confirm_replace?: boolean;
+            /** Plan Id */
+            plan_id: string;
+            /** Promo Code */
+            promo_code?: string | null;
             /** Replace Discount Ids */
             replace_discount_ids?: string[] | null;
+            /** Success Url */
+            success_url?: string | null;
         };
         /**
          * ComparisonOperator
@@ -3722,15 +3722,15 @@ export interface components {
          */
         CompletedPart: {
             /**
-             * Part Number
-             * @description 1-based index of the uploaded part.
-             */
-            part_number: number;
-            /**
              * Etag
              * @description ETag returned in the response to the part's upload request.
              */
             etag: string;
+            /**
+             * Part Number
+             * @description 1-based index of the uploaded part.
+             */
+            part_number: number;
         };
         /**
          * ConditionTreeGroup
@@ -3738,12 +3738,10 @@ export interface components {
          */
         ConditionTreeGroup: {
             /**
-             * Type
-             * @description Marks this node as a group of conditions.
-             * @default group
-             * @constant
+             * Children
+             * @description Nested groups or predicates.
              */
-            type?: "group";
+            children: (components["schemas"]["ConditionTreeGroup"] | components["schemas"]["ConditionTreePredicate"])[];
             /**
              * Id
              * @description Optional identifier for this node.
@@ -3752,10 +3750,12 @@ export interface components {
             /** @description Whether all children must match (`AND`) or any (`OR`). */
             op: components["schemas"]["LogicalOperator"];
             /**
-             * Children
-             * @description Nested groups or predicates.
+             * Type
+             * @description Marks this node as a group of conditions.
+             * @default group
+             * @constant
              */
-            children: (components["schemas"]["ConditionTreeGroup"] | components["schemas"]["ConditionTreePredicate"])[];
+            type?: "group";
         };
         /**
          * ConditionTreePredicate
@@ -3763,12 +3763,11 @@ export interface components {
          */
         ConditionTreePredicate: {
             /**
-             * Type
-             * @description Marks this node as a single condition.
-             * @default predicate
-             * @constant
+             * Field Id
+             * @description ID of the eval or data extraction field, as the `id` of the item in List Alert Conditions. Send together with `source`.
+             * @example 11
              */
-            type?: "predicate";
+            field_id?: number | null;
             /**
              * Id
              * @description Optional identifier for this node.
@@ -3782,18 +3781,6 @@ export interface components {
              * @example metadata.customer_tier
              */
             lhs: string;
-            /**
-             * Source
-             * @description Kind of field `field_id` points at: `eval` or `data_extraction_field`, as the `source_type` of the item's group in List Alert Conditions. Only for evals and data extraction fields. Send together with `field_id`.
-             * @example eval
-             */
-            source?: ("eval" | "data_extraction_field") | null;
-            /**
-             * Field Id
-             * @description ID of the eval or data extraction field, as the `id` of the item in List Alert Conditions. Send together with `source`.
-             * @example 11
-             */
-            field_id?: number | null;
             /** @description How to compare `lhs` to `rhs`. `eq`, `neq`, `contains` and `starts_with` compare text ignoring case ("Yes" matches "yes"). */
             op: components["schemas"]["ComparisonOperator"];
             /**
@@ -3801,50 +3788,63 @@ export interface components {
              * @description Value to compare against. Omit for `exists` and `not_exists`.
              */
             rhs?: unknown | null;
+            /**
+             * Source
+             * @description Kind of field `field_id` points at: `eval` or `data_extraction_field`, as the `source_type` of the item's group in List Alert Conditions. Only for evals and data extraction fields. Send together with `field_id`.
+             * @example eval
+             */
+            source?: ("eval" | "data_extraction_field") | null;
+            /**
+             * Type
+             * @description Marks this node as a single condition.
+             * @default predicate
+             * @constant
+             */
+            type?: "predicate";
         };
         /**
          * CouponInfo
          * @description Display details of a coupon (Autumn ``ListRewardsCoupon``); ``name`` falls back to the id.
          */
         CouponInfo: {
+            /** Duration Length */
+            duration_length?: number | null;
+            /** Duration Type */
+            duration_type: string;
             /** Id */
             id: string;
             /** Name */
             name: string;
+            /** Plan Ids */
+            plan_ids?: string[] | null;
             /** Type */
             type: string;
             /** Value */
             value: number;
-            /** Duration Type */
-            duration_type: string;
-            /** Duration Length */
-            duration_length?: number | null;
-            /** Plan Ids */
-            plan_ids?: string[] | null;
         };
         /**
          * CouponPlanPreview
          * @description What one eligible plan would cost with the coupon applied.
          */
         CouponPlanPreview: {
-            /** Plan Id */
-            plan_id: string;
-            /** Due Today */
-            due_today: number;
-            /** Next Cycle Total */
-            next_cycle_total?: number | null;
             /** Discounted Price */
             discounted_price?: number | null;
-            /**
-             * Replaces
-             * @default []
-             */
-            replaces?: components["schemas"]["CouponInfo"][];
+            /** Due Today */
+            due_today: number;
             /**
              * Ending
              * @default []
              */
             ending?: components["schemas"]["CouponInfo"][];
+            /** Next Cycle Total */
+            next_cycle_total?: number | null;
+            /** Plan Id */
+            plan_id: string;
+            /**
+             * Replaces
+             * @default []
+             */
+            replaces?: components["schemas"]["CouponInfo"][];
         };
         /**
          * CouponPreviewRequest
@@ -3937,11 +3937,131 @@ export interface components {
          */
         CreateCallRequest: {
             /**
+             * Agent Version
+             * @description The version of the agent that handled this call (e.g. 3).
+             */
+            agent_version?: number | null;
+            /**
+             * Call Analysis
+             * @description Provider-native analysis payload (free-form JSON; stored as-is)
+             */
+            call_analysis?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Call Cost
+             * @description Total call cost in cents (e.g. 125 for $1.25).
+             */
+            call_cost?: number | null;
+            /**
              * Call Id
              * @description Unique call identifier from your provider. Must be unique; a duplicate is rejected with a conflict (409).
              * @example call_example_0001
              */
             call_id: string;
+            /**
+             * Call Status
+             * @description Provider call status at ingest time. Preferred values: 'call_ended'.
+             */
+            call_status?: string | null;
+            /**
+             * Call Successful
+             * @description Whether the call was successful
+             */
+            call_successful?: boolean | null;
+            /**
+             * Call Type
+             * @description Call channel/type from your provider (e.g., 'phone_call', 'web_call').
+             * @example phone_call
+             */
+            call_type: string;
+            /**
+             * Caller Phone Number
+             * @description Caller phone number in E.164 format when available (e.g., '+14155550123').
+             */
+            caller_phone_number?: string | null;
+            /**
+             * Collected Dynamic Variables
+             * @description Dynamic variables collected during the call (free-form JSON). Evals can read these through `metadata.<key>` in `inputs_used`; rules and alerts cannot, so send values you want to filter or alert on in `metadata`.
+             * @example {
+             *       "appointment_type": "cleaning"
+             *     }
+             */
+            collected_dynamic_variables?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Disconnection Reason
+             * @description Why the call ended (e.g. user_hangup, agent_hangup).
+             */
+            disconnection_reason?: string | null;
+            /**
+             * Duration Ms
+             * @description Call duration in milliseconds. If omitted, we compute it from start_timestamp and end_timestamp.
+             */
+            duration_ms?: number | null;
+            /**
+             * End Timestamp
+             * @description Call end time as Unix epoch. Accepts either seconds or milliseconds. Must be greater than or equal to start_timestamp.
+             */
+            end_timestamp: number;
+            /**
+             * General Meta Data Raw
+             * @description Custom data about the call, as a JSON object. Nested objects are allowed and keys are case-sensitive. If `metadata` is also sent, the keys are merged and these keys win on collision. Evals, rules and alerts refer to these keys the same way as for `metadata`.
+             * @example {
+             *       "campaign_id": "spring-2026"
+             *     }
+             */
+            general_meta_data_raw?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * In Voicemail
+             * @description Whether the call reached voicemail
+             */
+            in_voicemail?: boolean | null;
+            /**
+             * @description Custom data about the call, as a JSON object. Nested objects are allowed and keys are case-sensitive. `ai_models` and `usage_token` have a defined structure; any other keys are accepted. Merged with `general_meta_data_raw`, whose keys win on collision. Evals, rules and alerts can refer to these keys as `metadata.<key>`: in an eval's `inputs_used`, in an alert condition, and in the `key` of a `call_metadata` rule condition.
+             * @example {
+             *       "account": {
+             *         "region": "EU",
+             *         "seats": 12
+             *       },
+             *       "customer_tier": "gold",
+             *       "instructions": "Never discuss pricing."
+             *     }
+             */
+            metadata?: components["schemas"]["CallMetadata"] | null;
+            /**
+             * Recipient
+             * @description Recipient phone number (E.164) or SIP URL for outbound calls. For outbound Tuner simulation calls, send the SIP URI your agent dialed so the call can be linked to its simulation.
+             */
+            recipient?: string | null;
+            /**
+             * Recording File Extension
+             * @description Supplying this opts the call into receiving a presigned upload target (`recording_upload` in the response) so you can upload the call's audio directly to Tuner's storage. Provide the file extension without a leading dot (e.g. 'wav', 'mp3'). Omit this field entirely if you are not uploading audio.
+             */
+            recording_file_extension?: string | null;
+            /**
+             * Recording Multi Channel Url
+             * @description Public https URL of a multi-channel recording (separate speaker channels), if available. A value that isn't a public https URL is stored as sent but treated as no recording: it isn't played back or used for Dataset calls.
+             */
+            recording_multi_channel_url?: string | null;
+            /**
+             * Recording S3 Caller Channel
+             * @description The 0-based index of the channel carrying the caller's voice, for audio uploaded via `recording_file_extension`. Defaults to 0 and is only meaningful when `recording_s3_multi_channel` is `true`.
+             */
+            recording_s3_caller_channel?: number | null;
+            /**
+             * Recording S3 Multi Channel
+             * @description Whether the audio being uploaded has the caller and the agent on separate channels rather than mixed into a single channel. Only applies to audio uploaded via `recording_file_extension`. Omit this field if the recording is a mono mix -- it is treated as a mono mix by default.
+             */
+            recording_s3_multi_channel?: boolean | null;
+            /**
+             * Recording Url
+             * @description Public https URL of the call recording (audio file or provider recording link). Required. A value that isn't a public https URL (e.g. a placeholder such as `pending`) is stored as sent but treated as no recording: it isn't played back or used for Dataset calls.
+             */
+            recording_url: string;
             /**
              * Sip Call Id
              * @description Optional SIP Call-ID reported by your provider. Stored as the call's SIP identifier and used to correlate the call with a simulation; it never replaces `call_id` for persistence or idempotency.
@@ -3958,21 +4078,15 @@ export interface components {
                 [key: string]: string;
             } | null;
             /**
-             * Recipient
-             * @description Recipient phone number (E.164) or SIP URL for outbound calls. For outbound Tuner simulation calls, send the SIP URI your agent dialed so the call can be linked to its simulation.
+             * Start Timestamp
+             * @description Call start time as Unix epoch. Accepts either seconds or milliseconds.
              */
-            recipient?: string | null;
+            start_timestamp: number;
             /**
-             * Call Type
-             * @description Call channel/type from your provider (e.g., 'phone_call', 'web_call').
-             * @example phone_call
+             * Transcript
+             * @description Diarized plain-text transcript (fallback for display/search). If omitted, we derive it from transcript_with_tool_calls when possible.
              */
-            call_type: string;
-            /**
-             * Agent Version
-             * @description The version of the agent that handled this call (e.g. 3).
-             */
-            agent_version?: number | null;
+            transcript?: string | null;
             /**
              * Transcript With Tool Calls
              * @description The call timeline in chronological order. Each item is a user turn, an agent turn, a tool call or its result, or a workflow node transition.
@@ -3981,124 +4095,10 @@ export interface components {
              */
             transcript_with_tool_calls: components["schemas"]["PublicTranscriptSegment"][];
             /**
-             * Start Timestamp
-             * @description Call start time as Unix epoch. Accepts either seconds or milliseconds.
-             */
-            start_timestamp: number;
-            /**
-             * End Timestamp
-             * @description Call end time as Unix epoch. Accepts either seconds or milliseconds. Must be greater than or equal to start_timestamp.
-             */
-            end_timestamp: number;
-            /**
-             * Recording Url
-             * @description Public https URL of the call recording (audio file or provider recording link). Required. A value that isn't a public https URL (e.g. a placeholder such as `pending`) is stored as sent but treated as no recording: it isn't played back or used for Dataset calls.
-             */
-            recording_url: string;
-            /**
-             * Transcript
-             * @description Diarized plain-text transcript (fallback for display/search). If omitted, we derive it from transcript_with_tool_calls when possible.
-             */
-            transcript?: string | null;
-            /**
-             * Duration Ms
-             * @description Call duration in milliseconds. If omitted, we compute it from start_timestamp and end_timestamp.
-             */
-            duration_ms?: number | null;
-            /**
-             * Call Status
-             * @description Provider call status at ingest time. Preferred values: 'call_ended'.
-             */
-            call_status?: string | null;
-            /**
-             * Disconnection Reason
-             * @description Why the call ended (e.g. user_hangup, agent_hangup).
-             */
-            disconnection_reason?: string | null;
-            /**
-             * Caller Phone Number
-             * @description Caller phone number in E.164 format when available (e.g., '+14155550123').
-             */
-            caller_phone_number?: string | null;
-            /**
-             * Call Successful
-             * @description Whether the call was successful
-             */
-            call_successful?: boolean | null;
-            /**
              * User Sentiment
              * @description User sentiment label. Must be one of [positive, neutral, negative, unknown]
              */
             user_sentiment?: string | null;
-            /**
-             * In Voicemail
-             * @description Whether the call reached voicemail
-             */
-            in_voicemail?: boolean | null;
-            /**
-             * Collected Dynamic Variables
-             * @description Dynamic variables collected during the call (free-form JSON). Evals can read these through `metadata.<key>` in `inputs_used`; rules and alerts cannot, so send values you want to filter or alert on in `metadata`.
-             * @example {
-             *       "appointment_type": "cleaning"
-             *     }
-             */
-            collected_dynamic_variables?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Call Cost
-             * @description Total call cost in cents (e.g. 125 for $1.25).
-             */
-            call_cost?: number | null;
-            /**
-             * Call Analysis
-             * @description Provider-native analysis payload (free-form JSON; stored as-is)
-             */
-            call_analysis?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * @description Custom data about the call, as a JSON object. Nested objects are allowed and keys are case-sensitive. `ai_models` and `usage_token` have a defined structure; any other keys are accepted. Merged with `general_meta_data_raw`, whose keys win on collision. Evals, rules and alerts can refer to these keys as `metadata.<key>`: in an eval's `inputs_used`, in an alert condition, and in the `key` of a `call_metadata` rule condition.
-             * @example {
-             *       "account": {
-             *         "region": "EU",
-             *         "seats": 12
-             *       },
-             *       "customer_tier": "gold",
-             *       "instructions": "Never discuss pricing."
-             *     }
-             */
-            metadata?: components["schemas"]["CallMetadata"] | null;
-            /**
-             * General Meta Data Raw
-             * @description Custom data about the call, as a JSON object. Nested objects are allowed and keys are case-sensitive. If `metadata` is also sent, the keys are merged and these keys win on collision. Evals, rules and alerts refer to these keys the same way as for `metadata`.
-             * @example {
-             *       "campaign_id": "spring-2026"
-             *     }
-             */
-            general_meta_data_raw?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Recording Multi Channel Url
-             * @description Public https URL of a multi-channel recording (separate speaker channels), if available. A value that isn't a public https URL is stored as sent but treated as no recording: it isn't played back or used for Dataset calls.
-             */
-            recording_multi_channel_url?: string | null;
-            /**
-             * Recording File Extension
-             * @description Supplying this opts the call into receiving a presigned upload target (`recording_upload` in the response) so you can upload the call's audio directly to Tuner's storage. Provide the file extension without a leading dot (e.g. 'wav', 'mp3'). Omit this field entirely if you are not uploading audio.
-             */
-            recording_file_extension?: string | null;
-            /**
-             * Recording S3 Multi Channel
-             * @description Whether the audio being uploaded has the caller and the agent on separate channels rather than mixed into a single channel. Only applies to audio uploaded via `recording_file_extension`. Omit this field if the recording is a mono mix -- it is treated as a mono mix by default.
-             */
-            recording_s3_multi_channel?: boolean | null;
-            /**
-             * Recording S3 Caller Channel
-             * @description The 0-based index of the channel carrying the caller's voice, for audio uploaded via `recording_file_extension`. Defaults to 0 and is only meaningful when `recording_s3_multi_channel` is `true`.
-             */
-            recording_s3_caller_channel?: number | null;
         };
         /**
          * CreateCallResponse
@@ -4111,15 +4111,15 @@ export interface components {
              */
             id: number;
             /**
-             * Provider Call Id
-             * @description Echo of the provider call ID, which is the `call_id` supplied in the request.
-             */
-            provider_call_id: string;
-            /**
              * Is New
              * @description Always true for a successful create; re-sending an existing `call_id` returns 409 instead.
              */
             is_new: boolean;
+            /**
+             * Provider Call Id
+             * @description Echo of the provider call ID, which is the `call_id` supplied in the request.
+             */
+            provider_call_id: string;
             /** @description Present only when the request set `recording_file_extension` and the upload target could be prepared; the target is valid for 24 hours. Null if the extension was omitted, if the call already had a recording uploaded, or if preparing the target failed after the call was otherwise saved successfully. */
             recording_upload?: components["schemas"]["RecordingUploadTarget"] | null;
         };
@@ -4129,14 +4129,12 @@ export interface components {
          */
         CreateReplayRunRequest: {
             /**
-             * Voice Clip Set Ids
-             * @description IDs of the voice clip sets to replay, 1 to 10 sets.
-             * @example [
-             *       5,
-             *       6
-             *     ]
+             * Max Call Duration Minutes
+             * @description Maximum length of each replayed call, in minutes (1-12). Defaults to 3. A clip set whose worst-case call duration exceeds this is rejected.
+             * @default 3
+             * @example 3
              */
-            voice_clip_set_ids: number[];
+            max_call_duration_minutes?: number;
             /**
              * Repeat Count
              * @description Number of times to replay each clip set (1-20). Defaults to 1. `len(voice_clip_set_ids) * repeat_count` must be at most 20.
@@ -4145,12 +4143,13 @@ export interface components {
              */
             repeat_count?: number;
             /**
-             * Max Call Duration Minutes
-             * @description Maximum length of each replayed call, in minutes (1-12). Defaults to 3. A clip set whose worst-case call duration exceeds this is rejected.
-             * @default 3
-             * @example 3
+             * @description Overrides for the replay's turn-timing. Omitted fields use their defaults.
+             * @example {
+             *       "max_wait_ms": 15000,
+             *       "silence_ms": 700
+             *     }
              */
-            max_call_duration_minutes?: number;
+            replay_settings?: components["schemas"]["ReplaySettingsInput"] | null;
             /**
              * Selected Eval Ids
              * @description IDs of `PASS_FAIL` evals to grade the replayed calls with. Omit, `null` or `[]` means no evals are run (a latency-only run).
@@ -4170,19 +4169,32 @@ export interface components {
              */
             selected_intent_ids?: number[] | null;
             /**
-             * @description Overrides for the replay's turn-timing. Omitted fields use their defaults.
-             * @example {
-             *       "max_wait_ms": 15000,
-             *       "silence_ms": 700
-             *     }
+             * Voice Clip Set Ids
+             * @description IDs of the voice clip sets to replay, 1 to 10 sets.
+             * @example [
+             *       5,
+             *       6
+             *     ]
              */
-            replay_settings?: components["schemas"]["ReplaySettingsInput"] | null;
+            voice_clip_set_ids: number[];
         };
         /**
          * CreateSelectSimulationRunRequest
          * @description Request to start a run that places test calls against scenarios picked from the library.
          */
         CreateSelectSimulationRunRequest: {
+            /**
+             * Caller Persona Id
+             * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas. When neither this nor `language` is sent, the agent's language picks the persona (English (American) by default).
+             * @example 1
+             */
+            caller_persona_id?: number | null;
+            /**
+             * Language
+             * @description Caller persona by `code` (`en-US`, case-insensitive) or exact `name`. Use instead of `caller_persona_id`.
+             * @example en-US
+             */
+            language?: string | null;
             /**
              * Max Call Duration Minutes
              * @description Maximum length of each simulated call, in minutes (1-12). Defaults to 3.
@@ -4191,17 +4203,18 @@ export interface components {
              */
             max_call_duration_minutes?: number;
             /**
-             * Caller Persona Id
-             * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas. When neither this nor `language` is sent, the agent's language picks the persona (English (American) by default).
-             * @example 1
+             * Metadata
+             * @description Reserved. Stored with the run as sent; not returned.
              */
-            caller_persona_id?: number | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /**
-             * Simulation Profile Id
-             * @description ID of a simulation profile belonging to this agent. Its fields are given to the simulated caller as facts about themselves. Optional.
-             * @example 12
+             * Noise
+             * @description Background-noise environment by `slug`. Use instead of `noise_environment_id`. `noise_intensity` defaults to `medium` (1.0).
+             * @example cafe
              */
-            simulation_profile_id?: number | null;
+            noise?: string | null;
             /**
              * Noise Environment Id
              * @description ID of a background-noise environment to mix into the call. Get valid IDs from List Noise Environments. Must be sent together with `noise_intensity`.
@@ -4215,6 +4228,12 @@ export interface components {
              * @example 1
              */
             noise_intensity?: ("low" | "medium" | "high") | (0.5 | 1 | 1.5) | null;
+            /**
+             * Profile
+             * @description Simulation profile of this agent by exact `name`. Use instead of `simulation_profile_id`.
+             * @example Returning customer
+             */
+            profile?: string | null;
             /**
              * Selected Scenario Ids
              * @description IDs of the library scenarios to run, 1 to 20, in the order they are queued. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.
@@ -4226,36 +4245,17 @@ export interface components {
              */
             selected_scenario_ids?: number[] | null;
             /**
+             * Simulation Profile Id
+             * @description ID of a simulation profile belonging to this agent. Its fields are given to the simulated caller as facts about themselves. Optional.
+             * @example 12
+             */
+            simulation_profile_id?: number | null;
+            /**
              * Tag
              * @description Run every active library scenario of this agent whose tags include this exact, case-sensitive value, in ascending scenario ID order. Send exactly one of `selected_scenario_ids` and `tag`.
              * @example smoke
              */
             tag?: string | null;
-            /**
-             * Language
-             * @description Caller persona by `code` (`en-US`, case-insensitive) or exact `name`. Use instead of `caller_persona_id`.
-             * @example en-US
-             */
-            language?: string | null;
-            /**
-             * Profile
-             * @description Simulation profile of this agent by exact `name`. Use instead of `simulation_profile_id`.
-             * @example Returning customer
-             */
-            profile?: string | null;
-            /**
-             * Noise
-             * @description Background-noise environment by `slug`. Use instead of `noise_environment_id`. `noise_intensity` defaults to `medium` (1.0).
-             * @example cafe
-             */
-            noise?: string | null;
-            /**
-             * Metadata
-             * @description Reserved. Stored with the run as sent; not returned.
-             */
-            metadata?: {
-                [key: string]: unknown;
-            } | null;
         };
         /**
          * CreateSimulationRunRequest
@@ -4267,12 +4267,11 @@ export interface components {
          */
         CreateSimulationRunRequest: {
             /**
-             * Max Call Duration Minutes
-             * @description Maximum length of each simulated call, in minutes (1-12). Defaults to 3.
-             * @default 3
-             * @example 3
+             * Adversarial Count
+             * @description Number of adversarial (pressure) scenarios to generate. `functional_count + adversarial_count` must be between 5 and 20.
+             * @example 2
              */
-            max_call_duration_minutes?: number;
+            adversarial_count: number;
             /**
              * Caller Persona Id
              * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas.
@@ -4280,11 +4279,18 @@ export interface components {
              */
             caller_persona_id: number;
             /**
-             * Simulation Profile Id
-             * @description ID of a simulation profile belonging to this agent. Its fields are given to the simulated caller as facts about themselves. Optional.
-             * @example 12
+             * Functional Count
+             * @description Number of functional (routine) scenarios to generate.
+             * @example 4
              */
-            simulation_profile_id?: number | null;
+            functional_count: number;
+            /**
+             * Max Call Duration Minutes
+             * @description Maximum length of each simulated call, in minutes (1-12). Defaults to 3.
+             * @default 3
+             * @example 3
+             */
+            max_call_duration_minutes?: number;
             /**
              * Noise Environment Id
              * @description ID of a background-noise environment to mix into the call. Get valid IDs from List Noise Environments. Must be sent together with `noise_intensity`.
@@ -4298,18 +4304,6 @@ export interface components {
              * @example 1
              */
             noise_intensity?: ("low" | "medium" | "high") | (0.5 | 1 | 1.5) | null;
-            /**
-             * Functional Count
-             * @description Number of functional (routine) scenarios to generate.
-             * @example 4
-             */
-            functional_count: number;
-            /**
-             * Adversarial Count
-             * @description Number of adversarial (pressure) scenarios to generate. `functional_count + adversarial_count` must be between 5 and 20.
-             * @example 2
-             */
-            adversarial_count: number;
             /**
              * Selected Eval Ids
              * @description IDs of `PASS_FAIL` evals to grade the calls with. Omit or send `null` to use all of the agent's evals. If provided, it must contain at least one ID.
@@ -4328,6 +4322,12 @@ export interface components {
              *     ]
              */
             selected_intent_ids?: number[] | null;
+            /**
+             * Simulation Profile Id
+             * @description ID of a simulation profile belonging to this agent. Its fields are given to the simulated caller as facts about themselves. Optional.
+             * @example 12
+             */
+            simulation_profile_id?: number | null;
         };
         /**
          * CriteriaItem
@@ -4355,88 +4355,69 @@ export interface components {
          *     ASGI mount's ``POST /customers/`` get-or-create route.
          */
         CustomerResponse: {
-            /** Id */
-            id?: string | null;
-            /** Name */
-            name?: string | null;
-            /** Email */
-            email?: string | null;
-            /** Created At */
-            created_at: number;
-            /** Fingerprint */
-            fingerprint?: string | null;
-            /** Stripe Id */
-            stripe_id?: string | null;
-            /** Metadata */
-            metadata: {
-                [key: string]: unknown;
-            };
-            /** Send Email Receipts */
-            send_email_receipts: boolean;
-            /** Subscriptions */
-            subscriptions: components["schemas"]["SubscriptionResponse"][];
-            /** Purchases */
-            purchases: components["schemas"]["PurchaseResponse"][];
             /** Balances */
             balances: {
                 [key: string]: components["schemas"]["BalanceResponse"];
             };
+            /** Created At */
+            created_at: number;
+            /** Email */
+            email?: string | null;
+            /** Fingerprint */
+            fingerprint?: string | null;
             /** Flags */
             flags: {
                 [key: string]: components["schemas"]["FlagResponse"];
             };
+            /** Id */
+            id?: string | null;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name?: string | null;
             /** Payment Method */
             payment_method?: unknown | null;
+            /** Purchases */
+            purchases: components["schemas"]["PurchaseResponse"][];
+            /** Send Email Receipts */
+            send_email_receipts: boolean;
+            /** Stripe Id */
+            stripe_id?: string | null;
+            /** Subscriptions */
+            subscriptions: components["schemas"]["SubscriptionResponse"][];
         };
         /** DashboardOverviewWithDelta */
         DashboardOverviewWithDelta: {
-            /** Total Calls */
-            total_calls: number;
-            /** Success Count */
-            success_count: number;
-            /** Failed Count */
-            failed_count: number;
-            /** Success Rate */
-            success_rate: number;
             /** Calls With Red Flags */
             calls_with_red_flags: number;
-            /** Red Flag Rate */
-            red_flag_rate: number;
-            /** Total Calls Delta */
-            total_calls_delta?: number | null;
-            /** Failed Count Delta */
-            failed_count_delta?: number | null;
-            /** Success Rate Delta */
-            success_rate_delta?: number | null;
             /** Calls With Red Flags Delta */
             calls_with_red_flags_delta?: number | null;
+            /** Failed Count */
+            failed_count: number;
+            /** Failed Count Delta */
+            failed_count_delta?: number | null;
+            /** Red Flag Rate */
+            red_flag_rate: number;
             /** Red Flag Rate Delta */
             red_flag_rate_delta?: number | null;
+            /** Success Count */
+            success_count: number;
+            /** Success Rate */
+            success_rate: number;
+            /** Success Rate Delta */
+            success_rate_delta?: number | null;
+            /** Total Calls */
+            total_calls: number;
+            /** Total Calls Delta */
+            total_calls_delta?: number | null;
         };
         /**
          * DataExtractionFieldInput
          * @description Input schema for data extraction field.
          */
         DataExtractionFieldInput: {
-            /**
-             * Label
-             * @description Display name for this field, and the key it appears under on call records.
-             * @example Order number
-             */
-            label: string;
-            /**
-             * Field Type
-             * @description Type of the extracted value: `text`, `number`, `boolean`, or `enum`. Use `enum` to restrict the value to a fixed set.
-             * @example text
-             * @enum {string}
-             */
-            field_type: "text" | "number" | "boolean" | "enum";
-            /**
-             * Prompt Definition
-             * @description Instruction the AI uses to find this value in the transcript. Name what to look for and the form it takes.
-             * @example The order number the caller gives, as a string of digits.
-             */
-            prompt_definition: string;
             /**
              * Enum Options
              * @description Allowed values, required when `field_type` is `enum`. Must be omitted otherwise — providing it with any other `field_type` returns a 422. Accepts an array or a comma-separated string.
@@ -4447,24 +4428,6 @@ export interface components {
              *     ]
              */
             enum_options?: string | string[] | null;
-        };
-        /**
-         * DataExtractionFieldResponse
-         * @description Response schema for data extraction field.
-         */
-        DataExtractionFieldResponse: {
-            /**
-             * Id
-             * @description Unique identifier for the data extraction field.
-             * @example 42
-             */
-            id: number;
-            /**
-             * Label
-             * @description Display name for this field, and the key it appears under on call records.
-             * @example Customer name
-             */
-            label: string;
             /**
              * Field Type
              * @description Type of the extracted value: `text`, `number`, `boolean`, or `enum`. Use `enum` to restrict the value to a fixed set.
@@ -4473,11 +4436,23 @@ export interface components {
              */
             field_type: "text" | "number" | "boolean" | "enum";
             /**
+             * Label
+             * @description Display name for this field, and the key it appears under on call records.
+             * @example Order number
+             */
+            label: string;
+            /**
              * Prompt Definition
              * @description Instruction the AI uses to find this value in the transcript. Name what to look for and the form it takes.
-             * @example The full name the caller provides when asked to identify themselves.
+             * @example The order number the caller gives, as a string of digits.
              */
             prompt_definition: string;
+        };
+        /**
+         * DataExtractionFieldResponse
+         * @description Response schema for data extraction field.
+         */
+        DataExtractionFieldResponse: {
             /**
              * Enum Options
              * @description Allowed values, present when `field_type` is `enum` and null otherwise, returned as a comma-separated string.
@@ -4485,12 +4460,37 @@ export interface components {
              */
             enum_options?: string | null;
             /**
+             * Field Type
+             * @description Type of the extracted value: `text`, `number`, `boolean`, or `enum`. Use `enum` to restrict the value to a fixed set.
+             * @example text
+             * @enum {string}
+             */
+            field_type: "text" | "number" | "boolean" | "enum";
+            /**
+             * Id
+             * @description Unique identifier for the data extraction field.
+             * @example 42
+             */
+            id: number;
+            /**
              * Is System
              * @description Whether this field was added automatically as a system default. System fields cannot be modified or deleted.
              * @default false
              * @example false
              */
             is_system?: boolean;
+            /**
+             * Label
+             * @description Display name for this field, and the key it appears under on call records.
+             * @example Customer name
+             */
+            label: string;
+            /**
+             * Prompt Definition
+             * @description Instruction the AI uses to find this value in the transcript. Name what to look for and the form it takes.
+             * @example The full name the caller provides when asked to identify themselves.
+             */
+            prompt_definition: string;
         };
         /**
          * DataRetentionResponse
@@ -4498,10 +4498,21 @@ export interface components {
          */
         DataRetentionResponse: {
             /**
-             * Retention Period Days
-             * @description Days a call is kept before it is erased. Null means never delete.
+             * Allowed Erasure Scopes
+             * @description Erasure scopes the workspace's plan allows, shallowest to deepest. The update endpoint accepts only these values.
              */
-            retention_period_days: number | null;
+            allowed_erasure_scopes: ("transcript_recording" | "caller_data" | "full")[];
+            /**
+             * Allowed Retention Periods
+             * @description Retention windows the workspace's plan allows, in days, ascending. Contains `null` when the plan permits never deleting. The update endpoint accepts only these values.
+             */
+            allowed_retention_periods: (number | null)[];
+            /**
+             * Default Erasure Scope
+             * @description The plan's default scope, useful to preselect when the workspace has none set yet. Null when the plan offers no scopes.
+             * @enum {unknown}
+             */
+            default_erasure_scope: "transcript_recording" | "caller_data" | "full" | null;
             /**
              * Erasure Scope
              * @description What is destroyed when a call expires. Null when nothing is ever deleted.
@@ -4509,21 +4520,10 @@ export interface components {
              */
             erasure_scope: "transcript_recording" | "caller_data" | "full" | null;
             /**
-             * Allowed Retention Periods
-             * @description Retention windows the workspace's plan allows, in days, ascending. Contains `null` when the plan permits never deleting. The update endpoint accepts only these values.
+             * Retention Period Days
+             * @description Days a call is kept before it is erased. Null means never delete.
              */
-            allowed_retention_periods: (number | null)[];
-            /**
-             * Allowed Erasure Scopes
-             * @description Erasure scopes the workspace's plan allows, shallowest to deepest. The update endpoint accepts only these values.
-             */
-            allowed_erasure_scopes: ("transcript_recording" | "caller_data" | "full")[];
-            /**
-             * Default Erasure Scope
-             * @description The plan's default scope, useful to preselect when the workspace has none set yet. Null when the plan offers no scopes.
-             * @enum {unknown}
-             */
-            default_erasure_scope: "transcript_recording" | "caller_data" | "full" | null;
+            retention_period_days: number | null;
         };
         /**
          * DataRetentionUpdateRequest
@@ -4534,17 +4534,17 @@ export interface components {
          */
         DataRetentionUpdateRequest: {
             /**
-             * Retention Period Days
-             * @description Days a call is kept before it is erased. `null` means never delete and always clears `erasure_scope`. Omit the field to leave the current window unchanged. Must be one of the plan's `allowed_retention_periods`.
-             * @example 30
-             */
-            retention_period_days?: number | null;
-            /**
              * Erasure Scope
              * @description What is destroyed when a call expires. `transcript_recording` removes the transcript, recording and log URLs; `caller_data` also removes the caller's identity and every free-text field derived from the conversation; `full` deletes the call record outright. Required whenever `retention_period_days` is set. Omit the field to leave the current scope unchanged.
              * @enum {unknown}
              */
             erasure_scope?: "transcript_recording" | "caller_data" | "full" | null;
+            /**
+             * Retention Period Days
+             * @description Days a call is kept before it is erased. `null` means never delete and always clears `erasure_scope`. Omit the field to leave the current window unchanged. Must be one of the plan's `allowed_retention_periods`.
+             * @example 30
+             */
+            retention_period_days?: number | null;
         };
         /**
          * DefaultRetentionPolicy
@@ -4575,15 +4575,15 @@ export interface components {
              */
             code: "delete_confirmation_required";
             /**
-             * Message
-             * @description Human-readable summary of what deleting the item will do.
-             */
-            message: string;
-            /**
              * Dependents
              * @description Alerts and rules that use the item, alerts first, each ordered by ID.
              */
             dependents: components["schemas"]["DependentItem"][];
+            /**
+             * Message
+             * @description Human-readable summary of what deleting the item will do.
+             */
+            message: string;
         };
         /**
          * DeleteConfirmationRequired
@@ -4601,12 +4601,6 @@ export interface components {
          */
         DependentItem: {
             /**
-             * Type
-             * @description Whether this is an alert or a rule.
-             * @enum {string}
-             */
-            type: "alert" | "rule";
-            /**
              * Id
              * @description ID of the alert or rule.
              */
@@ -4616,6 +4610,12 @@ export interface components {
              * @description Name of the alert, or the tag name of the rule.
              */
             name: string;
+            /**
+             * Type
+             * @description Whether this is an alert or a rule.
+             * @enum {string}
+             */
+            type: "alert" | "rule";
         };
         /**
          * DiscountResponse
@@ -4626,27 +4626,41 @@ export interface components {
          *     Autumn returns for discounts).
          */
         DiscountResponse: {
-            /** Id */
-            id: string;
-            /** Name */
-            name: string;
-            /** Type */
-            type: string;
+            /** Currency */
+            currency?: string | null;
             /** Discount Value */
             discount_value: number;
             /** Duration Type */
             duration_type: string;
             /** Duration Value */
             duration_value?: number | null;
-            /** Currency */
-            currency?: string | null;
-            /** Start */
-            start?: number | null;
             /** End */
             end?: number | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Start */
+            start?: number | null;
+            /** Type */
+            type: string;
         };
         /** ElevenLabsSipTrunkPreviewResponse */
         ElevenLabsSipTrunkPreviewResponse: {
+            /**
+             * Body
+             * @description JSON body Tuner sends to ElevenLabs.
+             */
+            body: {
+                [key: string]: unknown;
+            };
+            /**
+             * Headers
+             * @description Request headers, with the API key redacted.
+             */
+            headers: {
+                [key: string]: string;
+            };
             /**
              * Method
              * @description HTTP method Tuner sends to ElevenLabs.
@@ -4658,59 +4672,19 @@ export interface components {
              * @description ElevenLabs endpoint Tuner calls to create the number.
              */
             url: string;
-            /**
-             * Headers
-             * @description Request headers, with the API key redacted.
-             */
-            headers: {
-                [key: string]: string;
-            };
-            /**
-             * Body
-             * @description JSON body Tuner sends to ElevenLabs.
-             */
-            body: {
-                [key: string]: unknown;
-            };
         };
         /** ElevenLabsSipTrunkSetupResponse */
         ElevenLabsSipTrunkSetupResponse: {
-            /**
-             * Id
-             * @description Outbound configuration ID.
-             */
-            id: number;
             /**
              * Agent Settings Id
              * @description ID of the agent settings the configuration belongs to.
              */
             agent_settings_id: number;
             /**
-             * Trigger Url
-             * @description URL Tuner sends a POST request to in order to start an outbound call.
-             */
-            trigger_url: string | null;
-            /**
-             * Headers
-             * @description Extra HTTP headers sent with the request to `trigger_url`.
-             */
-            headers: components["schemas"]["OutboundConfigHeader"][] | null;
-            /**
              * Body Template Json
              * @description JSON body template sent to `trigger_url`.
              */
             body_template_json: string | null;
-            /**
-             * Phone Number Id
-             * @description ID of the phone number calls are placed from, on the agent's own provider (Vapi or ElevenLabs). Null for a custom webhook.
-             */
-            phone_number_id: string | null;
-            /**
-             * Vapi Phone Number Id
-             * @deprecated
-             * @description Deprecated, use `phone_number_id`. Same value as `phone_number_id` for Vapi agents, null otherwise. Kept for one more release.
-             */
-            vapi_phone_number_id: string | null;
             /**
              * Created At
              * Format: date-time
@@ -4718,17 +4692,43 @@ export interface components {
              */
             created_at: string;
             /**
-             * Updated At
-             * Format: date-time
-             * @description When the configuration was last updated.
+             * Headers
+             * @description Extra HTTP headers sent with the request to `trigger_url`.
              */
-            updated_at: string;
+            headers: components["schemas"]["OutboundConfigHeader"][] | null;
+            /**
+             * Id
+             * @description Outbound configuration ID.
+             */
+            id: number;
+            /**
+             * Phone Number Id
+             * @description ID of the phone number calls are placed from, on the agent's own provider (Vapi or ElevenLabs). Null for a custom webhook.
+             */
+            phone_number_id: string | null;
             /**
              * Sip Trunk Result
              * @description `created` when Tuner created a new ElevenLabs SIP trunk number, `reused` when an existing "Tuner Outbound" number already pointed at Tuner's SIP route.
              * @enum {string}
              */
             sip_trunk_result: "created" | "reused";
+            /**
+             * Trigger Url
+             * @description URL Tuner sends a POST request to in order to start an outbound call.
+             */
+            trigger_url: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description When the configuration was last updated.
+             */
+            updated_at: string;
+            /**
+             * Vapi Phone Number Id
+             * @deprecated
+             * @description Deprecated, use `phone_number_id`. Same value as `phone_number_id` for Vapi agents, null otherwise. Kept for one more release.
+             */
+            vapi_phone_number_id: string | null;
         };
         /**
          * ErrorCode
@@ -4764,30 +4764,6 @@ export interface components {
          */
         EvalInput: {
             /**
-             * Name
-             * @description Name of the eval. Must be unique among the agent's evals.
-             * @example Verified caller identity
-             */
-            name: string;
-            /**
-             * Scoring Type
-             * @description `PASS_FAIL` for a yes/no check, `SCORE_1_5` for a 1–5 rating. Simulations require at least one `PASS_FAIL` eval.
-             * @example PASS_FAIL
-             */
-            scoring_type: string;
-            /**
-             * Rule Logic
-             * @description Instruction the AI applies to each call. For `PASS_FAIL`, phrase it so that passing is unambiguous.
-             * @example Pass if the agent verified the caller's identity before sharing account details.
-             */
-            rule_logic: string;
-            /**
-             * Order
-             * @description Display order among the agent's evals. Ignored on create, where the eval is added at the end; on update, omit to keep the current position.
-             * @example 0
-             */
-            order?: number | null;
-            /**
              * Inputs Used
              * @description Extra context the AI sees when scoring a call; the transcript is always included. Allowed values: `system_prompt`, `tools`, `allowed_capabilities`, `workflow` (the agent's configuration), or `metadata.<key>` for a value from the call's metadata, with dots for nested keys (e.g. `metadata.account.region`). Keys are case-sensitive, and a key a call does not have is skipped for that call. Any other value returns a 422. Defaults to none.
              * @example [
@@ -4803,6 +4779,30 @@ export interface components {
              *     ]
              */
             inputs_used?: string[];
+            /**
+             * Name
+             * @description Name of the eval. Must be unique among the agent's evals.
+             * @example Verified caller identity
+             */
+            name: string;
+            /**
+             * Order
+             * @description Display order among the agent's evals. Ignored on create, where the eval is added at the end; on update, omit to keep the current position.
+             * @example 0
+             */
+            order?: number | null;
+            /**
+             * Rule Logic
+             * @description Instruction the AI applies to each call. For `PASS_FAIL`, phrase it so that passing is unambiguous.
+             * @example Pass if the agent verified the caller's identity before sharing account details.
+             */
+            rule_logic: string;
+            /**
+             * Scoring Type
+             * @description `PASS_FAIL` for a yes/no check, `SCORE_1_5` for a 1–5 rating. Simulations require at least one `PASS_FAIL` eval.
+             * @example PASS_FAIL
+             */
+            scoring_type: string;
         };
         /**
          * EvalResponse
@@ -4816,43 +4816,6 @@ export interface components {
              */
             id: number;
             /**
-             * Name
-             * @description Name of the eval.
-             * @example Verified caller identity
-             */
-            name: string;
-            /**
-             * Scoring Type
-             * @description `PASS_FAIL` for a yes/no check, `SCORE_1_5` for a 1–5 rating. Simulations require at least one `PASS_FAIL` eval.
-             * @example PASS_FAIL
-             * @enum {string}
-             */
-            scoring_type: "PASS_FAIL" | "SCORE_1_5";
-            /**
-             * Rule Logic
-             * @description Instruction the AI applies to each call. For `PASS_FAIL`, phrasing is written so that passing is unambiguous.
-             * @example The agent confirmed the caller's name and date of birth.
-             */
-            rule_logic: string;
-            /**
-             * Is System Added
-             * @description Whether this eval was added automatically as a system default rather than created by a user.
-             * @example false
-             */
-            is_system_added: boolean;
-            /**
-             * Is Removable
-             * @description Whether this eval can be deleted. System defaults may be marked non-removable; attempting to delete a non-removable eval returns a 403.
-             * @example true
-             */
-            is_removable: boolean;
-            /**
-             * Order
-             * @description Display order relative to other evals for the agent.
-             * @example 0
-             */
-            order: number;
-            /**
              * Inputs Used
              * @description Extra context the AI sees when scoring a call, in addition to the transcript: `system_prompt`, `tools`, `allowed_capabilities`, `workflow`, or `metadata.<key>` for a value from the call's metadata (dots for nested keys).
              * @example [
@@ -4861,26 +4824,63 @@ export interface components {
              *     ]
              */
             inputs_used: string[];
+            /**
+             * Is Removable
+             * @description Whether this eval can be deleted. System defaults may be marked non-removable; attempting to delete a non-removable eval returns a 403.
+             * @example true
+             */
+            is_removable: boolean;
+            /**
+             * Is System Added
+             * @description Whether this eval was added automatically as a system default rather than created by a user.
+             * @example false
+             */
+            is_system_added: boolean;
+            /**
+             * Name
+             * @description Name of the eval.
+             * @example Verified caller identity
+             */
+            name: string;
+            /**
+             * Order
+             * @description Display order relative to other evals for the agent.
+             * @example 0
+             */
+            order: number;
+            /**
+             * Rule Logic
+             * @description Instruction the AI applies to each call. For `PASS_FAIL`, phrasing is written so that passing is unambiguous.
+             * @example The agent confirmed the caller's name and date of birth.
+             */
+            rule_logic: string;
+            /**
+             * Scoring Type
+             * @description `PASS_FAIL` for a yes/no check, `SCORE_1_5` for a 1–5 rating. Simulations require at least one `PASS_FAIL` eval.
+             * @example PASS_FAIL
+             * @enum {string}
+             */
+            scoring_type: "PASS_FAIL" | "SCORE_1_5";
         };
         /**
          * EvalSeedResponse
          * @description Response schema for an eval seed.
          */
         EvalSeedResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Description */
-            description: string;
-            /** Scoring Type */
-            scoring_type: string;
-            /** Rule Logic */
-            rule_logic: string;
             /** Category */
             category: string;
+            /** Description */
+            description: string;
+            /** Id */
+            id: number;
             /** Inputs Used */
             inputs_used: string[];
+            /** Name */
+            name: string;
+            /** Rule Logic */
+            rule_logic: string;
+            /** Scoring Type */
+            scoring_type: string;
         };
         /**
          * FailedEval
@@ -4930,24 +4930,24 @@ export interface components {
          *     the frontend only needs presence/plan_id/expiry.
          */
         FlagResponse: {
-            /** Id */
-            id: string;
-            /** Plan Id */
-            plan_id?: string | null;
             /** Expires At */
             expires_at?: number | null;
             /** Feature Id */
             feature_id: string;
+            /** Id */
+            id: string;
+            /** Plan Id */
+            plan_id?: string | null;
         };
         /**
          * GrantedEntitlementSchema
          * @description A feature balance granted by redeeming a feature-grant promo code.
          */
         GrantedEntitlementSchema: {
-            /** Feature Id */
-            feature_id: string;
             /** Balance */
             balance: number;
+            /** Feature Id */
+            feature_id: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -4962,16 +4962,16 @@ export interface components {
          *     is fixed server-side (most-recent ``max_calls`` from the last 30 days).
          */
         ImportCallsQueuedResponse: {
-            /** Message */
-            message: string;
             /** Agent Id */
             agent_id: string;
-            /** Start Time */
-            start_time: string;
             /** End Time */
             end_time: string;
             /** Max Calls */
             max_calls: number;
+            /** Message */
+            message: string;
+            /** Start Time */
+            start_time: string;
         };
         /**
          * InputDataType
@@ -4984,55 +4984,32 @@ export interface components {
          * @description Integration schema for API responses (excludes sensitive api_key).
          */
         Integration: {
-            /** Id */
-            id: number;
-            /**
-             * Uuid
-             * Format: uuid
-             */
-            uuid: string;
-            /** Workspace Id */
-            workspace_id: number;
-            /** Provider Id */
-            provider_id: number;
-            /** Deleted At */
-            deleted_at?: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-            /** Created By */
-            created_by?: number | null;
-            /** Updated By */
-            updated_by?: number | null;
             /**
              * Api Key Hint
              * @description Last 4 characters of the stored key. None if no key is set.
              * @example a1b2
              */
             api_key_hint?: string | null;
-        };
-        /**
-         * IntegrationConnectRequest
-         * @description Request schema for connecting a provider by live-validating its API key.
-         */
-        IntegrationConnectRequest: {
-            /** Provider Name */
-            provider_name: string;
-            /** Api Key */
-            api_key: string;
-        };
-        /**
-         * IntegrationCreate
-         * @description Schema for creating an integration.
-         */
-        IntegrationCreate: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by?: number | null;
+            /** Deleted At */
+            deleted_at?: string | null;
+            /** Id */
+            id: number;
+            /** Provider Id */
+            provider_id: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By */
+            updated_by?: number | null;
             /**
              * Uuid
              * Format: uuid
@@ -5040,10 +5017,33 @@ export interface components {
             uuid: string;
             /** Workspace Id */
             workspace_id: number;
-            /** Provider Id */
-            provider_id: number;
+        };
+        /**
+         * IntegrationConnectRequest
+         * @description Request schema for connecting a provider by live-validating its API key.
+         */
+        IntegrationConnectRequest: {
             /** Api Key */
             api_key: string;
+            /** Provider Name */
+            provider_name: string;
+        };
+        /**
+         * IntegrationCreate
+         * @description Schema for creating an integration.
+         */
+        IntegrationCreate: {
+            /** Api Key */
+            api_key: string;
+            /** Provider Id */
+            provider_id: number;
+            /**
+             * Uuid
+             * Format: uuid
+             */
+            uuid: string;
+            /** Workspace Id */
+            workspace_id: number;
         };
         /**
          * IntegrationInput
@@ -5051,28 +5051,28 @@ export interface components {
          */
         IntegrationInput: {
             /**
-             * Provider Id
-             * @description Provider ID (e.g., 1 for Retell)
-             */
-            provider_id: number;
-            /**
              * Api Key
              * @description Provider API key
              */
             api_key: string;
+            /**
+             * Provider Id
+             * @description Provider ID (e.g., 1 for Retell)
+             */
+            provider_id: number;
         };
         /**
          * IntegrationResponse
          * @description Integration info in response.
          */
         IntegrationResponse: {
-            /** Id */
-            id: number;
             /**
              * Api Key Hint
              * @example a1b2
              */
             api_key_hint?: string | null;
+            /** Id */
+            id: number;
             /** Provider Id */
             provider_id: number;
             /** Provider Name */
@@ -5085,8 +5085,33 @@ export interface components {
          * @description Integration schema with nested provider object.
          */
         IntegrationWithProvider: {
+            /**
+             * Api Key Hint
+             * @description Last 4 characters of the stored key. None if no key is set.
+             * @example a1b2
+             */
+            api_key_hint?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by?: number | null;
+            /** Deleted At */
+            deleted_at?: string | null;
             /** Id */
             id: number;
+            provider?: components["schemas"]["ProviderResponse"] | null;
+            /** Provider Id */
+            provider_id: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By */
+            updated_by?: number | null;
             /**
              * Uuid
              * Format: uuid
@@ -5094,31 +5119,6 @@ export interface components {
             uuid: string;
             /** Workspace Id */
             workspace_id: number;
-            /** Provider Id */
-            provider_id: number;
-            /** Deleted At */
-            deleted_at?: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-            /** Created By */
-            created_by?: number | null;
-            /** Updated By */
-            updated_by?: number | null;
-            /**
-             * Api Key Hint
-             * @description Last 4 characters of the stored key. None if no key is set.
-             * @example a1b2
-             */
-            api_key_hint?: string | null;
-            provider?: components["schemas"]["ProviderResponse"] | null;
         };
         /**
          * LogicalOperator
@@ -5131,22 +5131,22 @@ export interface components {
          * @description Request to generate a Metabase dashboard token.
          */
         MetabaseDashboardTokenRequest: {
-            /** Resource Name */
-            resource_name: string;
             /** Resource Id */
             resource_id: number;
+            /** Resource Name */
+            resource_name: string;
         };
         /**
          * MetabaseTokenResponse
          * @description Response containing a Metabase token.
          */
         MetabaseTokenResponse: {
-            /** Token */
-            token: string;
             /** Expires In Minutes */
             expires_in_minutes: number;
             /** Metabase Url */
             metabase_url: string;
+            /** Token */
+            token: string;
         };
         /** MetricPoint */
         MetricPoint: {
@@ -5162,10 +5162,10 @@ export interface components {
          *     Line items are intentionally omitted. ``invoice_at`` is unix milliseconds.
          */
         NextInvoiceResponse: {
-            /** Invoice At */
-            invoice_at: number;
             /** Currency */
             currency: string;
+            /** Invoice At */
+            invoice_at: number;
             /** Subtotal */
             subtotal: number;
             /** Total */
@@ -5182,18 +5182,6 @@ export interface components {
              * @example 1
              */
             id: number;
-            /**
-             * Name
-             * @description Display name of the environment.
-             * @example Café
-             */
-            name: string;
-            /**
-             * Slug
-             * @description Stable text identifier of the environment.
-             * @example cafe
-             */
-            slug: string;
             /**
              * Intensities
              * @description Intensities this environment can play at, quietest first. Send a `name` or its `value` as `noise_intensity`. `medium` is the default when a run selects noise by `noise` slug without `noise_intensity`.
@@ -5213,6 +5201,18 @@ export interface components {
              *     ]
              */
             intensities?: components["schemas"]["NoiseIntensityResponse"][];
+            /**
+             * Name
+             * @description Display name of the environment.
+             * @example Café
+             */
+            name: string;
+            /**
+             * Slug
+             * @description Stable text identifier of the environment.
+             * @example cafe
+             */
+            slug: string;
         };
         /**
          * NoiseEnvironmentResponse
@@ -5281,15 +5281,15 @@ export interface components {
          *     to decide whether to show /welcome. It mirrors "onboarding_intent is not null".
          */
         OnboardingStatus: {
-            /** Onboarding Intent */
-            onboarding_intent?: string | null;
-            /** Onboarding Profile */
-            onboarding_profile?: string | null;
             /**
              * Answered
              * @default false
              */
             answered?: boolean;
+            /** Onboarding Intent */
+            onboarding_intent?: string | null;
+            /** Onboarding Profile */
+            onboarding_profile?: string | null;
         };
         /**
          * OnboardingUpdate
@@ -5329,41 +5329,15 @@ export interface components {
         /** OutboundConfigResponse */
         OutboundConfigResponse: {
             /**
-             * Id
-             * @description Outbound configuration ID.
-             */
-            id: number;
-            /**
              * Agent Settings Id
              * @description ID of the agent settings the configuration belongs to.
              */
             agent_settings_id: number;
             /**
-             * Trigger Url
-             * @description URL Tuner sends a POST request to in order to start an outbound call.
-             */
-            trigger_url: string | null;
-            /**
-             * Headers
-             * @description Extra HTTP headers sent with the request to `trigger_url`.
-             */
-            headers: components["schemas"]["OutboundConfigHeader"][] | null;
-            /**
              * Body Template Json
              * @description JSON body template sent to `trigger_url`.
              */
             body_template_json: string | null;
-            /**
-             * Phone Number Id
-             * @description ID of the phone number calls are placed from, on the agent's own provider (Vapi or ElevenLabs). Null for a custom webhook.
-             */
-            phone_number_id: string | null;
-            /**
-             * Vapi Phone Number Id
-             * @deprecated
-             * @description Deprecated, use `phone_number_id`. Same value as `phone_number_id` for Vapi agents, null otherwise. Kept for one more release.
-             */
-            vapi_phone_number_id: string | null;
             /**
              * Created At
              * Format: date-time
@@ -5371,34 +5345,60 @@ export interface components {
              */
             created_at: string;
             /**
+             * Headers
+             * @description Extra HTTP headers sent with the request to `trigger_url`.
+             */
+            headers: components["schemas"]["OutboundConfigHeader"][] | null;
+            /**
+             * Id
+             * @description Outbound configuration ID.
+             */
+            id: number;
+            /**
+             * Phone Number Id
+             * @description ID of the phone number calls are placed from, on the agent's own provider (Vapi or ElevenLabs). Null for a custom webhook.
+             */
+            phone_number_id: string | null;
+            /**
+             * Trigger Url
+             * @description URL Tuner sends a POST request to in order to start an outbound call.
+             */
+            trigger_url: string | null;
+            /**
              * Updated At
              * Format: date-time
              * @description When the configuration was last updated.
              */
             updated_at: string;
+            /**
+             * Vapi Phone Number Id
+             * @deprecated
+             * @description Deprecated, use `phone_number_id`. Same value as `phone_number_id` for Vapi agents, null otherwise. Kept for one more release.
+             */
+            vapi_phone_number_id: string | null;
         };
         /** OutboundConfigUpsertRequest */
         OutboundConfigUpsertRequest: {
-            /**
-             * Trigger Url
-             * @description URL Tuner sends a POST request to in order to start an outbound call, up to 2048 characters. Required for a custom webhook; must be omitted when `phone_number_id` is set.
-             */
-            trigger_url?: string | null;
-            /**
-             * Headers
-             * @description Extra HTTP headers to send with the request to `trigger_url`.
-             */
-            headers?: components["schemas"]["OutboundConfigHeader"][] | null;
             /**
              * Body Template Json
              * @description JSON body to send to `trigger_url`. Placeholders in double curly braces are filled in at call time, and it must contain `{{sipUriToDial}}`. Required for a custom webhook; must be omitted when `phone_number_id` is set.
              */
             body_template_json?: string | null;
             /**
+             * Headers
+             * @description Extra HTTP headers to send with the request to `trigger_url`.
+             */
+            headers?: components["schemas"]["OutboundConfigHeader"][] | null;
+            /**
              * Phone Number Id
              * @description ID of the phone number to place calls from, on the agent's own provider (Vapi or ElevenLabs). For ElevenLabs it must be a SIP trunk number whose outbound trunk address points at Tuner's SIP route. Set this instead of `trigger_url` and `body_template_json` to let Tuner place the call through the provider.
              */
             phone_number_id?: string | null;
+            /**
+             * Trigger Url
+             * @description URL Tuner sends a POST request to in order to start an outbound call, up to 2048 characters. Required for a custom webhook; must be omitted when `phone_number_id` is set.
+             */
+            trigger_url?: string | null;
             /**
              * Vapi Phone Number Id
              * @deprecated
@@ -5412,15 +5412,15 @@ export interface components {
          */
         OutcomeDetail: {
             /**
-             * Value
-             * @description Name of the detected call outcome.
-             */
-            value: string | null;
-            /**
              * Type
              * @description Type of the detected call outcome.
              */
             type: string | null;
+            /**
+             * Value
+             * @description Name of the detected call outcome.
+             */
+            value: string | null;
         };
         /**
          * OutcomeInfo
@@ -5428,15 +5428,15 @@ export interface components {
          */
         OutcomeInfo: {
             /**
-             * Value
-             * @description Outcome value
-             */
-            value?: string | null;
-            /**
              * Type
              * @description Outcome type
              */
             type?: string | null;
+            /**
+             * Value
+             * @description Outcome value
+             */
+            value?: string | null;
         };
         /**
          * PIIRedactionResponse
@@ -5444,26 +5444,21 @@ export interface components {
          */
         PIIRedactionResponse: {
             /**
-             * Pii Redaction Enabled
-             * @description Whether to redact PII from transcripts before storage.
-             */
-            pii_redaction_enabled: boolean;
-            /**
              * Pii Redaction Categories
              * @description Categories currently being redacted. Null when redaction is disabled.
              */
             pii_redaction_categories: string[] | null;
+            /**
+             * Pii Redaction Enabled
+             * @description Whether to redact PII from transcripts before storage.
+             */
+            pii_redaction_enabled: boolean;
         };
         /**
          * PIIRedactionUpdateRequest
          * @description Request schema for enabling/disabling PII redaction and selecting categories.
          */
         PIIRedactionUpdateRequest: {
-            /**
-             * Enabled
-             * @description Whether to redact PII from transcripts before storage.
-             */
-            enabled: boolean;
             /**
              * Categories
              * @description Categories to redact. Required when `enabled` is true; the list replaces the current selection.
@@ -5473,6 +5468,11 @@ export interface components {
              *     ]
              */
             categories?: string[] | null;
+            /**
+             * Enabled
+             * @description Whether to redact PII from transcripts before storage.
+             */
+            enabled: boolean;
         };
         /**
          * PIIRegexPatternCreateRequest
@@ -5520,10 +5520,10 @@ export interface components {
          * @description Discounts that end if the workspace upgrades to ``plan_id`` (only non-empty entries).
          */
         PlanChangeEnding: {
-            /** Plan Id */
-            plan_id: string;
             /** Ending */
             ending: components["schemas"]["CouponInfo"][];
+            /** Plan Id */
+            plan_id: string;
         };
         /**
          * PlanCreditSchemaEntry
@@ -5532,10 +5532,10 @@ export interface components {
          *     From ``autumn_sdk.models.PlanCreditSchema``.
          */
         PlanCreditSchemaEntry: {
-            /** Metered Feature Id */
-            metered_feature_id: string;
             /** Credit Cost */
             credit_cost: number;
+            /** Metered Feature Id */
+            metered_feature_id: string;
         };
         /**
          * PlanCurrencyAmount
@@ -5546,10 +5546,10 @@ export interface components {
          *     which all share this shape.
          */
         PlanCurrencyAmount: {
-            /** Currency */
-            currency: string;
             /** Amount */
             amount: number;
+            /** Currency */
+            currency: string;
         };
         /**
          * PlanEligibility
@@ -5558,37 +5558,37 @@ export interface components {
         PlanEligibility: {
             /** Attach Action */
             attach_action: string;
-            /** Status */
-            status?: string | null;
             /** Canceling */
             canceling?: boolean | null;
+            /** Status */
+            status?: string | null;
         };
         /**
          * PlanFeature
          * @description The full feature object backing a plan item, from ``autumn_sdk.models.PlanFeature``.
          */
         PlanFeature: {
-            /** Id */
-            id: string;
-            /** Type */
-            type: string;
-            /** Name */
-            name?: string | null;
-            display?: components["schemas"]["PlanFeatureDisplay"] | null;
-            /** Credit Schema */
-            credit_schema?: components["schemas"]["PlanCreditSchemaEntry"][] | null;
             /** Archived */
             archived?: boolean | null;
+            /** Credit Schema */
+            credit_schema?: components["schemas"]["PlanCreditSchemaEntry"][] | null;
+            display?: components["schemas"]["PlanFeatureDisplay"] | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name?: string | null;
+            /** Type */
+            type: string;
         };
         /**
          * PlanFeatureDisplay
          * @description Singular/plural display names for a feature, from ``autumn_sdk.models.PlanFeatureDisplay``.
          */
         PlanFeatureDisplay: {
-            /** Singular */
-            singular: string;
             /** Plural */
             plural: string;
+            /** Singular */
+            singular: string;
         };
         /**
          * PlanItem
@@ -5600,17 +5600,17 @@ export interface components {
          *     used to size "buy credits" options).
          */
         PlanItem: {
+            display?: components["schemas"]["PlanItemDisplay"] | null;
+            feature?: components["schemas"]["PlanFeature"] | null;
             /** Feature Id */
             feature_id: string;
             /** Included */
             included: number;
+            price?: components["schemas"]["PlanItemPrice"] | null;
+            reset?: components["schemas"]["PlanItemReset"] | null;
+            rollover?: components["schemas"]["PlanItemRollover"] | null;
             /** Unlimited */
             unlimited: boolean;
-            reset?: components["schemas"]["PlanItemReset"] | null;
-            price?: components["schemas"]["PlanItemPrice"] | null;
-            feature?: components["schemas"]["PlanFeature"] | null;
-            display?: components["schemas"]["PlanItemDisplay"] | null;
-            rollover?: components["schemas"]["PlanItemRollover"] | null;
         };
         /**
          * PlanItemDisplay
@@ -5630,38 +5630,38 @@ export interface components {
          *     the feature is entirely free.
          */
         PlanItemPrice: {
-            /** Interval */
-            interval: string;
-            /** Billing Units */
-            billing_units: number;
-            /** Billing Method */
-            billing_method: string;
-            /** Max Purchase */
-            max_purchase?: number | null;
-            /** Amount */
-            amount?: number | null;
             /** Additional Currencies */
             additional_currencies?: components["schemas"]["PlanCurrencyAmount"][] | null;
-            /** Tiers */
-            tiers?: components["schemas"]["PlanItemPriceTier"][] | null;
-            /** Tier Behavior */
-            tier_behavior?: string | null;
+            /** Amount */
+            amount?: number | null;
+            /** Billing Method */
+            billing_method: string;
+            /** Billing Units */
+            billing_units: number;
+            /** Interval */
+            interval: string;
             /** Interval Count */
             interval_count?: number | null;
+            /** Max Purchase */
+            max_purchase?: number | null;
+            /** Tier Behavior */
+            tier_behavior?: string | null;
+            /** Tiers */
+            tiers?: components["schemas"]["PlanItemPriceTier"][] | null;
         };
         /**
          * PlanItemPriceTier
          * @description A single tier of tiered overage pricing, from ``autumn_sdk.models.PlanItemTier``.
          */
         PlanItemPriceTier: {
-            /** To */
-            to: number | string;
+            /** Additional Currencies */
+            additional_currencies?: components["schemas"]["PlanTierCurrencyAmount"][] | null;
             /** Amount */
             amount: number;
             /** Flat Amount */
             flat_amount?: number | null;
-            /** Additional Currencies */
-            additional_currencies?: components["schemas"]["PlanTierCurrencyAmount"][] | null;
+            /** To */
+            to: number | string;
         };
         /**
          * PlanItemReset
@@ -5681,14 +5681,14 @@ export interface components {
          *     units roll over to the next period.
          */
         PlanItemRollover: {
-            /** Max */
-            max?: number | null;
-            /** Expiry Duration Type */
-            expiry_duration_type: string;
-            /** Max Percentage */
-            max_percentage?: number | null;
             /** Expiry Duration Length */
             expiry_duration_length?: number | null;
+            /** Expiry Duration Type */
+            expiry_duration_type: string;
+            /** Max */
+            max?: number | null;
+            /** Max Percentage */
+            max_percentage?: number | null;
         };
         /**
          * PlanPrice
@@ -5698,15 +5698,15 @@ export interface components {
          *     which case ``PlanSummary.price`` is ``None``.
          */
         PlanPrice: {
+            /** Additional Currencies */
+            additional_currencies?: components["schemas"]["PlanCurrencyAmount"][] | null;
             /** Amount */
             amount: number;
+            display?: components["schemas"]["PlanPriceDisplay"] | null;
             /** Interval */
             interval: string;
             /** Interval Count */
             interval_count?: number | null;
-            /** Additional Currencies */
-            additional_currencies?: components["schemas"]["PlanCurrencyAmount"][] | null;
-            display?: components["schemas"]["PlanPriceDisplay"] | null;
         };
         /**
          * PlanPriceDisplay
@@ -5744,20 +5744,20 @@ export interface components {
          *     metadata directly rather than through this response.
          */
         PlanSummary: {
-            /** Id */
-            id: string;
-            /** Name */
-            name: string;
             /** Add On */
             add_on: boolean;
-            price?: components["schemas"]["PlanPrice"] | null;
+            customer_eligibility?: components["schemas"]["PlanEligibility"] | null;
+            /** Id */
+            id: string;
             /** Items */
             items: components["schemas"]["PlanItem"][];
-            customer_eligibility?: components["schemas"]["PlanEligibility"] | null;
             /** Metadata */
             metadata?: {
                 [key: string]: unknown;
             } | components["schemas"]["AutumnPlanMetadata"];
+            /** Name */
+            name: string;
+            price?: components["schemas"]["PlanPrice"] | null;
         };
         /**
          * PlanTierCurrencyAmount
@@ -5766,10 +5766,10 @@ export interface components {
          *     Corresponds to ``autumn_sdk.models.ItemTierAdditionalCurrency``.
          */
         PlanTierCurrencyAmount: {
-            /** Currency */
-            currency: string;
             /** Amount */
             amount?: number | null;
+            /** Currency */
+            currency: string;
             /** Flat Amount */
             flat_amount?: number | null;
         };
@@ -5802,6 +5802,11 @@ export interface components {
              */
             e2e_latency?: number | null;
             /**
+             * Eou Delay
+             * @description Time from end of user speech to end of turn detected, in milliseconds
+             */
+            eou_delay?: number | null;
+            /**
              * Interrupted
              * @description Whether the segment was interrupted before completion
              */
@@ -5812,25 +5817,20 @@ export interface components {
              */
             llm_node_ttft?: number | null;
             /**
-             * Tts Node Ttfb
-             * @description Time from TTS request to first audio byte, in milliseconds
+             * Stt Node Ttfb
+             * @description Time from end of user speech to transcript finalized, in milliseconds
              */
-            tts_node_ttfb?: number | null;
+            stt_node_ttfb?: number | null;
             /**
              * Transcript Confidence
              * @description Confidence score of transcript quality
              */
             transcript_confidence?: number | null;
             /**
-             * Stt Node Ttfb
-             * @description Time from end of user speech to transcript finalized, in milliseconds
+             * Tts Node Ttfb
+             * @description Time from TTS request to first audio byte, in milliseconds
              */
-            stt_node_ttfb?: number | null;
-            /**
-             * Eou Delay
-             * @description Time from end of user speech to end of turn detected, in milliseconds
-             */
-            eou_delay?: number | null;
+            tts_node_ttfb?: number | null;
         } & {
             [key: string]: unknown;
         };
@@ -5845,15 +5845,15 @@ export interface components {
              */
             from?: string | null;
             /**
-             * To
-             * @description Target node id
-             */
-            to: string;
-            /**
              * Reason
              * @description Transition reason (e.g. 'workflow route')
              */
             reason?: string | null;
+            /**
+             * To
+             * @description Target node id
+             */
+            to: string;
         };
         /**
          * PublicTranscriptRole
@@ -5870,39 +5870,39 @@ export interface components {
          *     - start_ms + duration_ms (end_ms is then derived).
          */
         PublicTranscriptSegment: {
+            /**
+             * Duration Ms
+             * @description Utterance duration (ms); accepts int or float, stored as int (ceiling). Should equal end_ms - start_ms if both set.
+             */
+            duration_ms?: number | null;
+            /**
+             * End Ms
+             * @description Segment end time relative to call start (ms); accepts int or float, stored as int (ceiling).
+             */
+            end_ms?: number | null;
+            /** @description Provider-specific metadata with known timing fields plus extra keys */
+            metadata?: components["schemas"]["PublicTranscriptMetadata"];
+            /** @description Workflow transition details (used for node_transition). */
+            node?: components["schemas"]["PublicTranscriptNode"] | null;
             /** @description Defines the type of segment in the call timeline. Allowed: node_transition, user, agent, agent_function, agent_result */
             role: components["schemas"]["PublicTranscriptRole"];
-            /**
-             * Text
-             * @description Utterance text for user or agent messages.
-             */
-            text?: string | null;
-            /**
-             * Words
-             * @description Word-level timing data (recommended when available).
-             */
-            words?: components["schemas"]["PublicTranscriptWord"][] | null;
             /**
              * Start Ms
              * @description Segment start time relative to call start (ms); accepts int or float, stored as int (ceiling).
              */
             start_ms?: number | null;
             /**
-             * End Ms
-             * @description Segment end time relative to call start (ms); accepts int or float, stored as int (ceiling).
+             * Text
+             * @description Utterance text for user or agent messages.
              */
-            end_ms?: number | null;
-            /**
-             * Duration Ms
-             * @description Utterance duration (ms); accepts int or float, stored as int (ceiling). Should equal end_ms - start_ms if both set.
-             */
-            duration_ms?: number | null;
-            /** @description Workflow transition details (used for node_transition). */
-            node?: components["schemas"]["PublicTranscriptNode"] | null;
+            text?: string | null;
             /** @description Tool invocation or result details (used for agent_function and agent_result). */
             tool?: components["schemas"]["PublicTranscriptTool"] | null;
-            /** @description Provider-specific metadata with known timing fields plus extra keys */
-            metadata?: components["schemas"]["PublicTranscriptMetadata"];
+            /**
+             * Words
+             * @description Word-level timing data (recommended when available).
+             */
+            words?: components["schemas"]["PublicTranscriptWord"][] | null;
         } & {
             [key: string]: unknown;
         };
@@ -5912,15 +5912,25 @@ export interface components {
          */
         PublicTranscriptTool: {
             /**
+             * End Ms
+             * @description Tool end time relative to call start (ms); equals start_ms when latency is unknown.
+             */
+            end_ms?: number | null;
+            /**
+             * Error
+             * @description Error message returned by the tool.
+             */
+            error?: string | null;
+            /**
+             * Is Error
+             * @description Whether the tool execution resulted in an error.
+             */
+            is_error?: boolean | null;
+            /**
              * Name
              * @description Tool name
              */
             name?: string | null;
-            /**
-             * Request Id
-             * @description Request id
-             */
-            request_id?: string | null;
             /**
              * Params
              * @description Tool input parameters (JSON).
@@ -5929,6 +5939,11 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
+             * Request Id
+             * @description Request id
+             */
+            request_id?: string | null;
+            /**
              * Result
              * @description Tool output payload (JSON).
              */
@@ -5936,25 +5951,10 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Is Error
-             * @description Whether the tool execution resulted in an error.
-             */
-            is_error?: boolean | null;
-            /**
-             * Error
-             * @description Error message returned by the tool.
-             */
-            error?: string | null;
-            /**
              * Start Ms
              * @description Tool invocation time relative to call start (ms).
              */
             start_ms?: number | null;
-            /**
-             * End Ms
-             * @description Tool end time relative to call start (ms); equals start_ms when latency is unknown.
-             */
-            end_ms?: number | null;
         };
         /**
          * PublicTranscriptWord
@@ -5962,50 +5962,45 @@ export interface components {
          */
         PublicTranscriptWord: {
             /**
-             * Word
-             * @description The word text
+             * Confidence
+             * @description Optional confidence score
              */
-            word: string;
-            /**
-             * Start Ms
-             * @description Start time relative to call start (ms); accepts int or float, stored as int (ceiling)
-             */
-            start_ms: number;
+            confidence?: number | null;
             /**
              * End Ms
              * @description End time relative to call start (ms); accepts int or float, stored as int (ceiling)
              */
             end_ms: number;
             /**
-             * Confidence
-             * @description Optional confidence score
+             * Start Ms
+             * @description Start time relative to call start (ms); accepts int or float, stored as int (ceiling)
              */
-            confidence?: number | null;
+            start_ms: number;
+            /**
+             * Word
+             * @description The word text
+             */
+            word: string;
         };
         /**
          * PurchaseResponse
          * @description A one-time purchase made by the customer.
          */
         PurchaseResponse: {
-            /** Plan Id */
-            plan_id: string;
             /** Expires At */
             expires_at?: number | null;
-            /** Started At */
-            started_at: number;
+            /** Plan Id */
+            plan_id: string;
             /** Quantity */
             quantity: number;
+            /** Started At */
+            started_at: number;
         };
         /**
          * RecentRedFlagResponse
          * @description Response model for recent red flags.
          */
         RecentRedFlagResponse: {
-            /**
-             * Id
-             * @description Tuner call ID
-             */
-            id: number;
             /**
              * Call Id
              * @description Provider call ID
@@ -6016,18 +6011,23 @@ export interface components {
              * @description Call intent
              */
             call_intent?: string | null;
+            /**
+             * Id
+             * @description Tuner call ID
+             */
+            id: number;
             /** @description Call outcome with value and type */
             outcome?: components["schemas"]["OutcomeInfo"] | null;
-            /**
-             * Timestamp
-             * @description Call timestamp in ISO 8601 format
-             */
-            timestamp: string;
             /**
              * Red Flag
              * @description Red flag name
              */
             red_flag: string;
+            /**
+             * Timestamp
+             * @description Call timestamp in ISO 8601 format
+             */
+            timestamp: string;
         };
         /**
          * RecordingUploadTarget
@@ -6043,10 +6043,16 @@ export interface components {
          */
         RecordingUploadTarget: {
             /**
-             * Url
-             * @description The S3 endpoint to POST the upload to.
+             * Content Type
+             * @description The exact Content-Type the upload must be sent with.
              */
-            url: string;
+            content_type: string;
+            /**
+             * Expires At
+             * Format: date-time
+             * @description When this upload target stops being valid (24 hours after issue).
+             */
+            expires_at: string;
             /**
              * Fields
              * @description Form fields to echo back verbatim in the upload POST, alongside the file (added last).
@@ -6060,21 +6066,15 @@ export interface components {
              */
             key: string;
             /**
-             * Content Type
-             * @description The exact Content-Type the upload must be sent with.
-             */
-            content_type: string;
-            /**
              * Max Bytes
              * @description Maximum accepted upload size, in bytes.
              */
             max_bytes: number;
             /**
-             * Expires At
-             * Format: date-time
-             * @description When this upload target stops being valid (24 hours after issue).
+             * Url
+             * @description The S3 endpoint to POST the upload to.
              */
-            expires_at: string;
+            url: string;
         };
         /**
          * RedeemCouponRequest
@@ -6083,8 +6083,6 @@ export interface components {
         RedeemCouponRequest: {
             /** Code */
             code: string;
-            /** Success Url */
-            success_url?: string | null;
             /**
              * Confirm Replace
              * @default false
@@ -6092,6 +6090,8 @@ export interface components {
             confirm_replace?: boolean;
             /** Replace Discount Ids */
             replace_discount_ids?: string[] | null;
+            /** Success Url */
+            success_url?: string | null;
         };
         /**
          * RedeemCouponResponseSchema
@@ -6111,24 +6111,24 @@ export interface components {
          *       ``replaces`` is also set on ``coupon_applied`` after a confirmed replace.
          */
         RedeemCouponResponseSchema: {
+            /** Code */
+            code?: string | null;
+            coupon?: components["schemas"]["CouponInfo"] | null;
             /** Customer Id */
             customer_id: string;
-            /** Payment Url */
-            payment_url?: string | null;
+            /** Eligible Plan Ids */
+            eligible_plan_ids?: string[] | null;
+            /** Entitlements Granted */
+            entitlements_granted?: components["schemas"]["GrantedEntitlementSchema"][] | null;
             /**
              * Kind
              * @enum {string}
              */
             kind: "feature_grant" | "coupon" | "coupon_applied" | "coupon_pending" | "coupon_replace_required";
-            /** Entitlements Granted */
-            entitlements_granted?: components["schemas"]["GrantedEntitlementSchema"][] | null;
+            /** Payment Url */
+            payment_url?: string | null;
             /** Plan Id */
             plan_id?: string | null;
-            /** Code */
-            code?: string | null;
-            /** Eligible Plan Ids */
-            eligible_plan_ids?: string[] | null;
-            coupon?: components["schemas"]["CouponInfo"] | null;
             /** Replaces */
             replaces?: components["schemas"]["CouponInfo"][] | null;
         };
@@ -6137,10 +6137,10 @@ export interface components {
          * @description Detail view of a single provider-side agent, including its system prompt.
          */
         RemoteAgentDetail: {
-            /** Remote Id */
-            remote_id: string;
             /** Name */
             name?: string | null;
+            /** Remote Id */
+            remote_id: string;
             /** System Prompt */
             system_prompt?: string | null;
         };
@@ -6159,10 +6159,10 @@ export interface components {
          * @description A single provider-side agent as shown in the wizard's picker list.
          */
         RemoteAgentSummary: {
-            /** Remote Id */
-            remote_id: string;
             /** Name */
             name?: string | null;
+            /** Remote Id */
+            remote_id: string;
         };
         /**
          * RemoteCallCountResponse
@@ -6175,10 +6175,10 @@ export interface components {
          *     back its call history goes.
          */
         RemoteCallCountResponse: {
-            /** Count */
-            count: number;
             /** Capped */
             capped: boolean;
+            /** Count */
+            count: number;
             /** Window Days */
             window_days: number;
         };
@@ -6188,15 +6188,11 @@ export interface components {
          */
         ReplayRunDetailItem: {
             /**
-             * Id
-             * @description ID of the replay run.
+             * Analysis Failed Count
+             * @description Number of calls that arrived but whose evals never came back.
+             * @default 0
              */
-            id: number;
-            /**
-             * Status
-             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
-             */
-            status: string;
+            analysis_failed_count?: number;
             /**
              * Created At
              * Format: date-time
@@ -6204,10 +6200,21 @@ export interface components {
              */
             created_at: string;
             /**
+             * Evals Expected
+             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
+             * @default true
+             */
+            evals_expected?: boolean;
+            /**
              * Execution Completed At
              * @description When every call finished executing. Null while calls are still in progress. The run can remain `running` or `analyzing` after this while calls are reported and evaluated.
              */
             execution_completed_at?: string | null;
+            /**
+             * Failed Count
+             * @description Number of calls that failed their evals.
+             */
+            failed_count: number;
             /**
              * Failure Reason
              * @description Explanation of why the run failed. Null if it did not fail.
@@ -6219,10 +6226,26 @@ export interface components {
              */
             generated_count: number;
             /**
-             * Voice Clip Sets
-             * @description Voice clip sets played by the run.
+             * Id
+             * @description ID of the replay run.
              */
-            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
+            id: number;
+            /**
+             * In Progress Count
+             * @description Number of calls still waiting for results (not yet finished or evaluated).
+             */
+            in_progress_count: number;
+            /**
+             * Passed Count
+             * @description Number of calls that passed their evals.
+             */
+            passed_count: number;
+            /**
+             * Ran Count
+             * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
+             * @default 0
+             */
+            ran_count?: number;
             /**
              * Replay Repeat Count
              * @description Number of times each clip set was replayed.
@@ -6236,37 +6259,20 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Evals Expected
-             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
-             * @default true
-             */
-            evals_expected?: boolean;
-            /**
              * Selected Evals
              * @description The evals the calls are graded with. Empty if none were selected.
              */
             selected_evals: components["schemas"]["CriteriaItem"][];
             /**
-             * Passed Count
-             * @description Number of calls that passed their evals.
+             * Simulation Calls
+             * @description The replayed calls in the run, one per clip set and repetition.
              */
-            passed_count: number;
+            simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /**
-             * Failed Count
-             * @description Number of calls that failed their evals.
+             * Status
+             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
              */
-            failed_count: number;
-            /**
-             * In Progress Count
-             * @description Number of calls still waiting for results (not yet finished or evaluated).
-             */
-            in_progress_count: number;
-            /**
-             * Ran Count
-             * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
-             * @default 0
-             */
-            ran_count?: number;
+            status: string;
             /**
              * Unreported Count
              * @description Number of calls that completed but whose call data never arrived.
@@ -6274,32 +6280,16 @@ export interface components {
              */
             unreported_count?: number;
             /**
-             * Analysis Failed Count
-             * @description Number of calls that arrived but whose evals never came back.
-             * @default 0
+             * Voice Clip Sets
+             * @description Voice clip sets played by the run.
              */
-            analysis_failed_count?: number;
-            /**
-             * Simulation Calls
-             * @description The replayed calls in the run, one per clip set and repetition.
-             */
-            simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
+            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
         };
         /**
          * ReplayRunsDetailResponse
          * @description A page of replay runs with their replayed calls and results.
          */
         ReplayRunsDetailResponse: {
-            /**
-             * Replay Runs
-             * @description Runs on this page, newest first.
-             */
-            replay_runs: components["schemas"]["ReplayRunDetailItem"][];
-            /**
-             * Total
-             * @description Total number of runs matching the request, across all pages.
-             */
-            total: number;
             /**
              * Page
              * @description Current page number, starting at 1.
@@ -6310,6 +6300,16 @@ export interface components {
              * @description Maximum number of runs per page.
              */
             page_size: number;
+            /**
+             * Replay Runs
+             * @description Runs on this page, newest first.
+             */
+            replay_runs: components["schemas"]["ReplayRunDetailItem"][];
+            /**
+             * Total
+             * @description Total number of runs matching the request, across all pages.
+             */
+            total: number;
             /**
              * Total Pages
              * @description Total number of pages.
@@ -6322,17 +6322,11 @@ export interface components {
          */
         ReplaySettingsInput: {
             /**
-             * Silence Ms
-             * @description Milliseconds of trailing silence that mark the end of the agent's turn (200-3000). Defaults to 700.
-             * @example 700
+             * Initial Agent Wait Ms
+             * @description Maximum milliseconds to wait for the agent's opening turn (1000-60000). Defaults to 12000.
+             * @example 12000
              */
-            silence_ms?: number | null;
-            /**
-             * Min Speech Ms
-             * @description Milliseconds of speech required in a turn before trailing silence can end it (50-2000). Defaults to 250.
-             * @example 250
-             */
-            min_speech_ms?: number | null;
+            initial_agent_wait_ms?: number | null;
             /**
              * Inter Turn Delay Ms
              * @description Pause in milliseconds before the caller replies after the agent's turn (0-5000). Defaults to 300.
@@ -6346,11 +6340,17 @@ export interface components {
              */
             max_wait_ms?: number | null;
             /**
-             * Initial Agent Wait Ms
-             * @description Maximum milliseconds to wait for the agent's opening turn (1000-60000). Defaults to 12000.
-             * @example 12000
+             * Min Speech Ms
+             * @description Milliseconds of speech required in a turn before trailing silence can end it (50-2000). Defaults to 250.
+             * @example 250
              */
-            initial_agent_wait_ms?: number | null;
+            min_speech_ms?: number | null;
+            /**
+             * Silence Ms
+             * @description Milliseconds of trailing silence that mark the end of the agent's turn (200-3000). Defaults to 700.
+             * @example 700
+             */
+            silence_ms?: number | null;
         };
         /**
          * RetentionPolicyMetadata
@@ -6377,12 +6377,10 @@ export interface components {
          */
         RuleConditionGroup: {
             /**
-             * Type
-             * @description Marks this node as a group of conditions.
-             * @default group
-             * @constant
+             * Children
+             * @description Nested groups or predicates.
              */
-            type?: "group";
+            children: (components["schemas"]["RuleConditionGroup"] | components["schemas"]["RuleConditionPredicate"])[];
             /**
              * Id
              * @description Optional identifier for this node.
@@ -6391,10 +6389,12 @@ export interface components {
             /** @description Whether all children must match (`AND`) or any (`OR`). */
             op: components["schemas"]["LogicalOperator"];
             /**
-             * Children
-             * @description Nested groups or predicates.
+             * Type
+             * @description Marks this node as a group of conditions.
+             * @default group
+             * @constant
              */
-            children: (components["schemas"]["RuleConditionGroup"] | components["schemas"]["RuleConditionPredicate"])[];
+            type?: "group";
         };
         /**
          * RuleConditionPredicate
@@ -6402,12 +6402,11 @@ export interface components {
          */
         RuleConditionPredicate: {
             /**
-             * Type
-             * @description Marks this node as a single condition.
-             * @default predicate
-             * @constant
+             * Field Id
+             * @description ID of the eval, voice metric or data extraction field, as the `id` of the item in List Rule Conditions. Send together with `source`.
+             * @example 12
              */
-            type?: "predicate";
+            field_id?: number | null;
             /**
              * Id
              * @description Optional identifier for this node.
@@ -6423,18 +6422,6 @@ export interface components {
              */
             lhs: string;
             /**
-             * Source
-             * @description Kind of item `field_id` points at: `eval`, `voice_metric` or `data_extraction_field`, as the `source_type` of the item's group in List Rule Conditions. Not used for latency percentiles or Extra Metadata. Send together with `field_id`.
-             * @example eval
-             */
-            source?: ("eval" | "voice_metric" | "data_extraction_field") | null;
-            /**
-             * Field Id
-             * @description ID of the eval, voice metric or data extraction field, as the `id` of the item in List Rule Conditions. Send together with `source`.
-             * @example 12
-             */
-            field_id?: number | null;
-            /**
              * @description How to compare `lhs` to `rhs`: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `exists`, `not_exists`, `contains` or `starts_with`. These are words, not the symbols List Rule Conditions returns (`=` is `eq`, `!=` is `neq`, `>` is `gt`, `>=` is `gte`, `<` is `lt`, `<=` is `lte`). `eq`, `neq`, `contains` and `starts_with` on text ignore case. List Rule Conditions shows which operators each item accepts.
              * @example eq
              */
@@ -6444,6 +6431,19 @@ export interface components {
              * @description Value to compare against. Omit for `exists` and `not_exists`.
              */
             rhs?: unknown | null;
+            /**
+             * Source
+             * @description Kind of item `field_id` points at: `eval`, `voice_metric` or `data_extraction_field`, as the `source_type` of the item's group in List Rule Conditions. Not used for latency percentiles or Extra Metadata. Send together with `field_id`.
+             * @example eval
+             */
+            source?: ("eval" | "voice_metric" | "data_extraction_field") | null;
+            /**
+             * Type
+             * @description Marks this node as a single condition.
+             * @default predicate
+             * @constant
+             */
+            type?: "predicate";
         };
         /**
          * RuleCreate
@@ -6566,12 +6566,11 @@ export interface components {
              */
             condition_tree: components["schemas"]["RuleConditionGroup"];
             /**
-             * Output Type
-             * @description Whether a matching call gets a label or a red flag. Any other value returns a 422.
-             * @example red_flag
-             * @enum {string}
+             * Output Description
+             * @description Optional note explaining what this rule is for.
+             * @example Flags calls where the required disclosure was missed.
              */
-            output_type: "label" | "red_flag";
+            output_description?: string | null;
             /**
              * Output Tag Name
              * @description Tag applied to matching calls. Appears on the call record and as a value in the `labels_and_redflags` filter on List Calls.
@@ -6579,11 +6578,12 @@ export interface components {
              */
             output_tag_name: string;
             /**
-             * Output Description
-             * @description Optional note explaining what this rule is for.
-             * @example Flags calls where the required disclosure was missed.
+             * Output Type
+             * @description Whether a matching call gets a label or a red flag. Any other value returns a 422.
+             * @example red_flag
+             * @enum {string}
              */
-            output_description?: string | null;
+            output_type: "label" | "red_flag";
             /**
              * @description `paused` rules don't run on new calls. Defaults to `active`.
              * @default active
@@ -6596,11 +6596,6 @@ export interface components {
          * @description Response schema for a rule.
          */
         RuleResponse: {
-            /**
-             * Id
-             * @description Tuner's ID for this rule.
-             */
-            id: number;
             /**
              * Condition Tree
              * @description The rule's conditions: a group of predicates and nested groups, in the format `condition_tree` takes when you create or update a rule. For an eval, a voice metric or a data extraction field, `lhs` is the item's current name. `null` only for an older rule whose condition could not be converted; it never matches.
@@ -6629,26 +6624,31 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Output Type
-             * @description Whether matching calls get a label or a red flag.
+             * Created At
+             * Format: date-time
+             * @description When the rule was created.
              */
-            output_type: string;
+            created_at: string;
             /**
-             * Output Tag Name
-             * @description Tag applied to matching calls.
+             * Id
+             * @description Tuner's ID for this rule.
              */
-            output_tag_name: string;
+            id: number;
             /**
              * Output Description
              * @description Note explaining what this rule is for.
              */
             output_description?: string | null;
             /**
-             * State
-             * @description `active` when the rule runs on new calls, `paused` when it doesn't.
-             * @example active
+             * Output Tag Name
+             * @description Tag applied to matching calls.
              */
-            state: string;
+            output_tag_name: string;
+            /**
+             * Output Type
+             * @description Whether matching calls get a label or a red flag.
+             */
+            output_type: string;
             /**
              * Paused Reason
              * @description Why Tuner paused this rule, such as `Eval deleted` when the eval its condition used was deleted. Null when it is active or a person paused it.
@@ -6656,11 +6656,11 @@ export interface components {
              */
             paused_reason?: string | null;
             /**
-             * Created At
-             * Format: date-time
-             * @description When the rule was created.
+             * State
+             * @description `active` when the rule runs on new calls, `paused` when it doesn't.
+             * @example active
              */
-            created_at: string;
+            state: string;
             /**
              * Updated At
              * Format: date-time
@@ -6772,11 +6772,11 @@ export interface components {
              */
             condition_tree?: components["schemas"]["RuleConditionGroup"] | null;
             /**
-             * Output Type
-             * @description Whether a matching call gets a label or a red flag. Any other value returns a 422.
-             * @enum {unknown}
+             * Output Description
+             * @description Optional note explaining what this rule is for. Leave it out to keep the current note. Send `null` to remove it (it is then returned as `null`), or `""` to set it to an empty string.
+             * @example Flags calls where the required disclosure was missed.
              */
-            output_type?: "label" | "red_flag";
+            output_description?: string | null;
             /**
              * Output Tag Name
              * @description Tag applied to matching calls.
@@ -6784,11 +6784,11 @@ export interface components {
              */
             output_tag_name?: string | null;
             /**
-             * Output Description
-             * @description Optional note explaining what this rule is for. Leave it out to keep the current note. Send `null` to remove it (it is then returned as `null`), or `""` to set it to an empty string.
-             * @example Flags calls where the required disclosure was missed.
+             * Output Type
+             * @description Whether a matching call gets a label or a red flag. Any other value returns a 422.
+             * @enum {unknown}
              */
-            output_description?: string | null;
+            output_type?: "label" | "red_flag";
             /**
              * @description `paused` rules don't run on new calls. A rule Tuner paused (it has a `paused_reason`) needs a working condition before it can be set back to `active`.
              * @example paused
@@ -6826,24 +6826,11 @@ export interface components {
          */
         ScenarioAuthoringRequest: {
             /**
-             * Name
-             * @description Name of the scenario, up to 200 characters.
-             * @example Customer disputes a charge
+             * First Line
+             * @description Exact opening line the caller speaks first, up to 500 characters.
+             * @example Hi, I think I was charged twice for my last order.
              */
-            name: string;
-            /**
-             * Type
-             * @description `routine` for an ordinary call or `pressure` for an adversarial, stress-testing call.
-             * @example routine
-             * @enum {string}
-             */
-            type: "routine" | "pressure";
-            /**
-             * Situation
-             * @description Description of the situation the simulated caller is in, up to 8000 characters. Must not be blank.
-             * @example The caller was charged twice for the same order and wants one charge refunded.
-             */
-            situation: string;
+            first_line?: string | null;
             /**
              * Goal
              * @description What the caller is trying to achieve, up to 2000 characters.
@@ -6851,25 +6838,29 @@ export interface components {
              */
             goal?: string | null;
             /**
-             * First Line
-             * @description Exact opening line the caller speaks first, up to 500 characters.
-             * @example Hi, I think I was charged twice for my last order.
+             * Intent Id
+             * @description ID of the call intent this scenario exercises. Must belong to this agent.
+             * @example 8
              */
-            first_line?: string | null;
+            intent_id?: number | null;
+            /**
+             * Name
+             * @description Name of the scenario, up to 200 characters.
+             * @example Customer disputes a charge
+             */
+            name: string;
+            /**
+             * Situation
+             * @description Description of the situation the simulated caller is in, up to 8000 characters. Must not be blank.
+             * @example The caller was charged twice for the same order and wants one charge refunded.
+             */
+            situation: string;
             /**
              * Stop Condition
              * @description When the caller should hang up, up to 1000 characters.
              * @example The agent confirms the refund or says it cannot be done.
              */
             stop_condition?: string | null;
-            /**
-             * Intent Id
-             * @description ID of the call intent this scenario exercises. Must belong to this agent.
-             * @example 8
-             */
-            intent_id?: number | null;
-            /** @description The eval or call outcome this scenario targets. For type `eval`, `value` must be the name of one of the agent's `PASS_FAIL` evals. */
-            target_ai_evaluation?: components["schemas"]["TargetAiEvaluation"] | null;
             /**
              * Tags
              * @description Free-form labels for the scenario, up to 20 tags of 50 characters each.
@@ -6879,6 +6870,15 @@ export interface components {
              *     ]
              */
             tags?: string[] | null;
+            /** @description The eval or call outcome this scenario targets. For type `eval`, `value` must be the name of one of the agent's `PASS_FAIL` evals. */
+            target_ai_evaluation?: components["schemas"]["TargetAiEvaluation"] | null;
+            /**
+             * Type
+             * @description `routine` for an ordinary call or `pressure` for an adversarial, stress-testing call.
+             * @example routine
+             * @enum {string}
+             */
+            type: "routine" | "pressure";
         };
         /**
          * ScenarioExecutionItem
@@ -6886,10 +6886,43 @@ export interface components {
          */
         ScenarioExecutionItem: {
             /**
-             * Simulation Run Id
-             * @description ID of the simulation run the execution belongs to.
+             * Analysis Failed
+             * @description Whether the call arrived but its evals never came back.
+             * @default false
              */
-            simulation_run_id: number;
+            analysis_failed?: boolean;
+            /**
+             * Analysis Stopped
+             * @description Whether the call outcome is one that stops further analysis.
+             */
+            analysis_stopped: boolean;
+            /**
+             * Call Id
+             * @description ID of the resulting call, once it has reached Tuner. Null until then.
+             */
+            call_id: number | null;
+            /**
+             * Duration
+             * @description Duration of the simulated call, in minutes.
+             */
+            duration: number | null;
+            /**
+             * Evals
+             * @description Eval results for the call, if any.
+             */
+            evals?: components["schemas"]["SimulationCallEvalResult"][];
+            /**
+             * Evals Expected
+             * @description Whether calls in the owning run are expected to be graded by evals.
+             */
+            evals_expected: boolean;
+            /**
+             * Failed Evals
+             * @description The evals that made the verdict `failed`. For an adversarial scenario with a target eval, only that eval. Empty for every other verdict.
+             */
+            failed_evals: components["schemas"]["FailedEval"][];
+            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
+            failure_category: components["schemas"]["FailureCategory"] | null;
             /**
              * Run Created At
              * Format: date-time
@@ -6897,66 +6930,33 @@ export interface components {
              */
             run_created_at: string;
             /**
+             * Simulation Run Id
+             * @description ID of the simulation run the execution belongs to.
+             */
+            simulation_run_id: number;
+            /**
              * Status
              * @description Status of the simulated call: `initiated`, `in_progress`, `completed` or `failed`.
              */
             status: string | null;
-            /**
-             * Duration
-             * @description Duration of the simulated call, in minutes.
-             */
-            duration: number | null;
-            /**
-             * Call Id
-             * @description ID of the resulting call, once it has reached Tuner. Null until then.
-             */
-            call_id: number | null;
-            /**
-             * Analysis Stopped
-             * @description Whether the call outcome is one that stops further analysis.
-             */
-            analysis_stopped: boolean;
-            /**
-             * Unreported
-             * @description Whether the call completed but no call data ever arrived.
-             * @default false
-             */
-            unreported?: boolean;
-            /**
-             * Analysis Failed
-             * @description Whether the call arrived but its evals never came back.
-             * @default false
-             */
-            analysis_failed?: boolean;
             /**
              * Target Eval Label
              * @description Name of the eval or call outcome the scenario targeted in this execution.
              */
             target_eval_label: string | null;
             /**
-             * Evals
-             * @description Eval results for the call, if any.
-             */
-            evals?: components["schemas"]["SimulationCallEvalResult"][];
-            /**
              * Type
              * @description Type of this execution, such as `functional` or `adversarial`. Not the scenario's own `routine` or `pressure` type.
              */
             type: string;
             /**
-             * Evals Expected
-             * @description Whether calls in the owning run are expected to be graded by evals.
+             * Unreported
+             * @description Whether the call completed but no call data ever arrived.
+             * @default false
              */
-            evals_expected: boolean;
+            unreported?: boolean;
             /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
-            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
-            failure_category: components["schemas"]["FailureCategory"] | null;
-            /**
-             * Failed Evals
-             * @description The evals that made the verdict `failed`. For an adversarial scenario with a target eval, only that eval. Empty for every other verdict.
-             */
-            failed_evals: components["schemas"]["FailedEval"][];
         };
         /**
          * ScenarioExecutionListResponse
@@ -6986,12 +6986,11 @@ export interface components {
          */
         ScenarioPromptPreviewRequest: {
             /**
-             * Situation
-             * @description Situation the simulated caller is in, up to 8000 characters. May be empty.
-             * @default
-             * @example The caller was charged twice for the same order and wants one charge refunded.
+             * First Line
+             * @description Exact opening line the caller speaks first, up to 500 characters.
+             * @example Hi, I think I was charged twice for my last order.
              */
-            situation?: string;
+            first_line?: string | null;
             /**
              * Goal
              * @description What the caller is trying to achieve, up to 2000 characters.
@@ -6999,11 +6998,12 @@ export interface components {
              */
             goal?: string | null;
             /**
-             * First Line
-             * @description Exact opening line the caller speaks first, up to 500 characters.
-             * @example Hi, I think I was charged twice for my last order.
+             * Situation
+             * @description Situation the simulated caller is in, up to 8000 characters. May be empty.
+             * @default
+             * @example The caller was charged twice for the same order and wants one charge refunded.
              */
-            first_line?: string | null;
+            situation?: string;
             /**
              * Stop Condition
              * @description When the caller should hang up, up to 1000 characters.
@@ -7017,15 +7017,15 @@ export interface components {
          */
         ScenarioPromptPreviewResponse: {
             /**
-             * Sections
-             * @description The prompt split into labelled parts. Optional fields left empty are omitted.
-             */
-            sections: components["schemas"]["ScenarioPromptPreviewSection"][];
-            /**
              * Prompt
              * @description The full prompt text, as it would be used for a simulated call.
              */
             prompt: string;
+            /**
+             * Sections
+             * @description The prompt split into labelled parts. Optional fields left empty are omitted.
+             */
+            sections: components["schemas"]["ScenarioPromptPreviewSection"][];
         };
         /**
          * ScenarioPromptPreviewSection
@@ -7055,35 +7055,48 @@ export interface components {
          */
         ScenarioResponse: {
             /**
-             * Id
-             * @description Scenario ID.
-             */
-            id: number;
-            /**
              * Agent Id
              * @description ID of the agent the scenario belongs to.
              */
             agent_id: number;
             /**
-             * Workspace Id
-             * @description ID of the workspace the scenario belongs to.
+             * Created At
+             * Format: date-time
+             * @description When the scenario was created.
              */
-            workspace_id: number;
+            created_at: string;
             /**
-             * Name
-             * @description Name of the scenario.
+             * First Line
+             * @description Exact opening line the caller speaks first.
              */
-            name: string;
-            /**
-             * Type
-             * @description `routine` or `pressure`.
-             */
-            type: string;
+            first_line: string | null;
             /**
              * Format
              * @description How the caller follows the scenario. Currently always `freeform`.
              */
             format: string;
+            /**
+             * Goal
+             * @description What the caller is trying to achieve.
+             */
+            goal: string | null;
+            /**
+             * Id
+             * @description Scenario ID.
+             */
+            id: number;
+            /**
+             * Intent Id
+             * @description ID of the call intent the scenario exercises.
+             */
+            intent_id: number | null;
+            /** @description The scenario's most recent execution. Only populated by List Scenarios; null if the scenario has never been run. */
+            last_run?: components["schemas"]["ScenarioExecutionItem"] | null;
+            /**
+             * Name
+             * @description Name of the scenario.
+             */
+            name: string;
             /**
              * Origin
              * @description How the scenario entered the library: `manual` or `ai_saved`.
@@ -7095,25 +7108,20 @@ export interface components {
              */
             situation: string;
             /**
-             * Goal
-             * @description What the caller is trying to achieve.
+             * Source Run Id
+             * @description ID of the simulation run the scenario was saved from, if any.
              */
-            goal: string | null;
-            /**
-             * First Line
-             * @description Exact opening line the caller speaks first.
-             */
-            first_line: string | null;
+            source_run_id: number | null;
             /**
              * Stop Condition
              * @description When the caller should hang up.
              */
             stop_condition: string | null;
             /**
-             * Intent Id
-             * @description ID of the call intent the scenario exercises.
+             * Tags
+             * @description Free-form labels on the scenario.
              */
-            intent_id: number | null;
+            tags: string[] | null;
             /**
              * Target Ai Evaluation
              * @description The eval or call outcome the scenario targets, as `type` and `value`.
@@ -7122,29 +7130,21 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Tags
-             * @description Free-form labels on the scenario.
+             * Type
+             * @description `routine` or `pressure`.
              */
-            tags: string[] | null;
-            /**
-             * Source Run Id
-             * @description ID of the simulation run the scenario was saved from, if any.
-             */
-            source_run_id: number | null;
-            /**
-             * Created At
-             * Format: date-time
-             * @description When the scenario was created.
-             */
-            created_at: string;
+            type: string;
             /**
              * Updated At
              * Format: date-time
              * @description When the scenario was last updated.
              */
             updated_at: string;
-            /** @description The scenario's most recent execution. Only populated by List Scenarios; null if the scenario has never been run. */
-            last_run?: components["schemas"]["ScenarioExecutionItem"] | null;
+            /**
+             * Workspace Id
+             * @description ID of the workspace the scenario belongs to.
+             */
+            workspace_id: number;
         };
         /**
          * ScenarioSaveSelection
@@ -7152,17 +7152,17 @@ export interface components {
          */
         ScenarioSaveSelection: {
             /**
-             * Simulation Scenario Id
-             * @description ID of the generated scenario to save, as returned in the `id` field of the run's scenarios list. This is not a library scenario ID.
-             * @example 101
-             */
-            simulation_scenario_id: number;
-            /**
              * Name
              * @description Name for the new library scenario, up to 200 characters. Must not be blank.
              * @example Customer disputes a charge
              */
             name: string;
+            /**
+             * Simulation Scenario Id
+             * @description ID of the generated scenario to save, as returned in the `id` field of the run's scenarios list. This is not a library scenario ID.
+             * @example 101
+             */
+            simulation_scenario_id: number;
         };
         /**
          * SimulationCallDetailResponse
@@ -7170,47 +7170,11 @@ export interface components {
          */
         SimulationCallDetailResponse: {
             /**
-             * Id
-             * @description ID of the simulated call. Falls back to the scenario ID if the call has not been placed yet.
+             * Analysis Failed
+             * @description Whether the call arrived but its evals never came back.
+             * @default false
              */
-            id: number;
-            /**
-             * Scenario Id
-             * @description ID of the scenario the call was placed for.
-             */
-            scenario_id: number;
-            /**
-             * Type
-             * @description Scenario type, such as `functional`, `adversarial` or `recorded_clips`.
-             */
-            type: string;
-            /**
-             * Status
-             * @description Status of the simulated call: `initiated`, `in_progress`, `completed` or `failed`. Null if the call has not been placed yet.
-             */
-            status: string | null;
-            /**
-             * Duration
-             * @description Duration of the simulated call, in minutes. Null if not available.
-             */
-            duration: number | null;
-            /** @description Call outcome detected on the call. Null if none was detected. */
-            outcome: components["schemas"]["OutcomeDetail"] | null;
-            /**
-             * Intent
-             * @description Call intent detected on the call. Null if none was detected.
-             */
-            intent: string | null;
-            /**
-             * Evals
-             * @description Eval results for the call. Empty until evals have been reported.
-             */
-            evals: components["schemas"]["SimulationCallEvalResult"][];
-            /**
-             * Call Id
-             * @description ID of the resulting call, once it has reached Tuner. Null until then.
-             */
-            call_id: number | null;
+            analysis_failed?: boolean;
             /**
              * Analysis Stopped
              * @description Whether the call outcome is one that stops further analysis.
@@ -7218,36 +7182,51 @@ export interface components {
              */
             analysis_stopped?: boolean;
             /**
-             * Unreported
-             * @description Whether the call completed but no call data ever arrived.
-             * @default false
+             * Call Id
+             * @description ID of the resulting call, once it has reached Tuner. Null until then.
              */
-            unreported?: boolean;
-            /**
-             * Analysis Failed
-             * @description Whether the call arrived but its evals never came back.
-             * @default false
-             */
-            analysis_failed?: boolean;
-            /** @description Why the call, or its scenario before any call was placed, failed. Null unless it failed. */
-            failure?: components["schemas"]["SimulationCallFailure"] | null;
-            /**
-             * Target Eval Label
-             * @description Name of the eval or call outcome the scenario targeted in this call.
-             */
-            target_eval_label?: string | null;
-            /**
-             * Target Ai Evaluation
-             * @description The eval or call outcome the scenario targets. Null if it has none.
-             */
-            target_ai_evaluation?: {
-                [key: string]: unknown;
-            } | null;
+            call_id: number | null;
             /**
              * Clip Set Name
              * @description Name of the voice clip set played. Null for non-replay runs.
              */
             clip_set_name?: string | null;
+            /**
+             * Duration
+             * @description Duration of the simulated call, in minutes. Null if not available.
+             */
+            duration: number | null;
+            /**
+             * Evals
+             * @description Eval results for the call. Empty until evals have been reported.
+             */
+            evals: components["schemas"]["SimulationCallEvalResult"][];
+            /**
+             * Failed Evals
+             * @description The evals that made the verdict `failed`. For an adversarial scenario with a target eval, only that eval. Empty for every other verdict.
+             */
+            failed_evals: components["schemas"]["FailedEval"][];
+            /** @description Why the call, or its scenario before any call was placed, failed. Null unless it failed. */
+            failure?: components["schemas"]["SimulationCallFailure"] | null;
+            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
+            failure_category: components["schemas"]["FailureCategory"] | null;
+            /**
+             * Id
+             * @description ID of the simulated call. Falls back to the scenario ID if the call has not been placed yet.
+             */
+            id: number;
+            /**
+             * Intent
+             * @description Call intent detected on the call. Null if none was detected.
+             */
+            intent: string | null;
+            /** @description Call outcome detected on the call. Null if none was detected. */
+            outcome: components["schemas"]["OutcomeDetail"] | null;
+            /**
+             * Persona
+             * @description Label of the scenario: the generated persona, or the library scenario's name for runs from saved scenarios. Null if not available, and for replay runs.
+             */
+            persona?: string | null;
             /**
              * Repetition
              * @description 1-based repetition of the clip set that this call replayed. Null for non-replay runs.
@@ -7259,25 +7238,51 @@ export interface components {
              */
             saved_scenario_id?: number | null;
             /**
-             * Persona
-             * @description Label of the scenario: the generated persona, or the library scenario's name for runs from saved scenarios. Null if not available, and for replay runs.
+             * Scenario Id
+             * @description ID of the scenario the call was placed for.
              */
-            persona?: string | null;
+            scenario_id: number;
+            /**
+             * Status
+             * @description Status of the simulated call: `initiated`, `in_progress`, `completed` or `failed`. Null if the call has not been placed yet.
+             */
+            status: string | null;
+            /**
+             * Target Ai Evaluation
+             * @description The eval or call outcome the scenario targets. Null if it has none.
+             */
+            target_ai_evaluation?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Target Eval Label
+             * @description Name of the eval or call outcome the scenario targeted in this call.
+             */
+            target_eval_label?: string | null;
+            /**
+             * Type
+             * @description Scenario type, such as `functional`, `adversarial` or `recorded_clips`.
+             */
+            type: string;
+            /**
+             * Unreported
+             * @description Whether the call completed but no call data ever arrived.
+             * @default false
+             */
+            unreported?: boolean;
             /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
-            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
-            failure_category: components["schemas"]["FailureCategory"] | null;
-            /**
-             * Failed Evals
-             * @description The evals that made the verdict `failed`. For an adversarial scenario with a target eval, only that eval. Empty for every other verdict.
-             */
-            failed_evals: components["schemas"]["FailedEval"][];
         };
         /**
          * SimulationCallEvalResult
          * @description The result of one eval on a simulated call.
          */
         SimulationCallEvalResult: {
+            /**
+             * Evidence
+             * @description Explanation of the result. Null if none was given.
+             */
+            evidence: string | null;
             /**
              * Label
              * @description Name of the eval.
@@ -7288,23 +7293,18 @@ export interface components {
              * @description Result of the eval. Null if it produced no value.
              */
             value: string | null;
-            /**
-             * Evidence
-             * @description Explanation of the result. Null if none was given.
-             */
-            evidence: string | null;
         };
         /**
          * SimulationCallFailure
          * @description Why a simulation call failed, in words safe to show a customer.
          */
         SimulationCallFailure: {
+            /** Message */
+            message: string;
             /** Reason */
             reason: string;
             /** Title */
             title: string;
-            /** Message */
-            message: string;
         };
         /**
          * SimulationNoise
@@ -7312,27 +7312,21 @@ export interface components {
          */
         SimulationNoise: {
             /**
-             * Name
-             * @description Noise environment display name
-             */
-            name: string;
-            /**
              * Intensity
              * @description Noise gain applied for the run
              */
             intensity?: number | null;
+            /**
+             * Name
+             * @description Noise environment display name
+             */
+            name: string;
         };
         /**
          * SimulationProfileInput
          * @description Input schema for creating or updating a simulation profile.
          */
         SimulationProfileInput: {
-            /**
-             * Name
-             * @description Name of the profile, up to 255 characters. Must be unique for the agent.
-             * @example Returning customer
-             */
-            name: string;
             /**
              * Fields
              * @description Facts about the simulated caller, as key-value pairs. Up to 50 keys; each key must match `^[a-zA-Z_][a-zA-Z0-9_]*$` and each value can be up to 1000 characters.
@@ -7344,6 +7338,12 @@ export interface components {
             fields?: {
                 [key: string]: string;
             };
+            /**
+             * Name
+             * @description Name of the profile, up to 255 characters. Must be unique for the agent.
+             * @example Returning customer
+             */
+            name: string;
         };
         /**
          * SimulationProfileListResponse
@@ -7359,20 +7359,16 @@ export interface components {
          */
         SimulationProfileResponse: {
             /**
-             * Id
-             * @description Profile ID.
-             */
-            id: number;
-            /**
              * Agent Id
              * @description ID of the agent the profile belongs to.
              */
             agent_id: number;
             /**
-             * Name
-             * @description Name of the profile.
+             * Created At
+             * Format: date-time
+             * @description When the profile was created.
              */
-            name: string;
+            created_at: string;
             /**
              * Fields
              * @description Facts about the simulated caller, as key-value pairs.
@@ -7381,11 +7377,15 @@ export interface components {
                 [key: string]: string;
             };
             /**
-             * Created At
-             * Format: date-time
-             * @description When the profile was created.
+             * Id
+             * @description Profile ID.
              */
-            created_at: string;
+            id: number;
+            /**
+             * Name
+             * @description Name of the profile.
+             */
+            name: string;
             /**
              * Updated At
              * Format: date-time
@@ -7415,15 +7415,22 @@ export interface components {
          */
         SimulationReplayInfo: {
             /**
-             * Voice Clip Set Id
-             * @description Clip set replayed into this call
+             * Clip Count
+             * @description Number of caller-turn clips played back
              */
-            voice_clip_set_id: number;
+            clip_count: number;
             /**
-             * Voice Clip Set Name
-             * @description Clip set display name at the time of the run
+             * Repetition
+             * @description 1-based repetition index of this call within its clip set
              */
-            voice_clip_set_name?: string | null;
+            repetition?: number | null;
+            /**
+             * Replay Settings
+             * @description Replay tuning knobs frozen onto the run
+             */
+            replay_settings?: {
+                [key: string]: unknown;
+            };
             /**
              * Source Call Id
              * @description Production call the clips were sliced from
@@ -7434,30 +7441,23 @@ export interface components {
              * @description Channel layout of the source recording
              */
             source_channel_mode?: ("multi_channel" | "mono") | null;
-            /**
-             * Repetition
-             * @description 1-based repetition index of this call within its clip set
-             */
-            repetition?: number | null;
-            /**
-             * Clip Count
-             * @description Number of caller-turn clips played back
-             */
-            clip_count: number;
-            /**
-             * Replay Settings
-             * @description Replay tuning knobs frozen onto the run
-             */
-            replay_settings?: {
-                [key: string]: unknown;
-            };
+            /** @description How accurately the agent's speech-to-text heard the clips. Null when the call has no score (not scorable, or not scored yet) */
+            transcription_accuracy?: components["schemas"]["TranscriptionAccuracy"] | null;
             /**
              * Turn Timings
              * @description Per-turn timings, ordered by turn_index. Empty when the replay runtime's best-effort write of timings never landed -- never null and never an error.
              */
             turn_timings?: components["schemas"]["SimulationReplayTurnTiming"][];
-            /** @description How accurately the agent's speech-to-text heard the clips. Null when the call has no score (not scorable, or not scored yet) */
-            transcription_accuracy?: components["schemas"]["TranscriptionAccuracy"] | null;
+            /**
+             * Voice Clip Set Id
+             * @description Clip set replayed into this call
+             */
+            voice_clip_set_id: number;
+            /**
+             * Voice Clip Set Name
+             * @description Clip set display name at the time of the run
+             */
+            voice_clip_set_name?: string | null;
         };
         /**
          * SimulationReplayTurnTiming
@@ -7466,21 +7466,6 @@ export interface components {
          *     Recorded on a best-effort basis, so it can be missing.
          */
         SimulationReplayTurnTiming: {
-            /**
-             * Turn Index
-             * @description Zero-based position of the clip within the set
-             */
-            turn_index: number;
-            /**
-             * Clip Started Ms
-             * @description Offset into the call at which the clip started playing, in ms
-             */
-            clip_started_ms: number;
-            /**
-             * Clip Ended Ms
-             * @description Offset into the call at which the clip finished playing, in ms
-             */
-            clip_ended_ms: number;
             /**
              * Agent First Audio Ms
              * @description Offset at which the agent's first audio for this turn arrived. Null when the agent never spoke after this clip -- must not be coerced to 0.
@@ -7492,20 +7477,35 @@ export interface components {
              */
             agent_turn_ended_ms?: number | null;
             /**
-             * Waited Ms
-             * @description How long the replayer waited for the agent before playing the next clip
+             * Clip Ended Ms
+             * @description Offset into the call at which the clip finished playing, in ms
              */
-            waited_ms: number;
+            clip_ended_ms: number;
+            /**
+             * Clip Started Ms
+             * @description Offset into the call at which the clip started playing, in ms
+             */
+            clip_started_ms: number;
+            /**
+             * Overlapped
+             * @description True when the clip started while the agent was still speaking
+             */
+            overlapped: boolean;
+            /**
+             * Turn Index
+             * @description Zero-based position of the clip within the set
+             */
+            turn_index: number;
             /**
              * Wait Capped
              * @description True when the wait hit `max_wait_ms` instead of the agent finishing
              */
             wait_capped: boolean;
             /**
-             * Overlapped
-             * @description True when the clip started while the agent was still speaking
+             * Waited Ms
+             * @description How long the replayer waited for the agent before playing the next clip
              */
-            overlapped: boolean;
+            waited_ms: number;
         };
         /**
          * SimulationRunDetailItem
@@ -7513,15 +7513,23 @@ export interface components {
          */
         SimulationRunDetailItem: {
             /**
-             * Id
-             * @description ID of the simulation run.
+             * Adversarial Count
+             * @description Number of adversarial scenarios requested. Null for runs from saved scenarios.
              */
-            id: number;
+            adversarial_count: number | null;
             /**
-             * Status
-             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
+             * Analysis Failed Count
+             * @description Number of calls that arrived but whose evals never came back.
+             * @default 0
              */
-            status: string;
+            analysis_failed_count?: number;
+            /** @description The caller persona used. Null for replay runs. */
+            caller_persona: components["schemas"]["CallerPersonaResponse"] | null;
+            /**
+             * Caller Persona Id
+             * @description ID of the caller persona used. Null for replay runs.
+             */
+            caller_persona_id: number | null;
             /**
              * Created At
              * Format: date-time
@@ -7529,10 +7537,21 @@ export interface components {
              */
             created_at: string;
             /**
+             * Evals Expected
+             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
+             * @default true
+             */
+            evals_expected?: boolean;
+            /**
              * Execution Completed At
              * @description When every call finished executing. Null while calls are still in progress. The run can remain `running` or `analyzing` after this while calls are reported and evaluated.
              */
             execution_completed_at?: string | null;
+            /**
+             * Failed Count
+             * @description Number of calls that failed their evals.
+             */
+            failed_count: number;
             /**
              * Failure Reason
              * @description Explanation of why the run failed. Null if it did not fail.
@@ -7544,22 +7563,87 @@ export interface components {
              */
             functional_count: number | null;
             /**
-             * Adversarial Count
-             * @description Number of adversarial scenarios requested. Null for runs from saved scenarios.
-             */
-            adversarial_count: number | null;
-            /**
              * Generated Count
              * @description Number of test scenarios created so far.
              */
             generated_count: number;
             /**
-             * Caller Persona Id
-             * @description ID of the caller persona used. Null for replay runs.
+             * Id
+             * @description ID of the simulation run.
              */
-            caller_persona_id: number | null;
-            /** @description The caller persona used. Null for replay runs. */
-            caller_persona: components["schemas"]["CallerPersonaResponse"] | null;
+            id: number;
+            /**
+             * In Progress Count
+             * @description Number of calls still waiting for results (not yet finished or evaluated).
+             */
+            in_progress_count: number;
+            /** @description The background-noise environment used, if one was given. */
+            noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
+            /**
+             * Noise Environment Id
+             * @description ID of the background-noise environment used, if one was given.
+             */
+            noise_environment_id?: number | null;
+            /**
+             * Noise Intensity
+             * @description Gain applied to the background noise, if noise was used.
+             */
+            noise_intensity?: number | null;
+            /**
+             * Passed Count
+             * @description Number of calls that passed their evals.
+             */
+            passed_count: number;
+            /**
+             * Ran Count
+             * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
+             * @default 0
+             */
+            ran_count?: number;
+            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            reason: components["schemas"]["FailureCategory"] | null;
+            /**
+             * Replay Repeat Count
+             * @description Number of times each clip set was replayed. Null for non-replay runs.
+             */
+            replay_repeat_count?: number | null;
+            /**
+             * Replay Settings
+             * @description Turn-timing overrides the replay used. Null for non-replay runs.
+             */
+            replay_settings?: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
+            result: components["schemas"]["RunResult"];
+            /**
+             * Run Mode
+             * @description `generate` for runs with generated scenarios, `select` for library scenarios.
+             * @default generate
+             */
+            run_mode?: string;
+            /**
+             * Scenario Source
+             * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
+             * @default generated
+             * @enum {string}
+             */
+            scenario_source?: "generated" | "recorded_clips";
+            /**
+             * Selected Evals
+             * @description The evals the calls are graded with. Empty if none were selected.
+             */
+            selected_evals: components["schemas"]["CriteriaItem"][];
+            /**
+             * Selected Intents
+             * @description The call intents detected on the calls. Empty if none were selected.
+             */
+            selected_intents: components["schemas"]["CriteriaItem"][];
+            /**
+             * Simulation Calls
+             * @description The simulated calls in the run, one per scenario.
+             */
+            simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /**
              * Simulation Profile Id
              * @description ID of the simulation profile used, if one was given.
@@ -7578,78 +7662,10 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Noise Environment Id
-             * @description ID of the background-noise environment used, if one was given.
+             * Status
+             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
              */
-            noise_environment_id?: number | null;
-            /**
-             * Noise Intensity
-             * @description Gain applied to the background noise, if noise was used.
-             */
-            noise_intensity?: number | null;
-            /** @description The background-noise environment used, if one was given. */
-            noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
-            /**
-             * Scenario Source
-             * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
-             * @default generated
-             * @enum {string}
-             */
-            scenario_source?: "generated" | "recorded_clips";
-            /**
-             * Voice Clip Sets
-             * @description Voice clip sets played by a replay run. Empty otherwise.
-             */
-            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
-            /**
-             * Replay Repeat Count
-             * @description Number of times each clip set was replayed. Null for non-replay runs.
-             */
-            replay_repeat_count?: number | null;
-            /**
-             * Replay Settings
-             * @description Turn-timing overrides the replay used. Null for non-replay runs.
-             */
-            replay_settings?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Evals Expected
-             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
-             * @default true
-             */
-            evals_expected?: boolean;
-            /**
-             * Selected Evals
-             * @description The evals the calls are graded with. Empty if none were selected.
-             */
-            selected_evals: components["schemas"]["CriteriaItem"][];
-            /**
-             * Selected Intents
-             * @description The call intents detected on the calls. Empty if none were selected.
-             */
-            selected_intents: components["schemas"]["CriteriaItem"][];
-            /**
-             * Passed Count
-             * @description Number of calls that passed their evals.
-             */
-            passed_count: number;
-            /**
-             * Failed Count
-             * @description Number of calls that failed their evals.
-             */
-            failed_count: number;
-            /**
-             * In Progress Count
-             * @description Number of calls still waiting for results (not yet finished or evaluated).
-             */
-            in_progress_count: number;
-            /**
-             * Ran Count
-             * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
-             * @default 0
-             */
-            ran_count?: number;
+            status: string;
             /**
              * Unreported Count
              * @description Number of calls that completed but whose call data never arrived.
@@ -7657,26 +7673,10 @@ export interface components {
              */
             unreported_count?: number;
             /**
-             * Analysis Failed Count
-             * @description Number of calls that arrived but whose evals never came back.
-             * @default 0
+             * Voice Clip Sets
+             * @description Voice clip sets played by a replay run. Empty otherwise.
              */
-            analysis_failed_count?: number;
-            /**
-             * Simulation Calls
-             * @description The simulated calls in the run, one per scenario.
-             */
-            simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
-            /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
-            result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
-            reason: components["schemas"]["FailureCategory"] | null;
-            /**
-             * Run Mode
-             * @description `generate` for runs with generated scenarios, `select` for library scenarios.
-             * @default generate
-             */
-            run_mode?: string;
+            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
         };
         /**
          * SimulationRunGetResponse
@@ -7684,15 +7684,23 @@ export interface components {
          */
         SimulationRunGetResponse: {
             /**
-             * Id
-             * @description ID of the simulation run.
+             * Adversarial Count
+             * @description Number of adversarial scenarios requested. Null for runs from saved scenarios.
              */
-            id: number;
+            adversarial_count: number | null;
             /**
-             * Status
-             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
+             * Analysis Failed Count
+             * @description Number of calls that arrived but whose evals never came back.
+             * @default 0
              */
-            status: string;
+            analysis_failed_count?: number;
+            /** @description The caller persona used. Null for replay runs. */
+            caller_persona: components["schemas"]["CallerPersonaResponse"] | null;
+            /**
+             * Caller Persona Id
+             * @description ID of the caller persona used. Null for replay runs.
+             */
+            caller_persona_id: number | null;
             /**
              * Created At
              * Format: date-time
@@ -7700,10 +7708,26 @@ export interface components {
              */
             created_at: string;
             /**
+             * Dashboard Url
+             * @description Link to the run in the Tuner dashboard.
+             */
+            dashboard_url: string;
+            /**
+             * Evals Expected
+             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
+             * @default true
+             */
+            evals_expected?: boolean;
+            /**
              * Execution Completed At
              * @description When every call finished executing. Null while calls are still in progress. The run can remain `running` or `analyzing` after this while calls are reported and evaluated.
              */
             execution_completed_at?: string | null;
+            /**
+             * Failed Count
+             * @description Number of calls that failed their evals.
+             */
+            failed_count: number;
             /**
              * Failure Reason
              * @description Explanation of why the run failed. Null if it did not fail.
@@ -7715,39 +7739,27 @@ export interface components {
              */
             functional_count: number | null;
             /**
-             * Adversarial Count
-             * @description Number of adversarial scenarios requested. Null for runs from saved scenarios.
-             */
-            adversarial_count: number | null;
-            /**
              * Generated Count
              * @description Number of test scenarios created so far.
              */
             generated_count: number;
             /**
-             * Caller Persona Id
-             * @description ID of the caller persona used. Null for replay runs.
+             * Id
+             * @description ID of the simulation run.
              */
-            caller_persona_id: number | null;
-            /** @description The caller persona used. Null for replay runs. */
-            caller_persona: components["schemas"]["CallerPersonaResponse"] | null;
+            id: number;
             /**
-             * Simulation Profile Id
-             * @description ID of the simulation profile used, if one was given.
+             * In Progress Count
+             * @description Number of calls still waiting for results (not yet finished or evaluated).
              */
-            simulation_profile_id?: number | null;
+            in_progress_count: number;
             /**
-             * Simulation Profile Name
-             * @description Name of the simulation profile used, if one was given.
+             * Is Terminal
+             * @description Whether the run has finished: `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `analyzing` is not terminal.
              */
-            simulation_profile_name?: string | null;
-            /**
-             * Simulation Profile Snapshot
-             * @description Copy of the profile's fields as they were when the run started.
-             */
-            simulation_profile_snapshot?: {
-                [key: string]: unknown;
-            } | null;
+            is_terminal: boolean;
+            /** @description The background-noise environment used, if one was given. */
+            noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
             /**
              * Noise Environment Id
              * @description ID of the background-noise environment used, if one was given.
@@ -7758,20 +7770,19 @@ export interface components {
              * @description Gain applied to the background noise, if noise was used.
              */
             noise_intensity?: number | null;
-            /** @description The background-noise environment used, if one was given. */
-            noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
             /**
-             * Scenario Source
-             * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
-             * @default generated
-             * @enum {string}
+             * Passed Count
+             * @description Number of calls that passed their evals.
              */
-            scenario_source?: "generated" | "recorded_clips";
+            passed_count: number;
             /**
-             * Voice Clip Sets
-             * @description Voice clip sets played by a replay run. Empty otherwise.
+             * Ran Count
+             * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
+             * @default 0
              */
-            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
+            ran_count?: number;
+            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Replay Repeat Count
              * @description Number of times each clip set was replayed. Null for non-replay runs.
@@ -7784,12 +7795,21 @@ export interface components {
             replay_settings?: {
                 [key: string]: unknown;
             } | null;
+            /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
+            result: components["schemas"]["RunResult"];
             /**
-             * Evals Expected
-             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
-             * @default true
+             * Run Mode
+             * @description `generate` for runs with generated scenarios, `select` for library scenarios.
+             * @default generate
              */
-            evals_expected?: boolean;
+            run_mode?: string;
+            /**
+             * Scenario Source
+             * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
+             * @default generated
+             * @enum {string}
+             */
+            scenario_source?: "generated" | "recorded_clips";
             /**
              * Selected Evals
              * @description The evals the calls are graded with. Empty if none were selected.
@@ -7801,91 +7821,10 @@ export interface components {
              */
             selected_intents: components["schemas"]["CriteriaItem"][];
             /**
-             * Passed Count
-             * @description Number of calls that passed their evals.
-             */
-            passed_count: number;
-            /**
-             * Failed Count
-             * @description Number of calls that failed their evals.
-             */
-            failed_count: number;
-            /**
-             * In Progress Count
-             * @description Number of calls still waiting for results (not yet finished or evaluated).
-             */
-            in_progress_count: number;
-            /**
-             * Ran Count
-             * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
-             * @default 0
-             */
-            ran_count?: number;
-            /**
-             * Unreported Count
-             * @description Number of calls that completed but whose call data never arrived.
-             * @default 0
-             */
-            unreported_count?: number;
-            /**
-             * Analysis Failed Count
-             * @description Number of calls that arrived but whose evals never came back.
-             * @default 0
-             */
-            analysis_failed_count?: number;
-            /**
              * Simulation Calls
              * @description The simulated calls in the run, one per scenario.
              */
             simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
-            /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
-            result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
-            reason: components["schemas"]["FailureCategory"] | null;
-            /**
-             * Run Mode
-             * @description `generate` for runs with generated scenarios, `select` for library scenarios.
-             * @default generate
-             */
-            run_mode?: string;
-            /**
-             * Is Terminal
-             * @description Whether the run has finished: `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `analyzing` is not terminal.
-             */
-            is_terminal: boolean;
-            /**
-             * Dashboard Url
-             * @description Link to the run in the Tuner dashboard.
-             */
-            dashboard_url: string;
-        };
-        /**
-         * SimulationRunResponse
-         * @description The simulation run that was just started.
-         */
-        SimulationRunResponse: {
-            /**
-             * Simulation Run Id
-             * @description ID of the new simulation run.
-             */
-            simulation_run_id: number;
-            /**
-             * Generated Count
-             * @description Number of test scenarios created so far. 0 for Run AI-Generated Scenarios, because generation is asynchronous; the full count for replay runs and runs from saved scenarios.
-             */
-            generated_count: number;
-            /**
-             * Success
-             * @description Whether the run was accepted.
-             */
-            success: boolean;
-            /**
-             * Caller Persona Id
-             * @description ID of the caller persona used. Null for replay runs.
-             */
-            caller_persona_id?: number | null;
-            /** @description The caller persona used. Null for replay runs. */
-            caller_persona?: components["schemas"]["CallerPersonaResponse"] | null;
             /**
              * Simulation Profile Id
              * @description ID of the simulation profile used, if one was given.
@@ -7904,6 +7843,42 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
+             * Status
+             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
+             */
+            status: string;
+            /**
+             * Unreported Count
+             * @description Number of calls that completed but whose call data never arrived.
+             * @default 0
+             */
+            unreported_count?: number;
+            /**
+             * Voice Clip Sets
+             * @description Voice clip sets played by a replay run. Empty otherwise.
+             */
+            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
+        };
+        /**
+         * SimulationRunResponse
+         * @description The simulation run that was just started.
+         */
+        SimulationRunResponse: {
+            /** @description The caller persona used. Null for replay runs. */
+            caller_persona?: components["schemas"]["CallerPersonaResponse"] | null;
+            /**
+             * Caller Persona Id
+             * @description ID of the caller persona used. Null for replay runs.
+             */
+            caller_persona_id?: number | null;
+            /**
+             * Generated Count
+             * @description Number of test scenarios created so far. 0 for Run AI-Generated Scenarios, because generation is asynchronous; the full count for replay runs and runs from saved scenarios.
+             */
+            generated_count: number;
+            /** @description The background-noise environment used, if one was given. */
+            noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
+            /**
              * Noise Environment Id
              * @description ID of the background-noise environment used, if one was given.
              */
@@ -7913,8 +7888,33 @@ export interface components {
              * @description Gain applied to the background noise, if noise was used.
              */
             noise_intensity?: number | null;
-            /** @description The background-noise environment used, if one was given. */
-            noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
+            /**
+             * Simulation Profile Id
+             * @description ID of the simulation profile used, if one was given.
+             */
+            simulation_profile_id?: number | null;
+            /**
+             * Simulation Profile Name
+             * @description Name of the simulation profile used, if one was given.
+             */
+            simulation_profile_name?: string | null;
+            /**
+             * Simulation Profile Snapshot
+             * @description Copy of the profile's fields as they were when the run started.
+             */
+            simulation_profile_snapshot?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Simulation Run Id
+             * @description ID of the new simulation run.
+             */
+            simulation_run_id: number;
+            /**
+             * Success
+             * @description Whether the run was accepted.
+             */
+            success: boolean;
         };
         /**
          * SimulationRunSearchItem
@@ -7922,50 +7922,44 @@ export interface components {
          */
         SimulationRunSearchItem: {
             /**
-             * Id
-             * @description ID of the simulation run.
-             */
-            id: number;
-            /**
-             * Agent Id
-             * @description ID of the agent the run belongs to.
-             */
-            agent_id: number;
-            /**
-             * Status
-             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
-             */
-            status: string;
-            /**
-             * Functional Count
-             * @description Number of functional scenarios requested. Null for runs from saved scenarios.
-             */
-            functional_count: number | null;
-            /**
              * Adversarial Count
              * @description Number of adversarial scenarios requested. Null for runs from saved scenarios.
              */
             adversarial_count: number | null;
             /**
-             * Generated Count
-             * @description Number of test scenarios created so far.
+             * Agent Id
+             * @description ID of the agent the run belongs to.
              */
-            generated_count: number;
+            agent_id: number;
+            /** @description The caller persona used. Null for replay runs. */
+            caller_persona?: components["schemas"]["CallerPersonaResponse"] | null;
+            /**
+             * Caller Persona Id
+             * @description ID of the caller persona used. Null for replay runs.
+             */
+            caller_persona_id: number | null;
+            /**
+             * Completed At
+             * @description When the run reached a final status. Null while it is `pending`, `running` or `analyzing`.
+             */
+            completed_at: string | null;
             /**
              * Completed Count
              * @description Number of scenarios whose call has finished executing, successfully or not.
              */
             completed_count: number;
             /**
-             * Started At
-             * @description When the run started processing. Null until then.
+             * Created At
+             * Format: date-time
+             * @description When the run was created.
              */
-            started_at: string | null;
+            created_at: string;
             /**
-             * Completed At
-             * @description When the run reached a final status. Null while it is `pending`, `running` or `analyzing`.
+             * Evals Expected
+             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
+             * @default true
              */
-            completed_at: string | null;
+            evals_expected?: boolean;
             /**
              * Execution Completed At
              * @description When every call finished executing. Null while calls are still in progress. The run can remain `running` or `analyzing` after this while calls are reported and evaluated.
@@ -7977,36 +7971,22 @@ export interface components {
              */
             failure_reason: string | null;
             /**
-             * Created At
-             * Format: date-time
-             * @description When the run was created.
+             * Functional Count
+             * @description Number of functional scenarios requested. Null for runs from saved scenarios.
              */
-            created_at: string;
+            functional_count: number | null;
             /**
-             * Updated At
-             * Format: date-time
-             * @description When the run was last updated.
+             * Generated Count
+             * @description Number of test scenarios created so far.
              */
-            updated_at: string;
+            generated_count: number;
             /**
-             * Caller Persona Id
-             * @description ID of the caller persona used. Null for replay runs.
+             * Id
+             * @description ID of the simulation run.
              */
-            caller_persona_id: number | null;
-            /** @description The caller persona used. Null for replay runs. */
-            caller_persona?: components["schemas"]["CallerPersonaResponse"] | null;
-            /**
-             * Scenario Source
-             * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
-             * @default generated
-             * @enum {string}
-             */
-            scenario_source?: "generated" | "recorded_clips";
-            /**
-             * Voice Clip Sets
-             * @description Voice clip sets played by a replay run. Empty otherwise.
-             */
-            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
+            id: number;
+            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Replay Repeat Count
              * @description Number of times each clip set was replayed. Null for non-replay runs.
@@ -8019,22 +7999,42 @@ export interface components {
             replay_settings?: {
                 [key: string]: unknown;
             } | null;
-            /**
-             * Evals Expected
-             * @description Whether the calls are graded by evals. False only for replay runs started without evals.
-             * @default true
-             */
-            evals_expected?: boolean;
+            /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
+            result: components["schemas"]["RunResult"];
             /**
              * Run Mode
              * @description `generate` for runs with generated scenarios, `select` for library scenarios.
              * @default generate
              */
             run_mode?: string;
-            /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
-            result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
-            reason: components["schemas"]["FailureCategory"] | null;
+            /**
+             * Scenario Source
+             * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
+             * @default generated
+             * @enum {string}
+             */
+            scenario_source?: "generated" | "recorded_clips";
+            /**
+             * Started At
+             * @description When the run started processing. Null until then.
+             */
+            started_at: string | null;
+            /**
+             * Status
+             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
+             */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description When the run was last updated.
+             */
+            updated_at: string;
+            /**
+             * Voice Clip Sets
+             * @description Voice clip sets played by a replay run. Empty otherwise.
+             */
+            voice_clip_sets?: components["schemas"]["VoiceClipSetRef"][];
         };
         /**
          * SimulationRunSearchResponse
@@ -8058,16 +8058,6 @@ export interface components {
          */
         SimulationRunsDetailResponse: {
             /**
-             * Simulation Runs
-             * @description Runs on this page, newest first.
-             */
-            simulation_runs: components["schemas"]["SimulationRunDetailItem"][];
-            /**
-             * Total
-             * @description Total number of runs matching the request, across all pages.
-             */
-            total: number;
-            /**
              * Page
              * @description Current page number, starting at 1.
              */
@@ -8077,6 +8067,16 @@ export interface components {
              * @description Maximum number of runs per page.
              */
             page_size: number;
+            /**
+             * Simulation Runs
+             * @description Runs on this page, newest first.
+             */
+            simulation_runs: components["schemas"]["SimulationRunDetailItem"][];
+            /**
+             * Total
+             * @description Total number of runs matching the request, across all pages.
+             */
+            total: number;
             /**
              * Total Pages
              * @description Total number of pages.
@@ -8093,41 +8093,53 @@ export interface components {
          */
         SimulationScenarioDetails: {
             /**
-             * Type
-             * @description functional->routine, adversarial->pressure
-             * @enum {string}
+             * First Line
+             * @description Snapshot first_line (library runs only); blank -> null
              */
-            type: "routine" | "pressure";
-            /**
-             * Label
-             * @description scenario_label_from_snapshot: persona, else name
-             */
-            label?: string | null;
+            first_line?: string | null;
             /**
              * Goal
              * @description Snapshot goal; blank treated as null
              */
             goal?: string | null;
             /**
+             * Intent
+             * @description Snapshot intent label; blank -> null
+             */
+            intent?: string | null;
+            /**
+             * Label
+             * @description scenario_label_from_snapshot: persona, else name
+             */
+            label?: string | null;
+            /**
+             * Language
+             * @description Display string for the run's caller persona language/accent
+             */
+            language?: string | null;
+            /**
+             * Library Scenario Id
+             * @description The linked library scenario's id, when it exists and is not soft-deleted
+             */
+            library_scenario_id?: number | null;
+            /** @description The run's noise environment */
+            noise?: components["schemas"]["SimulationNoise"] | null;
+            /**
+             * Origin
+             * @description 'manual' iff the linked library scenario (not soft-deleted) has origin 'manual'; 'ai_generated' otherwise, including when the link is deleted or absent.
+             * @enum {string}
+             */
+            origin: "manual" | "ai_generated";
+            /**
              * Situation
              * @description situation_from_generated_scenario; blank -> null
              */
             situation?: string | null;
             /**
-             * First Line
-             * @description Snapshot first_line (library runs only); blank -> null
-             */
-            first_line?: string | null;
-            /**
              * Stop Condition
              * @description Snapshot stop_condition (when the caller hangs up); blank -> null
              */
             stop_condition?: string | null;
-            /**
-             * Intent
-             * @description Snapshot intent label; blank -> null
-             */
-            intent?: string | null;
             /**
              * Tags
              * @description Snapshot tags (library runs only); [] otherwise
@@ -8138,49 +8150,17 @@ export interface components {
             /** @description The run's simulation profile, if one was used */
             test_profile?: components["schemas"]["SimulationTestProfile"] | null;
             /**
-             * Language
-             * @description Display string for the run's caller persona language/accent
-             */
-            language?: string | null;
-            /** @description The run's noise environment */
-            noise?: components["schemas"]["SimulationNoise"] | null;
-            /**
-             * Origin
-             * @description 'manual' iff the linked library scenario (not soft-deleted) has origin 'manual'; 'ai_generated' otherwise, including when the link is deleted or absent.
+             * Type
+             * @description functional->routine, adversarial->pressure
              * @enum {string}
              */
-            origin: "manual" | "ai_generated";
-            /**
-             * Library Scenario Id
-             * @description The linked library scenario's id, when it exists and is not soft-deleted
-             */
-            library_scenario_id?: number | null;
+            type: "routine" | "pressure";
         };
         /**
          * SimulationScenarioResponse
          * @description A test scenario in a simulation run and its current status.
          */
         SimulationScenarioResponse: {
-            /**
-             * Id
-             * @description ID of the scenario within the run. Use it as `simulation_scenario_id` when saving scenarios to the library.
-             */
-            id: number;
-            /**
-             * Simulation Run Id
-             * @description ID of the simulation run the scenario belongs to.
-             */
-            simulation_run_id: number;
-            /**
-             * Type
-             * @description Scenario type, such as `functional` or `adversarial` for generated runs.
-             */
-            type: string;
-            /**
-             * Status
-             * @description Scenario status: `pending`, `running`, `complete` or `failed`.
-             */
-            status: string;
             /**
              * Generated Scenario
              * @description The scenario definition the simulated call follows.
@@ -8189,6 +8169,26 @@ export interface components {
                 [key: string]: unknown;
             };
             /**
+             * Id
+             * @description ID of the scenario within the run. Use it as `simulation_scenario_id` when saving scenarios to the library.
+             */
+            id: number;
+            /**
+             * Saved Scenario Id
+             * @description ID of the library scenario this one was saved as. Null if it has not been saved to the library.
+             */
+            saved_scenario_id?: number | null;
+            /**
+             * Simulation Run Id
+             * @description ID of the simulation run the scenario belongs to.
+             */
+            simulation_run_id: number;
+            /**
+             * Status
+             * @description Scenario status: `pending`, `running`, `complete` or `failed`.
+             */
+            status: string;
+            /**
              * Target Ai Evaluation
              * @description The eval or call outcome the scenario targets. Null if it has none.
              */
@@ -8196,16 +8196,21 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Saved Scenario Id
-             * @description ID of the library scenario this one was saved as. Null if it has not been saved to the library.
+             * Type
+             * @description Scenario type, such as `functional` or `adversarial` for generated runs.
              */
-            saved_scenario_id?: number | null;
+            type: string;
         };
         /**
          * SimulationScenarioTargetEval
          * @description Target AI evaluation for a simulation scenario, resolved for display.
          */
         SimulationScenarioTargetEval: {
+            /**
+             * Label
+             * @description Display label. For 'eval', the agent's current eval display name resolved from `value`, falling back to `value` itself when no active eval matches (renamed or deleted). For 'outcome', always equal to `value`.
+             */
+            label: string;
             /**
              * Type
              * @description Target evaluation kind
@@ -8217,11 +8222,6 @@ export interface components {
              * @description Raw stored value (eval name, or the outcome text)
              */
             value: string;
-            /**
-             * Label
-             * @description Display label. For 'eval', the agent's current eval display name resolved from `value`, falling back to `value` itself when no active eval matches (renamed or deleted). For 'outcome', always equal to `value`.
-             */
-            label: string;
         };
         /**
          * SimulationScenariosListResponse
@@ -8245,35 +8245,47 @@ export interface components {
          */
         SimulationTestProfile: {
             /**
-             * Name
-             * @description Simulation profile name at run time
-             */
-            name?: string | null;
-            /**
              * Fields
              * @description The profile's frozen key/value snapshot
              */
             fields?: {
                 [key: string]: unknown;
             };
+            /**
+             * Name
+             * @description Simulation profile name at run time
+             */
+            name?: string | null;
         };
         /** SipConfigResponse */
         SipConfigResponse: {
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the configuration was created.
+             */
+            created_at: string;
             /**
              * Id
              * @description SIP configuration ID.
              */
             id: number;
             /**
+             * Is Sip Verified
+             * @description Whether Tuner's connectivity check against the trunk succeeded.
+             */
+            is_sip_verified: boolean;
+            /**
              * Settings Id
              * @description ID of the agent settings the configuration belongs to.
              */
             settings_id: number;
             /**
-             * Workspace Id
-             * @description ID of the workspace the configuration belongs to.
+             * Sip Password Set
+             * @description Whether a SIP password is saved. The password itself is never returned.
+             * @example true
              */
-            workspace_id: number;
+            sip_password_set: boolean;
             /**
              * Sip Url
              * @description SIP URI of the trunk, e.g. `sip:user@host:5060`.
@@ -8285,31 +8297,24 @@ export interface components {
              */
             sip_username: string | null;
             /**
-             * Sip Password Set
-             * @description Whether a SIP password is saved. The password itself is never returned.
-             * @example true
-             */
-            sip_password_set: boolean;
-            /**
-             * Is Sip Verified
-             * @description Whether Tuner's connectivity check against the trunk succeeded.
-             */
-            is_sip_verified: boolean;
-            /**
-             * Created At
-             * Format: date-time
-             * @description When the configuration was created.
-             */
-            created_at: string;
-            /**
              * Updated At
              * Format: date-time
              * @description When the configuration was last updated.
              */
             updated_at: string;
+            /**
+             * Workspace Id
+             * @description ID of the workspace the configuration belongs to.
+             */
+            workspace_id: number;
         };
         /** SipConfigUpsertRequest */
         SipConfigUpsertRequest: {
+            /**
+             * Sip Password
+             * @description Password for authenticating to the SIP trunk, up to 500 characters. Leave it blank or omit it to keep the saved password. It is never returned.
+             */
+            sip_password?: string | null;
             /**
              * Sip Url
              * @description SIP URI, e.g. sip:user@host:5060
@@ -8320,11 +8325,6 @@ export interface components {
              * @description Username for authenticating to the SIP trunk, up to 200 characters.
              */
             sip_username?: string | null;
-            /**
-             * Sip Password
-             * @description Password for authenticating to the SIP trunk, up to 500 characters. Leave it blank or omit it to keep the saved password. It is never returned.
-             */
-            sip_password?: string | null;
         };
         /**
          * SourceCallCandidate
@@ -8337,16 +8337,16 @@ export interface components {
              */
             call_id: number;
             /**
-             * Provider Call Id
-             * @description Call ID assigned by the voice provider.
+             * Caller Turn Count
+             * @description Number of caller turns that would become clips if this call is used.
              */
-            provider_call_id: string;
+            caller_turn_count: number;
             /**
-             * Started At
-             * Format: date-time
-             * @description When the call started.
+             * Channel Mode
+             * @description Whether the call recording is `multi_channel` or `mono`.
+             * @enum {string}
              */
-            started_at: string;
+            channel_mode: "multi_channel" | "mono";
             /**
              * Duration Ms
              * @description Call duration in milliseconds.
@@ -8363,16 +8363,16 @@ export interface components {
              */
             outcome?: string | null;
             /**
-             * Channel Mode
-             * @description Whether the call recording is `multi_channel` or `mono`.
-             * @enum {string}
+             * Provider Call Id
+             * @description Call ID assigned by the voice provider.
              */
-            channel_mode: "multi_channel" | "mono";
+            provider_call_id: string;
             /**
-             * Caller Turn Count
-             * @description Number of caller turns that would become clips if this call is used.
+             * Started At
+             * Format: date-time
+             * @description When the call started.
              */
-            caller_turn_count: number;
+            started_at: string;
         };
         /**
          * SourceCallsListResponse
@@ -8385,11 +8385,6 @@ export interface components {
              */
             calls?: components["schemas"]["SourceCallCandidate"][];
             /**
-             * Total
-             * @description Total number of matching calls.
-             */
-            total: number;
-            /**
              * Page
              * @description Current page number.
              */
@@ -8399,6 +8394,11 @@ export interface components {
              * @description Number of items per page.
              */
             page_size: number;
+            /**
+             * Total
+             * @description Total number of matching calls.
+             */
+            total: number;
             /**
              * Total Pages
              * @description Total number of pages.
@@ -8410,44 +8410,44 @@ export interface components {
          * @description An active or scheduled recurring plan attached to the customer.
          */
         SubscriptionResponse: {
-            /** Id */
-            id: string;
-            /** Plan Id */
-            plan_id: string;
             /** Add On */
             add_on: boolean;
-            /** Status */
-            status: string;
-            /** Past Due */
-            past_due: boolean;
             /** Canceled At */
             canceled_at?: number | null;
-            /** Expires At */
-            expires_at?: number | null;
-            /** Trial Ends At */
-            trial_ends_at?: number | null;
-            /** Started At */
-            started_at: number;
-            /** Current Period Start */
-            current_period_start?: number | null;
             /** Current Period End */
             current_period_end?: number | null;
+            /** Current Period Start */
+            current_period_start?: number | null;
+            /** Expires At */
+            expires_at?: number | null;
+            /** Id */
+            id: string;
+            /** Past Due */
+            past_due: boolean;
+            /** Plan Id */
+            plan_id: string;
             /** Quantity */
             quantity: number;
+            /** Started At */
+            started_at: number;
+            /** Status */
+            status: string;
+            /** Trial Ends At */
+            trial_ends_at?: number | null;
         };
         /**
          * SyncCallsQueuedResponse
          * @description Response model for queued sync calls request.
          */
         SyncCallsQueuedResponse: {
-            /** Message */
-            message: string;
             /** Agent Id */
             agent_id: string;
-            /** Start Time */
-            start_time: string;
             /** End Time */
             end_time: string;
+            /** Message */
+            message: string;
+            /** Start Time */
+            start_time: string;
         };
         /** TargetAiEvaluation */
         TargetAiEvaluation: {
@@ -8473,18 +8473,18 @@ export interface components {
          *     they actually apply a template.
          */
         TemplateListItem: {
-            /** Id */
-            id: number;
-            /** Slug */
-            slug: string;
-            /** Name */
-            name: string;
-            /** Direction */
-            direction: string;
             /** Description */
             description: string;
+            /** Direction */
+            direction: string;
             /** Display Order */
             display_order: number;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
         };
         /**
          * TemplateListResponse
@@ -8505,22 +8505,22 @@ export interface components {
          * @description Input schema for tool.
          */
         ToolInput: {
-            /** Name */
-            name: string;
             /** Description */
             description?: string | null;
+            /** Name */
+            name: string;
         };
         /**
          * ToolResponse
          * @description Response schema for tool.
          */
         ToolResponse: {
+            /** Description */
+            description?: string | null;
             /** Id */
             id: number;
             /** Name */
             name: string;
-            /** Description */
-            description?: string | null;
         };
         /**
          * TrackRequest
@@ -8555,112 +8555,112 @@ export interface components {
          */
         TranscriptionAccuracy: {
             /**
-             * Score
-             * @description Accuracy from 0 to 1 (1 minus the error rate, floored at 0)
-             */
-            score: number;
-            /**
-             * Error Rate
-             * @description Raw word error rate. Can exceed 1 when much noise was transcribed
-             */
-            error_rate: number;
-            /**
              * Band
              * @description Quality band for the score
              * @enum {string}
              */
             band: "good" | "fair" | "poor";
             /**
-             * Reference Word Count
-             * @description Words the caller said (after cleaning)
+             * Calculated At
+             * Format: date-time
+             * @description When the score was calculated
              */
-            reference_word_count: number;
-            /**
-             * Hypothesis Word Count
-             * @description Words the agent heard (after cleaning)
-             */
-            hypothesis_word_count: number;
-            /**
-             * Wrong Count
-             * @description Caller words that were misheard
-             */
-            wrong_count: number;
-            /**
-             * Missed Count
-             * @description Caller words that were not transcribed
-             */
-            missed_count: number;
-            /**
-             * Extra Count
-             * @description Transcribed words the caller did not say
-             */
-            extra_count: number;
-            /**
-             * Errors
-             * @description Up to 50 mismatches in reading order. See `error_entry_count` for the total
-             */
-            errors?: components["schemas"]["TranscriptionErrorEntry"][];
-            /**
-             * Error Entry Count
-             * @description Total number of mismatch entries, including those beyond the 50 stored
-             */
-            error_entry_count: number;
-            /**
-             * Language
-             * @description Language code the comparison used
-             */
-            language: string;
-            /**
-             * Stt Provider
-             * @description Raw speech-to-text provider name. Null when not reported
-             */
-            stt_provider?: string | null;
-            /**
-             * Stt Model
-             * @description Raw speech-to-text model name. Null when not reported
-             */
-            stt_model?: string | null;
-            /**
-             * Partial Playback
-             * @description True when the call ended before every clip was played
-             */
-            partial_playback: boolean;
-            /**
-             * Clips Total
-             * @description Clips in the set when the call was scored
-             */
-            clips_total: number;
-            /**
-             * Clips Scored
-             * @description Clips that were played and compared
-             */
-            clips_scored: number;
-            /**
-             * Clips Verified
-             * @description How many of the scored clips are human-verified right now
-             */
-            clips_verified: number;
-            /**
-             * Last Verified At
-             * @description Latest verification time among the verified scored clips
-             */
-            last_verified_at?: string | null;
+            calculated_at: string;
             /**
              * Clips
              * @description The scored clips in playback order, with their current text
              */
             clips?: components["schemas"]["TranscriptionClipReference"][];
             /**
+             * Clips Scored
+             * @description Clips that were played and compared
+             */
+            clips_scored: number;
+            /**
+             * Clips Total
+             * @description Clips in the set when the call was scored
+             */
+            clips_total: number;
+            /**
+             * Clips Verified
+             * @description How many of the scored clips are human-verified right now
+             */
+            clips_verified: number;
+            /**
+             * Error Entry Count
+             * @description Total number of mismatch entries, including those beyond the 50 stored
+             */
+            error_entry_count: number;
+            /**
+             * Error Rate
+             * @description Raw word error rate. Can exceed 1 when much noise was transcribed
+             */
+            error_rate: number;
+            /**
+             * Errors
+             * @description Up to 50 mismatches in reading order. See `error_entry_count` for the total
+             */
+            errors?: components["schemas"]["TranscriptionErrorEntry"][];
+            /**
+             * Extra Count
+             * @description Transcribed words the caller did not say
+             */
+            extra_count: number;
+            /**
+             * Hypothesis Word Count
+             * @description Words the agent heard (after cleaning)
+             */
+            hypothesis_word_count: number;
+            /**
              * Is Outdated
              * @description True when clip transcripts were edited or verified after this call was scored, or the scoring rules changed. Re-score the call to use the current transcripts. False when the clip set no longer exists
              */
             is_outdated: boolean;
             /**
-             * Calculated At
-             * Format: date-time
-             * @description When the score was calculated
+             * Language
+             * @description Language code the comparison used
              */
-            calculated_at: string;
+            language: string;
+            /**
+             * Last Verified At
+             * @description Latest verification time among the verified scored clips
+             */
+            last_verified_at?: string | null;
+            /**
+             * Missed Count
+             * @description Caller words that were not transcribed
+             */
+            missed_count: number;
+            /**
+             * Partial Playback
+             * @description True when the call ended before every clip was played
+             */
+            partial_playback: boolean;
+            /**
+             * Reference Word Count
+             * @description Words the caller said (after cleaning)
+             */
+            reference_word_count: number;
+            /**
+             * Score
+             * @description Accuracy from 0 to 1 (1 minus the error rate, floored at 0)
+             */
+            score: number;
+            /**
+             * Stt Model
+             * @description Raw speech-to-text model name. Null when not reported
+             */
+            stt_model?: string | null;
+            /**
+             * Stt Provider
+             * @description Raw speech-to-text provider name. Null when not reported
+             */
+            stt_provider?: string | null;
+            /**
+             * Wrong Count
+             * @description Caller words that were misheard
+             */
+            wrong_count: number;
         };
         /**
          * TranscriptionClipReference
@@ -8668,15 +8668,15 @@ export interface components {
          */
         TranscriptionClipReference: {
             /**
-             * Turn Index
-             * @description Zero-based position of the clip within the set
-             */
-            turn_index: number;
-            /**
              * Reference Transcript
              * @description Current reference text of the clip. Null when it has no text
              */
             reference_transcript?: string | null;
+            /**
+             * Turn Index
+             * @description Zero-based position of the clip within the set
+             */
+            turn_index: number;
             /**
              * Verified
              * @description True when the clip's text was human-verified
@@ -8689,6 +8689,21 @@ export interface components {
          */
         TranscriptionErrorEntry: {
             /**
+             * Clip Index
+             * @description turn_index of the clip that owns the said words. Null for 'extra'
+             */
+            clip_index?: number | null;
+            /**
+             * From Verified Clip
+             * @description True when the owning clip's reference text was human-verified
+             */
+            from_verified_clip: boolean;
+            /**
+             * Heard
+             * @description What the agent heard (transcribed text). Null for 'missed'
+             */
+            heard?: string | null;
+            /**
              * Kind
              * @description 'wrong' = misheard (a different word was transcribed), 'missed' = said but not transcribed, 'extra' = transcribed but not said
              * @enum {string}
@@ -8699,21 +8714,6 @@ export interface components {
              * @description What the caller said (original clip text). Null for 'extra'
              */
             said?: string | null;
-            /**
-             * Heard
-             * @description What the agent heard (transcribed text). Null for 'missed'
-             */
-            heard?: string | null;
-            /**
-             * Clip Index
-             * @description turn_index of the clip that owns the said words. Null for 'extra'
-             */
-            clip_index?: number | null;
-            /**
-             * From Verified Clip
-             * @description True when the owning clip's reference text was human-verified
-             */
-            from_verified_clip: boolean;
         };
         /**
          * UsageToken
@@ -8721,15 +8721,15 @@ export interface components {
          */
         UsageToken: {
             /**
-             * Stt Duration Seconds
-             * @description ASR audio duration processed (seconds)
-             */
-            stt_duration_seconds?: number | null;
-            /**
              * Llm Token
              * @description LLM token usage
              */
             llm_token?: number | string | null;
+            /**
+             * Stt Duration Seconds
+             * @description ASR audio duration processed (seconds)
+             */
+            stt_duration_seconds?: number | null;
             /**
              * Tts Characters Count
              * @description TTS characters count
@@ -8743,6 +8743,15 @@ export interface components {
          * @description User schema for API responses.
          */
         User: {
+            /** Clerk Id */
+            clerk_id?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Deleted At */
+            deleted_at?: string | null;
             /**
              * Email
              * Format: email
@@ -8750,32 +8759,23 @@ export interface components {
             email: string;
             /** First Name */
             first_name?: string | null;
-            /** Last Name */
-            last_name?: string | null;
-            /** Username */
-            username?: string | null;
-            /** Image Url */
-            image_url?: string | null;
             /** Id */
             id: number;
-            /** Clerk Id */
-            clerk_id?: string | null;
+            /** Image Url */
+            image_url?: string | null;
+            /** Last Name */
+            last_name?: string | null;
             /** Onboarding Intent */
             onboarding_intent?: string | null;
             /** Onboarding Profile */
             onboarding_profile?: string | null;
-            /** Deleted At */
-            deleted_at?: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
             /**
              * Updated At
              * Format: date-time
              */
             updated_at: string;
+            /** Username */
+            username?: string | null;
             /** Workspace Ids */
             workspace_ids?: number[];
         };
@@ -8784,8 +8784,6 @@ export interface components {
          * @description Public user schema (limited fields).
          */
         UserPublic: {
-            /** Id */
-            id: number;
             /**
              * Email
              * Format: email
@@ -8793,12 +8791,14 @@ export interface components {
             email: string;
             /** First Name */
             first_name?: string | null;
+            /** Id */
+            id: number;
+            /** Image Url */
+            image_url?: string | null;
             /** Last Name */
             last_name?: string | null;
             /** Username */
             username?: string | null;
-            /** Image Url */
-            image_url?: string | null;
         };
         /**
          * UserUpdate
@@ -8809,27 +8809,27 @@ export interface components {
             email?: string | null;
             /** First Name */
             first_name?: string | null;
+            /** Image Url */
+            image_url?: string | null;
             /** Last Name */
             last_name?: string | null;
             /** Username */
             username?: string | null;
-            /** Image Url */
-            image_url?: string | null;
             /** Workspace Ids */
             workspace_ids?: number[] | null;
         };
         /** ValidationError */
         ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
             /** Location */
             loc: (string | number)[];
             /** Message */
             msg: string;
             /** Error Type */
             type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
         /**
          * ValidationErrorItem
@@ -8837,10 +8837,17 @@ export interface components {
          */
         ValidationErrorItem: {
             /**
-             * Type
-             * @description Machine-readable error type, e.g. `value_error`.
+             * Ctx
+             * @description Extra details for some error types.
              */
-            type: string;
+            ctx?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Input
+             * @description The value that failed, when available.
+             */
+            input?: unknown | null;
             /**
              * Loc
              * @description Path to the field that failed, starting with `body`, e.g. `["body", "threshold_n"]`. Numbers are positions in a list.
@@ -8852,17 +8859,10 @@ export interface components {
              */
             msg: string;
             /**
-             * Input
-             * @description The value that failed, when available.
+             * Type
+             * @description Machine-readable error type, e.g. `value_error`.
              */
-            input?: unknown | null;
-            /**
-             * Ctx
-             * @description Extra details for some error types.
-             */
-            ctx?: {
-                [key: string]: unknown;
-            } | null;
+            type: string;
         };
         /**
          * ValidationErrorResponse
@@ -8888,35 +8888,46 @@ export interface components {
          */
         VoiceClipResponse: {
             /**
-             * Id
-             * @description Clip ID.
+             * Draft Source
+             * @description Which speech-to-text model or voice platform produced the first draft.
              */
-            id: number;
-            /**
-             * Turn Index
-             * @description Position of the clip in the set, in playback order.
-             */
-            turn_index: number;
-            /**
-             * Start Ms
-             * @description Start of the clip in the caller track, in milliseconds.
-             */
-            start_ms: number;
-            /**
-             * End Ms
-             * @description End of the clip in the caller track, in milliseconds.
-             */
-            end_ms: number;
+            draft_source?: string | null;
             /**
              * Duration Ms
              * @description Length of the clip in milliseconds.
              */
             duration_ms: number;
             /**
+             * End Ms
+             * @description End of the clip in the caller track, in milliseconds.
+             */
+            end_ms: number;
+            /**
+             * Id
+             * @description Clip ID.
+             */
+            id: number;
+            /**
              * Reference Transcript
              * @description Transcript of what the caller said in the clip, if available.
              */
             reference_transcript?: string | null;
+            /**
+             * Reference Version
+             * @description Goes up each time the transcript is edited.
+             * @default 1
+             */
+            reference_version?: number;
+            /**
+             * Start Ms
+             * @description Start of the clip in the caller track, in milliseconds.
+             */
+            start_ms: number;
+            /**
+             * Turn Index
+             * @description Position of the clip in the set, in playback order.
+             */
+            turn_index: number;
             /**
              * Verified
              * @description Whether a person has checked this clip's transcript.
@@ -8933,17 +8944,6 @@ export interface components {
              * @description ID of the user who verified it.
              */
             verified_by?: number | null;
-            /**
-             * Reference Version
-             * @description Goes up each time the transcript is edited.
-             * @default 1
-             */
-            reference_version?: number;
-            /**
-             * Draft Source
-             * @description Which speech-to-text model or voice platform produced the first draft.
-             */
-            draft_source?: string | null;
         };
         /**
          * VoiceClipSetAudioResponse
@@ -8951,16 +8951,16 @@ export interface components {
          */
         VoiceClipSetAudioResponse: {
             /**
-             * Url
-             * @description Presigned URL of the caller audio track.
-             */
-            url: string;
-            /**
              * Expires At
              * Format: date-time
              * @description When the URL expires.
              */
             expires_at: string;
+            /**
+             * Url
+             * @description Presigned URL of the caller audio track.
+             */
+            url: string;
         };
         /**
          * VoiceClipSetCreateRequest
@@ -8971,35 +8971,17 @@ export interface components {
          */
         VoiceClipSetCreateRequest: {
             /**
-             * Name
-             * @description Name of the voice clip set, up to 255 characters.
-             * @example Angry caller, billing dispute
+             * Caller Channel Index
+             * @description Index of the channel in the uploaded recording that holds the caller's audio. Required with `voice_clip_upload_id`, and not allowed with `source_call_id`.
+             * @example 0
              */
-            name: string;
+            caller_channel_index?: number | null;
             /**
              * Description
              * @description Optional notes about the voice clip set, up to 10,000 characters.
              * @example Real call where the caller asks for a refund twice.
              */
             description?: string | null;
-            /**
-             * Source Call Id
-             * @description ID of an existing call to take the caller's turns from. Send either this or `voice_clip_upload_id`, not both.
-             * @example 1234
-             */
-            source_call_id?: number | null;
-            /**
-             * Voice Clip Upload Id
-             * @description ID of an uploaded recording to take the caller's turns from. Send either this or `source_call_id`, not both.
-             * @example 56
-             */
-            voice_clip_upload_id?: number | null;
-            /**
-             * Caller Channel Index
-             * @description Index of the channel in the uploaded recording that holds the caller's audio. Required with `voice_clip_upload_id`, and not allowed with `source_call_id`.
-             * @example 0
-             */
-            caller_channel_index?: number | null;
             /**
              * Extraction Settings
              * @description Optional overrides, in milliseconds, for `merge_gap_ms` (caller segments closer than this are merged into one turn, default 400), `min_turn_ms` (shorter turns are dropped, default 300) and `pad_ms` (padding added around each turn, default 120). Omit to use the defaults.
@@ -9012,12 +8994,61 @@ export interface components {
             extraction_settings?: {
                 [key: string]: number;
             } | null;
+            /**
+             * Name
+             * @description Name of the voice clip set, up to 255 characters.
+             * @example Angry caller, billing dispute
+             */
+            name: string;
+            /**
+             * Source Call Id
+             * @description ID of an existing call to take the caller's turns from. Send either this or `voice_clip_upload_id`, not both.
+             * @example 1234
+             */
+            source_call_id?: number | null;
+            /**
+             * Voice Clip Upload Id
+             * @description ID of an uploaded recording to take the caller's turns from. Send either this or `source_call_id`, not both.
+             * @example 56
+             */
+            voice_clip_upload_id?: number | null;
         };
         /**
          * VoiceClipSetDetailResponse
          * @description Response schema for a single voice clip set including its clips.
          */
         VoiceClipSetDetailResponse: {
+            /**
+             * Caller Track Duration Ms
+             * @description Length of the full caller audio track in milliseconds. Set once ready.
+             */
+            caller_track_duration_ms?: number | null;
+            /**
+             * Clip Count
+             * @description Number of clips in the set.
+             */
+            clip_count: number;
+            /**
+             * Clips
+             * @description Clips in playback order.
+             */
+            clips?: components["schemas"]["VoiceClipResponse"][];
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the voice clip set was created.
+             */
+            created_at: string;
+            /**
+             * Description
+             * @description Notes about the voice clip set.
+             */
+            description?: string | null;
+            /**
+             * Failure Reason
+             * @description Why extraction failed. Set only when `status` is `failed`.
+             */
+            failure_reason?: string | null;
             /**
              * Id
              * @description Voice clip set ID.
@@ -9029,50 +9060,30 @@ export interface components {
              */
             name: string;
             /**
-             * Description
-             * @description Notes about the voice clip set.
-             */
-            description?: string | null;
-            /**
-             * Status
-             * @description `extracting` while the caller's clips are being cut, `ready` once the set can be replayed, or `failed`.
-             */
-            status: string;
-            /**
-             * Clip Count
-             * @description Number of clips in the set.
-             */
-            clip_count: number;
-            /**
-             * Total Duration Ms
-             * @description Combined length of all clips in milliseconds. Set once ready.
-             */
-            total_duration_ms?: number | null;
-            /**
-             * Caller Track Duration Ms
-             * @description Length of the full caller audio track in milliseconds. Set once ready.
-             */
-            caller_track_duration_ms?: number | null;
-            /**
              * Source Call Id
              * @description ID of the call the set was built from, if it came from a call.
              */
             source_call_id?: number | null;
-            /**
-             * Source Voice Clip Upload Id
-             * @description ID of the upload the set was built from, if it came from an upload.
-             */
-            source_voice_clip_upload_id?: number | null;
             /**
              * Source Channel Mode
              * @description Whether the source recording was `mono` or `multi_channel`.
              */
             source_channel_mode?: string | null;
             /**
-             * Failure Reason
-             * @description Why extraction failed. Set only when `status` is `failed`.
+             * Source Voice Clip Upload Id
+             * @description ID of the upload the set was built from, if it came from an upload.
              */
-            failure_reason?: string | null;
+            source_voice_clip_upload_id?: number | null;
+            /**
+             * Status
+             * @description `extracting` while the caller's clips are being cut, `ready` once the set can be replayed, or `failed`.
+             */
+            status: string;
+            /**
+             * Total Duration Ms
+             * @description Combined length of all clips in milliseconds. Set once ready.
+             */
+            total_duration_ms?: number | null;
             /**
              * Transcripts Version
              * @description Goes up whenever any clip's transcript is edited, verified or unverified.
@@ -9085,17 +9096,6 @@ export interface components {
              * @default 0
              */
             verified_count?: number;
-            /**
-             * Created At
-             * Format: date-time
-             * @description When the voice clip set was created.
-             */
-            created_at: string;
-            /**
-             * Clips
-             * @description Clips in playback order.
-             */
-            clips?: components["schemas"]["VoiceClipResponse"][];
         };
         /**
          * VoiceClipSetListResponse
@@ -9130,6 +9130,32 @@ export interface components {
          */
         VoiceClipSetResponse: {
             /**
+             * Caller Track Duration Ms
+             * @description Length of the full caller audio track in milliseconds. Set once ready.
+             */
+            caller_track_duration_ms?: number | null;
+            /**
+             * Clip Count
+             * @description Number of clips in the set.
+             */
+            clip_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the voice clip set was created.
+             */
+            created_at: string;
+            /**
+             * Description
+             * @description Notes about the voice clip set.
+             */
+            description?: string | null;
+            /**
+             * Failure Reason
+             * @description Why extraction failed. Set only when `status` is `failed`.
+             */
+            failure_reason?: string | null;
+            /**
              * Id
              * @description Voice clip set ID.
              */
@@ -9140,50 +9166,30 @@ export interface components {
              */
             name: string;
             /**
-             * Description
-             * @description Notes about the voice clip set.
-             */
-            description?: string | null;
-            /**
-             * Status
-             * @description `extracting` while the caller's clips are being cut, `ready` once the set can be replayed, or `failed`.
-             */
-            status: string;
-            /**
-             * Clip Count
-             * @description Number of clips in the set.
-             */
-            clip_count: number;
-            /**
-             * Total Duration Ms
-             * @description Combined length of all clips in milliseconds. Set once ready.
-             */
-            total_duration_ms?: number | null;
-            /**
-             * Caller Track Duration Ms
-             * @description Length of the full caller audio track in milliseconds. Set once ready.
-             */
-            caller_track_duration_ms?: number | null;
-            /**
              * Source Call Id
              * @description ID of the call the set was built from, if it came from a call.
              */
             source_call_id?: number | null;
-            /**
-             * Source Voice Clip Upload Id
-             * @description ID of the upload the set was built from, if it came from an upload.
-             */
-            source_voice_clip_upload_id?: number | null;
             /**
              * Source Channel Mode
              * @description Whether the source recording was `mono` or `multi_channel`.
              */
             source_channel_mode?: string | null;
             /**
-             * Failure Reason
-             * @description Why extraction failed. Set only when `status` is `failed`.
+             * Source Voice Clip Upload Id
+             * @description ID of the upload the set was built from, if it came from an upload.
              */
-            failure_reason?: string | null;
+            source_voice_clip_upload_id?: number | null;
+            /**
+             * Status
+             * @description `extracting` while the caller's clips are being cut, `ready` once the set can be replayed, or `failed`.
+             */
+            status: string;
+            /**
+             * Total Duration Ms
+             * @description Combined length of all clips in milliseconds. Set once ready.
+             */
+            total_duration_ms?: number | null;
             /**
              * Transcripts Version
              * @description Goes up whenever any clip's transcript is edited, verified or unverified.
@@ -9196,12 +9202,6 @@ export interface components {
              * @default 0
              */
             verified_count?: number;
-            /**
-             * Created At
-             * Format: date-time
-             * @description When the voice clip set was created.
-             */
-            created_at: string;
         };
         /**
          * VoiceClipUpdateRequest
@@ -9240,15 +9240,15 @@ export interface components {
          */
         VoiceClipUploadCreateRequest: {
             /**
-             * Filename
-             * @description Original file name of the audio recording, up to 512 characters.
-             */
-            filename: string;
-            /**
              * Extension
              * @description File extension of the recording, with or without a leading dot. One of flac, m4a, mp3, ogg, wav, webm.
              */
             extension: string;
+            /**
+             * Filename
+             * @description Original file name of the audio recording, up to 512 characters.
+             */
+            filename: string;
             /**
              * Size Bytes
              * @description Size of the recording in bytes, up to 200 MB. The upload is split into parts based on this size.
@@ -9261,36 +9261,6 @@ export interface components {
          */
         VoiceClipUploadCreateResponse: {
             /**
-             * Id
-             * @description Voice clip upload ID.
-             */
-            id: number;
-            /**
-             * Status
-             * @description Upload status: `uploading`, `uploaded`, `analyzing`, `awaiting_selection`, `consumed` or `failed`. `awaiting_selection` means the recording is ready for you to pick the caller's channel; `consumed` means a clip set has been built from it.
-             */
-            status: string;
-            /**
-             * Filename
-             * @description Original file name of the recording.
-             */
-            filename: string;
-            /**
-             * Extension
-             * @description File extension of the recording.
-             */
-            extension: string;
-            /**
-             * Size Bytes
-             * @description Declared size of the recording, in bytes.
-             */
-            size_bytes: number;
-            /**
-             * Duration Ms
-             * @description Duration of the recording in milliseconds. Set after analysis.
-             */
-            duration_ms?: number | null;
-            /**
              * Channel Count
              * @description Number of audio channels. Set after analysis.
              */
@@ -9301,21 +9271,42 @@ export interface components {
              */
             channel_mode?: string | null;
             /**
-             * Speakers
-             * @description Channels detected in the recording. Set after analysis.
+             * Created At
+             * Format: date-time
+             * @description When the upload was started.
              */
-            speakers?: components["schemas"]["VoiceClipUploadSpeaker"][] | null;
+            created_at: string;
+            /**
+             * Duration Ms
+             * @description Duration of the recording in milliseconds. Set after analysis.
+             */
+            duration_ms?: number | null;
+            /**
+             * Expires At
+             * Format: date-time
+             * @description When the part URLs expire.
+             */
+            expires_at: string;
+            /**
+             * Extension
+             * @description File extension of the recording.
+             */
+            extension: string;
             /**
              * Failure Reason
              * @description Why the upload failed. Set only when `status` is `failed`.
              */
             failure_reason?: string | null;
             /**
-             * Created At
-             * Format: date-time
-             * @description When the upload was started.
+             * Filename
+             * @description Original file name of the recording.
              */
-            created_at: string;
+            filename: string;
+            /**
+             * Id
+             * @description Voice clip upload ID.
+             */
+            id: number;
             /**
              * Part Size Bytes
              * @description Size of each part in bytes. Every part except the last must be this size.
@@ -9327,11 +9318,20 @@ export interface components {
              */
             parts?: components["schemas"]["VoiceClipUploadPart"][];
             /**
-             * Expires At
-             * Format: date-time
-             * @description When the part URLs expire.
+             * Size Bytes
+             * @description Declared size of the recording, in bytes.
              */
-            expires_at: string;
+            size_bytes: number;
+            /**
+             * Speakers
+             * @description Channels detected in the recording. Set after analysis.
+             */
+            speakers?: components["schemas"]["VoiceClipUploadSpeaker"][] | null;
+            /**
+             * Status
+             * @description Upload status: `uploading`, `uploaded`, `analyzing`, `awaiting_selection`, `consumed` or `failed`. `awaiting_selection` means the recording is ready for you to pick the caller's channel; `consumed` means a clip set has been built from it.
+             */
+            status: string;
         };
         /**
          * VoiceClipUploadPart
@@ -9355,67 +9355,37 @@ export interface components {
          */
         VoiceClipUploadPartsResponse: {
             /**
-             * Upload Id
-             * @description Voice clip upload ID.
+             * Expires At
+             * Format: date-time
+             * @description When the part URLs expire.
              */
-            upload_id: number;
+            expires_at: string;
             /**
              * Part Size Bytes
              * @description Size of each part in bytes.
              */
             part_size_bytes: number;
             /**
-             * Uploaded Part Numbers
-             * @description Numbers of the parts already uploaded.
-             */
-            uploaded_part_numbers?: number[];
-            /**
              * Parts
              * @description Fresh presigned URLs for the parts still missing.
              */
             parts?: components["schemas"]["VoiceClipUploadPart"][];
             /**
-             * Expires At
-             * Format: date-time
-             * @description When the part URLs expire.
+             * Upload Id
+             * @description Voice clip upload ID.
              */
-            expires_at: string;
+            upload_id: number;
+            /**
+             * Uploaded Part Numbers
+             * @description Numbers of the parts already uploaded.
+             */
+            uploaded_part_numbers?: number[];
         };
         /**
          * VoiceClipUploadResponse
          * @description Status of an uploaded recording.
          */
         VoiceClipUploadResponse: {
-            /**
-             * Id
-             * @description Voice clip upload ID.
-             */
-            id: number;
-            /**
-             * Status
-             * @description Upload status: `uploading`, `uploaded`, `analyzing`, `awaiting_selection`, `consumed` or `failed`. `awaiting_selection` means the recording is ready for you to pick the caller's channel; `consumed` means a clip set has been built from it.
-             */
-            status: string;
-            /**
-             * Filename
-             * @description Original file name of the recording.
-             */
-            filename: string;
-            /**
-             * Extension
-             * @description File extension of the recording.
-             */
-            extension: string;
-            /**
-             * Size Bytes
-             * @description Declared size of the recording, in bytes.
-             */
-            size_bytes: number;
-            /**
-             * Duration Ms
-             * @description Duration of the recording in milliseconds. Set after analysis.
-             */
-            duration_ms?: number | null;
             /**
              * Channel Count
              * @description Number of audio channels. Set after analysis.
@@ -9427,21 +9397,51 @@ export interface components {
              */
             channel_mode?: string | null;
             /**
-             * Speakers
-             * @description Channels detected in the recording. Set after analysis.
+             * Created At
+             * Format: date-time
+             * @description When the upload was started.
              */
-            speakers?: components["schemas"]["VoiceClipUploadSpeaker"][] | null;
+            created_at: string;
+            /**
+             * Duration Ms
+             * @description Duration of the recording in milliseconds. Set after analysis.
+             */
+            duration_ms?: number | null;
+            /**
+             * Extension
+             * @description File extension of the recording.
+             */
+            extension: string;
             /**
              * Failure Reason
              * @description Why the upload failed. Set only when `status` is `failed`.
              */
             failure_reason?: string | null;
             /**
-             * Created At
-             * Format: date-time
-             * @description When the upload was started.
+             * Filename
+             * @description Original file name of the recording.
              */
-            created_at: string;
+            filename: string;
+            /**
+             * Id
+             * @description Voice clip upload ID.
+             */
+            id: number;
+            /**
+             * Size Bytes
+             * @description Declared size of the recording, in bytes.
+             */
+            size_bytes: number;
+            /**
+             * Speakers
+             * @description Channels detected in the recording. Set after analysis.
+             */
+            speakers?: components["schemas"]["VoiceClipUploadSpeaker"][] | null;
+            /**
+             * Status
+             * @description Upload status: `uploading`, `uploaded`, `analyzing`, `awaiting_selection`, `consumed` or `failed`. `awaiting_selection` means the recording is ready for you to pick the caller's channel; `consumed` means a clip set has been built from it.
+             */
+            status: string;
         };
         /**
          * VoiceClipUploadSampleResponse
@@ -9449,16 +9449,16 @@ export interface components {
          */
         VoiceClipUploadSampleResponse: {
             /**
-             * Url
-             * @description Presigned URL of the audio sample.
-             */
-            url: string;
-            /**
              * Expires At
              * Format: date-time
              * @description When the URL expires.
              */
             expires_at: string;
+            /**
+             * Url
+             * @description Presigned URL of the audio sample.
+             */
+            url: string;
         };
         /**
          * VoiceClipUploadSpeaker
@@ -9481,49 +9481,54 @@ export interface components {
          * @description Input schema for creating/updating a voice metric.
          */
         VoiceMetricInput: {
+            /** Configuration */
+            configuration?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Enabled
              * @default true
              */
             enabled?: boolean;
-            /** Status */
-            status?: string | null;
-            /** Configuration */
-            configuration?: {
-                [key: string]: unknown;
-            } | null;
             /** Order */
             order?: number | null;
+            /** Status */
+            status?: string | null;
         };
         /**
          * VoiceMetricResponse
          * @description Response schema for a voice metric.
          */
         VoiceMetricResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Description */
-            description: string;
-            /** Enabled */
-            enabled: boolean;
-            /** Status */
-            status: string;
-            /** Is Removable */
-            is_removable: boolean;
-            /** Order */
-            order: number;
             /** Configuration */
             configuration?: {
                 [key: string]: unknown;
             } | null;
+            /** Description */
+            description: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Id */
+            id: number;
+            /** Is Removable */
+            is_removable: boolean;
+            /** Name */
+            name: string;
+            /** Order */
+            order: number;
+            /** Status */
+            status: string;
         };
         /**
          * VoiceMetricsSummary
          * @description Aggregated voice metrics surfaced on call details.
          */
         VoiceMetricsSummary: {
+            /**
+             * Longest Agent Monologue Ms
+             * @description Longest continuous agent monologue duration in milliseconds
+             */
+            longest_agent_monologue_ms?: number | null;
             /**
              * P50 Latency
              * @description P50 e2e latency in milliseconds
@@ -9549,11 +9554,6 @@ export interface components {
              * @description P99 e2e latency in milliseconds
              */
             p99_latency?: number | null;
-            /**
-             * Longest Agent Monologue Ms
-             * @description Longest continuous agent monologue duration in milliseconds
-             */
-            longest_agent_monologue_ms?: number | null;
         };
         /**
          * WhoamiAgent
@@ -9567,17 +9567,17 @@ export interface components {
              */
             id: number;
             /**
-             * Remote Identifier
-             * @description The agent's Agent ID in Tuner.
-             * @example booking-staging
-             */
-            remote_identifier: string;
-            /**
              * Name
              * @description Agent name.
              * @example Booking (staging)
              */
             name: string;
+            /**
+             * Remote Identifier
+             * @description The agent's Agent ID in Tuner.
+             * @example booking-staging
+             */
+            remote_identifier: string;
         };
         /**
          * WhoamiApiKey
@@ -9585,11 +9585,11 @@ export interface components {
          */
         WhoamiApiKey: {
             /**
-             * Name
-             * @description Name of the API key.
-             * @example ci-staging
+             * Created At
+             * Format: date-time
+             * @description When the key was created.
              */
-            name: string;
+            created_at: string;
             /**
              * Last Four
              * @description Last four characters of the key.
@@ -9597,21 +9597,21 @@ export interface components {
              */
             last_four: string;
             /**
-             * Created At
-             * Format: date-time
-             * @description When the key was created.
+             * Name
+             * @description Name of the API key.
+             * @example ci-staging
              */
-            created_at: string;
+            name: string;
         };
         /**
          * WhoamiResponse
          * @description The workspace and key behind an API key, and optionally an agent.
          */
         WhoamiResponse: {
-            workspace: components["schemas"]["WhoamiWorkspace"];
-            api_key: components["schemas"]["WhoamiApiKey"];
             /** @description The agent with `agent_remote_identifier`; null when it was not sent. */
             agent: components["schemas"]["WhoamiAgent"] | null;
+            api_key: components["schemas"]["WhoamiApiKey"];
+            workspace: components["schemas"]["WhoamiWorkspace"];
         };
         /**
          * WhoamiWorkspace
@@ -9636,24 +9636,24 @@ export interface components {
          * @description Workspace schema for API responses.
          */
         Workspace: {
-            /** Name */
-            name: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Created By
-             * @description ID of the user who created this workspace
-             */
-            created_by?: number | null;
-            /** Id */
-            id: number;
-            /** Deleted At */
-            deleted_at?: string | null;
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
+            /**
+             * Created By
+             * @description ID of the user who created this workspace
+             */
+            created_by?: number | null;
+            /** Deleted At */
+            deleted_at?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
             /**
              * Updated At
              * Format: date-time
@@ -9681,20 +9681,10 @@ export interface components {
          */
         WorkspaceApiKeyCreatedResponse: {
             /**
-             * Id
-             * @description API key ID.
+             * Api Key
+             * @description The full key. Shown once and never retrievable again.
              */
-            id: number;
-            /**
-             * Name
-             * @description Name given to the key when it was created.
-             */
-            name: string;
-            /**
-             * Last Four
-             * @description Last four characters of the key, to tell keys apart.
-             */
-            last_four: string;
+            api_key: string;
             /**
              * Created At
              * Format: date-time
@@ -9702,15 +9692,25 @@ export interface components {
              */
             created_at: string;
             /**
+             * Id
+             * @description API key ID.
+             */
+            id: number;
+            /**
+             * Last Four
+             * @description Last four characters of the key, to tell keys apart.
+             */
+            last_four: string;
+            /**
              * Last Used At
              * @description When the key was last used. Null if it has never been used.
              */
             last_used_at?: string | null;
             /**
-             * Api Key
-             * @description The full key. Shown once and never retrievable again.
+             * Name
+             * @description Name given to the key when it was created.
              */
-            api_key: string;
+            name: string;
         };
         /**
          * WorkspaceApiKeyResponse
@@ -9721,60 +9721,60 @@ export interface components {
          */
         WorkspaceApiKeyResponse: {
             /**
-             * Id
-             * @description API key ID.
-             */
-            id: number;
-            /**
-             * Name
-             * @description Name given to the key when it was created.
-             */
-            name: string;
-            /**
-             * Last Four
-             * @description Last four characters of the key, to tell keys apart.
-             */
-            last_four: string;
-            /**
              * Created At
              * Format: date-time
              * @description When the key was created.
              */
             created_at: string;
             /**
+             * Id
+             * @description API key ID.
+             */
+            id: number;
+            /**
+             * Last Four
+             * @description Last four characters of the key, to tell keys apart.
+             */
+            last_four: string;
+            /**
              * Last Used At
              * @description When the key was last used. Null if it has never been used.
              */
             last_used_at?: string | null;
+            /**
+             * Name
+             * @description Name given to the key when it was created.
+             */
+            name: string;
         };
         /**
          * WorkspaceCreateRequest
          * @description Request schema for workspace creation.
          */
         WorkspaceCreateRequest: {
-            /** Workspace Name */
-            workspace_name: string;
             /**
              * Integrations
              * @description List of integrations to set up
              * @default []
              */
             integrations?: components["schemas"]["IntegrationInput"][];
+            /** Workspace Name */
+            workspace_name: string;
         };
         /**
          * WorkspaceResponse
          * @description Response schema for workspace creation.
          */
         WorkspaceResponse: {
-            /** Workspace Id */
-            workspace_id: number;
-            /** Workspace Name */
-            workspace_name: string;
             /**
              * Integrations
              * @default []
              */
             integrations?: components["schemas"]["IntegrationResponse"][];
+            /** Workspace Id */
+            workspace_id: number;
+            /** Workspace Name */
+            workspace_name: string;
         };
     };
     responses: never;
@@ -9785,6 +9785,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_all_providers_api_v1_providers__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderResponse"][];
+                };
+            };
+        };
+    };
     create_call_api_v1_public_call_post: {
         parameters: {
             query: {
@@ -9954,6 +9974,535 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    receive_traces_api_v1_traces_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    whoami_api_v1_whoami_get: {
+        parameters: {
+            query?: {
+                /** @description An agent's Agent ID in Tuner (Agent Settings > Agent Connection > Agent ID). When sent, the matching agent of the key's workspace is returned. */
+                agent_remote_identifier?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhoamiResponse"];
+                };
+            };
+            /** @description No `Authorization` header, or a credential that is not a Tuner API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "This endpoint requires a Tuner API key."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unknown or revoked API key. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Invalid API key."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `agent_remote_identifier` was sent and no agent in the key's workspace has it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with remote identifier booking-staging not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_user_workspaces_api_v1_workspaces__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Workspace"][];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_workspace_by_id_api_v1_workspaces__workspace_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workspace_agents_api_v1_workspaces__workspace_id__agents__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Agent"][];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_agent_api_v1_workspaces__workspace_id__agents__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Agent"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workspace_agent_api_v1_workspaces__workspace_id__agents__agent_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Agent"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace, or the agent belongs to a different workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "Agent with ID 17 does not belong to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found, or no agent with this ID exists in this workspace. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_agent_api_v1_workspaces__workspace_id__agents__agent_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Agent"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace, or the agent belongs to a different workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "Agent with ID 17 does not belong to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found, or no agent with this ID exists in this workspace. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -10342,6 +10891,87 @@ export interface operations {
             };
         };
     };
+    get_call_spans_api_v1_workspaces__workspace_id__agents__agent_id__calls__call_id__spans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's internal numeric ID for the call. */
+                call_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallSpanResponse"][];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or call not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Call with ID 88 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     rescore_call_transcription_accuracy_api_v1_workspaces__workspace_id__agents__agent_id__calls__call_id__transcription_accuracy_rescore_post: {
         parameters: {
             query?: never;
@@ -10438,894 +11068,7 @@ export interface operations {
             };
         };
     };
-    get_call_spans_api_v1_workspaces__workspace_id__agents__agent_id__calls__call_id__spans_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's internal numeric ID for the call. */
-                call_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CallSpanResponse"][];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or call not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Call with ID 88 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    whoami_api_v1_whoami_get: {
-        parameters: {
-            query?: {
-                /** @description An agent's Agent ID in Tuner (Agent Settings > Agent Connection > Agent ID). When sent, the matching agent of the key's workspace is returned. */
-                agent_remote_identifier?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WhoamiResponse"];
-                };
-            };
-            /** @description No `Authorization` header, or a credential that is not a Tuner API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "This endpoint requires a Tuner API key."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unknown or revoked API key. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Invalid API key."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description `agent_remote_identifier` was sent and no agent in the key's workspace has it. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with remote identifier booking-staging not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_workspace_by_id_api_v1_workspaces__workspace_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkspaceResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_user_workspaces_api_v1_workspaces__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Workspace"][];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    get_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PIIRedactionResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PIIRedactionUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PIIRedactionResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description PII redaction isn't included in the workspace's plan. */
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_credits",
-                     *       "detail": "PII redaction is not included in your current plan."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataRetentionResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DataRetentionUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataRetentionResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The selected retention window or erasure scope isn't included in the workspace's plan. Check `allowed_retention_periods` and `allowed_erasure_scopes` on the GET response. */
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_credits",
-                     *       "detail": "Selected retention period is not included in your current plan."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A retention window was set without an erasure scope, or a field failed validation (`retention_period_days` must be a positive integer or null; `erasure_scope` must be one of the known scope tokens). */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "erasure_scope is required when a retention period is set."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The workspace's plan could not be verified, so the requested window and scope can't be checked against it. Retry shortly. Clearing the policy (`retention_period_days: null`) is accepted even then, since it only ever stops deletion. */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "internal_error",
-                     *       "detail": "Could not verify your plan's retention options right now. Please try again."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    list_workspace_api_keys_api_v1_workspaces__workspace_id__api_keys_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkspaceApiKeyResponse"][];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_workspace_api_key_api_v1_workspaces__workspace_id__api_keys_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WorkspaceApiKeyCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkspaceApiKeyCreatedResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A live key of that name already exists. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Duplicate name"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    revoke_workspace_api_key_api_v1_workspaces__workspace_id__api_keys__key_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the workspace API key */
-                key_id: number;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No such key in this workspace. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Key not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_get: {
+    list_replay_runs_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_get: {
         parameters: {
             query?: {
                 /** @description Only return runs with this status. */
@@ -11352,7 +11095,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SimulationRunsDetailResponse"];
+                    "application/json": components["schemas"]["ReplayRunsDetailResponse"];
                 };
             };
             /** @description Missing or invalid API key. */
@@ -11411,7 +11154,7 @@ export interface operations {
             };
         };
     };
-    create_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_post: {
+    create_replay_run_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -11425,7 +11168,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateSimulationRunRequest"];
+                "application/json": components["schemas"]["CreateReplayRunRequest"];
             };
         };
         responses: {
@@ -11438,7 +11181,7 @@ export interface operations {
                     "application/json": components["schemas"]["SimulationRunResponse"];
                 };
             };
-            /** @description `caller_persona_id`, `simulation_profile_id` or `noise_environment_id` does not exist, or the profile belongs to a different agent. */
+            /** @description One or more `voice_clip_set_ids` are not `ready`, or do not belong to this agent. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -11447,7 +11190,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "code": "validation_error",
-                     *       "detail": "Invalid simulation_profile_id or profile does not belong to this agent"
+                     *       "detail": "Voice clip set(s) [12, 13] are not ready, or do not belong to this agent."
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
@@ -11528,7 +11271,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or `selected_eval_ids` or `selected_intent_ids` contains an unknown id. */
+            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, `selected_eval_ids` or `selected_intent_ids` contains an unknown id, a selected clip set's worst-case call duration exceeds `max_call_duration_minutes`, or the agent's SIP endpoint could not be reached. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -11536,8 +11279,8 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "code": "simulation_not_configured",
-                     *       "detail": "Agent has no boolean (PASS_FAIL) evals. Add at least one before running a simulation."
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip set 'Angry refund caller' (id=12) has a worst-case call duration of 185000ms, which exceeds the 3-minute cap. Increase max_call_duration_minutes."
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
@@ -11556,1174 +11299,6 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    create_select_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_select_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Client making the request, `<client>/<semver>` (e.g. `cli/0.1.0`). */
-                "X-Tuner-Client"?: string | null;
-            };
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateSelectSimulationRunRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationRunResponse"];
-                };
-            };
-            /** @description `caller_persona_id`, `simulation_profile_id` or `noise_environment_id` does not exist, or the profile belongs to a different agent. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Invalid simulation_profile_id or profile does not belong to this agent"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The workspace has no credits remaining, or its plan does not include simulations. */
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_credits",
-                     *       "detail": "You have no credits remaining."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A selected scenario id does not exist, is soft-deleted, or does not belong to this agent. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "scenario_not_found",
-                     *       "detail": "Scenario 501 not found for this agent."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A simulation run is already in progress for this agent. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "run_in_flight",
-                     *       "detail": "You have a simulation run in progress. Come back later."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 20 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "simulation_not_configured",
-                     *       "detail": "Agent has no boolean (PASS_FAIL) evals. Add at least one before running a simulation."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The run was created but could not be started (for example, its calls could not be queued). The run is marked failed; retry the request. */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "run_start_failed",
-                     *       "detail": "Could not start the simulation run. Please try again."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    list_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the simulation run */
-                simulation_run_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationScenariosListResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or simulation run not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Simulation run with ID 31 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    save_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_save_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the simulation run */
-                simulation_run_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SaveScenariosFromRunRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ScenarioResponse"][];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found, or a selected scenario execution does not belong to this run/agent. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Simulation scenario execution 501 not found for this run."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The run was not found for this agent, or it has not finished executing (its `status` must be `complete`, `partial`, `analyzing`, `unreported` or `analysis_failed`), or a selected execution was already saved to the library. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "This scenario is already in your library."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A selected execution has no `situation` to save, a selection's `name` is blank after trimming, or an execution id was selected more than once. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Scenario execution 501 has no situation to save."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    search_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_search_get: {
-        parameters: {
-            query: {
-                /** @description Only return runs with this status. */
-                run_status: "pending" | "running" | "analyzing" | "complete" | "partial" | "failed" | "unreported" | "analysis_failed" | "canceled";
-                /** @description Only return runs created within the last this-many minutes (1-10080, i.e. up to 7 days). Omit to search all time. */
-                minutes_back?: number | null;
-                /** @description Maximum number of runs to return (1-200). */
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationRunSearchResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the simulation run. */
-                run_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationRunGetResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The agent was not found, or the run is not one of this agent's simulation runs (replay runs included). */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    cancel_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__cancel_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the simulation run. */
-                run_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationRunGetResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The agent was not found, or the run is not one of this agent's simulation runs (replay runs included). */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_simulation_profiles_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationProfileListResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SimulationProfileInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationProfileResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A profile with this name already exists for this agent. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "A simulation profile named 'Frustrated caller' already exists for this agent."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the simulation profile */
-                profile_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SimulationProfileInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationProfileResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or profile not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Simulation profile with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Another profile with this name already exists for this agent. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "A simulation profile named 'Frustrated caller' already exists for this agent."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the simulation profile */
-                profile_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or profile not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Simulation profile with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_caller_personas_api_v1_workspaces__workspace_id__caller_personas_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CallerOptionsResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_noise_environments_api_v1_workspaces__workspace_id__noise_environments_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NoiseEnvironmentsResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    preview_scenario_prompt_api_v1_workspaces__workspace_id__agents__agent_id__scenarios_preview_prompt_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ScenarioPromptPreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ScenarioPromptPreviewResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -12899,6 +11474,89 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_scenario_prompt_api_v1_workspaces__workspace_id__agents__agent_id__scenarios_preview_prompt_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScenarioPromptPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioPromptPreviewResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -13238,93 +11896,7 @@ export interface operations {
             };
         };
     };
-    list_source_calls_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_source_calls_get: {
-        parameters: {
-            query?: {
-                /** @description Page number */
-                page?: number;
-                /** @description Items per page */
-                page_size?: number;
-                /** @description Search by provider call ID */
-                search?: string | null;
-            };
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SourceCallsListResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_voice_clip_sets_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_get: {
+    list_alert_definitions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -13344,7 +11916,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VoiceClipSetListResponse"];
+                    "application/json": components["schemas"]["AlertDefinitionResponse"][];
                 };
             };
             /** @description Missing or invalid API key. */
@@ -13403,7 +11975,7 @@ export interface operations {
             };
         };
     };
-    create_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_post: {
+    create_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -13417,32 +11989,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["VoiceClipSetCreateRequest"];
+                "application/json": components["schemas"]["AlertDefinitionCreate"];
             };
         };
         responses: {
             /** @description Successful Response */
-            202: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VoiceClipSetResponse"];
-                };
-            };
-            /** @description `source_call_id` or `voice_clip_upload_id` does not exist or belongs to a different agent, the source call has no usable recording (its recording link is not a public https link and no uploaded audio is stored), or `caller_channel_index` is out of range for the upload. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Call with ID 123 not found for this agent."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["AlertDefinitionResponse"];
                 };
             };
             /** @description Missing or invalid API key. */
@@ -13455,21 +12012,6 @@ export interface operations {
                      * @example {
                      *       "code": "invalid_api_key",
                      *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Simulation (for a call source) or clip upload analysis (for an upload source) is not included in the workspace's current plan. */
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_credits",
-                     *       "detail": "Clip upload analysis not included in your current plan."
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
@@ -13505,39 +12047,22 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description A voice clip set with this name already exists for this agent, or the upload is not awaiting a channel selection or already has a clip set. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "A voice clip set named 'Angry customer' already exists for this agent."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
+            /** @description The request body is invalid. `detail` is always a list with one item per problem, and `loc` points at the field that failed. Common causes: a field does not match its schema; `threshold_type` is missing its companion fields (`threshold_n` for `count`; `threshold_percentage` and `threshold_minimum` for `percentage`); `percentage` mode with more than one predicate; a condition tree with no predicate; a condition the agent can't evaluate (unknown field, an operator the field doesn't allow, a missing value, or a value of the wrong type); a predicate with only one of `source` and `field_id`, with a `field_id` that is not an eval or data extraction field of this agent, or with a name that matches both an eval and a data extraction field but no `source` and `field_id`; or the `webhook` channel on an agent that has no webhook URL. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorResponse"];
                 };
             };
         };
     };
-    get_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__get: {
+    get_alerts_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_available_conditions_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description ID of the voice clip set */
-                voice_clip_set_id: number;
                 /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
                 agent_id: string;
                 /** @description Workspace ID. Find this in Workspace > General Settings. */
@@ -13553,7 +12078,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VoiceClipSetDetailResponse"];
+                    "application/json": components["schemas"]["AlertAvailableConditionsResponse"];
                 };
             };
             /** @description Missing or invalid API key. */
@@ -13586,18 +12111,12 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Agent or voice clip set not found. */
+            /** @description The agent does not exist, or it has no settings record. */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip set with ID 9 not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
@@ -13612,13 +12131,167 @@ export interface operations {
             };
         };
     };
-    delete_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__delete: {
+    get_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description ID of the voice clip set */
-                voice_clip_set_id: number;
+                /** @description ID of the alert definition */
+                alert_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDefinitionResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent does not exist, or no alert definition with this ID exists for it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the alert definition */
+                alert_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlertDefinitionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDefinitionResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent does not exist, or no alert definition with this ID exists for it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request body is invalid. `detail` is always a list with one item per problem, and `loc` points at the field that failed. Common causes: a field does not match its schema; `threshold_type` is being switched without its companion fields (`threshold_n` for `count`; `threshold_percentage` and `threshold_minimum` for `percentage`); switching to `percentage` while the alert's condition tree has more than one predicate; a condition tree with no predicate; a new or changed condition the agent can't evaluate (unknown field, an operator the field doesn't allow, a missing value, or a value of the wrong type); a predicate with only one of `source` and `field_id`, with a `field_id` that is not an eval or data extraction field of this agent, or with a name that matches both an eval and a data extraction field but no `source` and `field_id`; or the `webhook` channel on an agent that has no webhook URL. Only conditions that are new or changed in a sent `condition_tree` are checked, so an alert whose existing condition can no longer be evaluated can still be paused or renamed. Setting a paused alert back to `active` checks the whole condition, sent or stored: if a field it uses no longer exists or a condition can't be evaluated, `loc` points at `state` (or at the condition in a sent `condition_tree`); fix the condition in the same request. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the alert definition */
+                alert_id: number;
                 /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
                 agent_id: string;
                 /** @description Workspace ID. Find this in Workspace > General Settings. */
@@ -13665,1402 +12338,12 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Agent or voice clip set not found. */
+            /** @description The agent does not exist, or no alert definition with this ID exists for it. */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip set with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_voice_clip_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__clips__turn_index__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                voice_clip_set_id: number;
-                turn_index: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VoiceClipUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoiceClipResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent, voice clip set or clip (by turn index) not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip set with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The set has not finished extracting yet. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Clip set is still being processed; clips can't be edited yet"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Empty body, `reference_transcript` longer than 5000 characters, or `verified=false` combined with `reference_transcript`. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Provide reference_transcript and/or verified."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    get_voice_clip_set_audio_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__audio_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the voice clip set */
-                voice_clip_set_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoiceClipSetAudioResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or voice clip set not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip set with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The set has not finished extracting yet, or extraction failed. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip set 9 has no playable audio yet (status='extracting')."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VoiceClipUploadCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoiceClipUploadCreateResponse"];
-                };
-            };
-            /** @description Unsupported extension, or a declared size above the 200 MB ceiling. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Unsupported extension 'flac'. Allowed: ['m4a', 'mp3', 'wav']"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Simulation is not included in the workspace's current plan, or the workspace lacks credits for uploaded-audio analysis. */
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_credits",
-                     *       "detail": "Simulation not included in your current plan."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Audio uploads are currently unavailable. */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "internal_error",
-                     *       "detail": "Audio uploads are not available in this environment."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    get_voice_clip_upload_parts_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__parts_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the voice clip upload */
-                voice_clip_upload_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoiceClipUploadPartsResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or upload not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The upload has already been completed or aborted. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload 9 has no upload in progress (status='uploaded')."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Audio uploads are currently unavailable. */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "internal_error",
-                     *       "detail": "Audio uploads are not available in this environment."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    complete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__complete_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the voice clip upload */
-                voice_clip_upload_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VoiceClipUploadCompleteRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoiceClipUploadResponse"];
-                };
-            };
-            /** @description The reported parts do not match what was uploaded. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Parts [3] are missing from S3 or have a different ETag. Re-upload them and complete again."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or upload not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The upload was aborted, or never had an upload in progress. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload 9 has no upload in progress (status='failed')."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_voice_clip_upload_sample_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__samples__channel_index__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the voice clip upload */
-                voice_clip_upload_id: number;
-                /** @description `index` of the speaker channel, as listed in the upload's `speakers` */
-                channel_index: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoiceClipUploadSampleResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or upload not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Analysis has not produced samples yet, or there is no such channel. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload 9 has no channel samples yet (status='uploaded')."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the voice clip upload */
-                voice_clip_upload_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoiceClipUploadResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or upload not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the voice clip upload */
-                voice_clip_upload_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent or upload not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload with ID 9 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A voice clip set was already built from the upload. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip upload 9 has been used to build a voice clip set."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_replay_runs_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_get: {
-        parameters: {
-            query?: {
-                /** @description Only return runs with this status. */
-                status?: ("pending" | "running" | "analyzing" | "complete" | "partial" | "failed" | "unreported" | "analysis_failed" | "canceled") | null;
-                /** @description Page number, starting at 1. */
-                page?: number;
-                /** @description Number of runs per page (1-100). */
-                page_size?: number;
-            };
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReplayRunsDetailResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_replay_run_api_v1_workspaces__workspace_id__agents__agent_id__replay_runs_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateReplayRunRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulationRunResponse"];
-                };
-            };
-            /** @description One or more `voice_clip_set_ids` are not `ready`, or do not belong to this agent. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip set(s) [12, 13] are not ready, or do not belong to this agent."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The workspace has no credits remaining, or its plan does not include simulations. */
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_credits",
-                     *       "detail": "You have no credits remaining."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description A simulation run is already in progress for this agent. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "run_in_flight",
-                     *       "detail": "You have a simulation run in progress. Come back later."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, `selected_eval_ids` or `selected_intent_ids` contains an unknown id, a selected clip set's worst-case call duration exceeds `max_call_duration_minutes`, or the agent's SIP endpoint could not be reached. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Voice clip set 'Angry refund caller' (id=12) has a worst-case call duration of 185000ms, which exceeds the 3-minute cap. Increase max_call_duration_minutes."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The run was created but could not be started (for example, its calls could not be queued). The run is marked failed; retry the request. */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "run_start_failed",
-                     *       "detail": "Could not start the simulation run. Please try again."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    get_workspace_agents_api_v1_workspaces__workspace_id__agents__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Agent"][];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_agent_api_v1_workspaces__workspace_id__agents__post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AgentCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Agent"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "workspace_not_found",
-                     *       "detail": "Workspace with ID 42 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_workspace_agent_api_v1_workspaces__workspace_id__agents__agent_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Agent"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace, or the agent belongs to a different workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "Agent with ID 17 does not belong to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found, or no agent with this ID exists in this workspace. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_agent_api_v1_workspaces__workspace_id__agents__agent_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AgentUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Agent"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace, or the agent belongs to a different workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "Agent with ID 17 does not belong to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Workspace not found, or no agent with this ID exists in this workspace. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
@@ -15138,865 +12421,6 @@ export interface operations {
                      * @example {
                      *       "code": "agent_not_found",
                      *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["Body_update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SipConfigResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No SIP configuration has been saved for this agent. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "SIP config not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    upsert_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SipConfigUpsertRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SipConfigResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The SIP connectivity check failed — the trunk could not be reached or did not answer the verification call. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Your SIP endpoint didn't answer our test call. Make sure your voice agent is live and answering calls, then try again."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The SIP connectivity check timed out after 12 seconds. */
-            504: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "internal_error",
-                     *       "detail": "SIP probe timed out"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    delete_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OutboundConfigResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No outbound configuration has been saved for this agent. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "No outbound config found for agent 17"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    upsert_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OutboundConfigUpsertRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OutboundConfigResponse"];
-                };
-            };
-            /** @description The trigger URL was unreachable or returned a non-2xx response, or `phone_number_id` could not be verified. For a Vapi agent: no VAPI integration configured, the phone number was not found, or VAPI verification of it failed. For an ElevenLabs agent: no ElevenLabs integration, number not found, not a SIP trunk number, or its outbound trunk address is not Tuner's SIP route. Any other provider cannot use `phone_number_id`; use `trigger_url` instead. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "VAPI phone number not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description The trigger URL check timed out after 15 seconds. */
-            504: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "internal_error",
-                     *       "detail": "Trigger URL probe timed out"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    delete_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CallOutcomeInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CallOutcomeResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the call outcome */
-                outcome_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CallOutcomeInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CallOutcomeResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found, or no call outcome with this ID exists for it. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Call outcome with ID 5 not found for agent 17"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the call outcome */
-                outcome_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found, or no call outcome with this ID exists for it. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "validation_error",
-                     *       "detail": "Call outcome with ID 5 not found for agent 17"
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
@@ -16244,6 +12668,253 @@ export interface operations {
                      * @example {
                      *       "code": "validation_error",
                      *       "detail": "Call intent with ID 8 not found for agent 17"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CallOutcomeInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallOutcomeResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the call outcome */
+                outcome_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CallOutcomeInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallOutcomeResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found, or no call outcome with this ID exists for it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Call outcome with ID 5 not found for agent 17"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_call_outcome_api_v1_workspaces__workspace_id__agents__agent_id__settings_call_outcomes__outcome_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the call outcome */
+                outcome_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found, or no call outcome with this ID exists for it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Call outcome with ID 5 not found for agent 17"
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
@@ -16540,19 +13211,19 @@ export interface operations {
                      *       "code": "validation_error",
                      *       "detail": {
                      *         "code": "delete_confirmation_required",
-                     *         "message": "1 alert and 1 rule use this data extraction field. They will be paused, and their trigger history is kept. To turn them back on, edit each one and choose another data extraction field.",
                      *         "dependents": [
                      *           {
-                     *             "type": "alert",
                      *             "id": 31,
-                     *             "name": "Missing order number"
+                     *             "name": "Missing order number",
+                     *             "type": "alert"
                      *           },
                      *           {
-                     *             "type": "rule",
                      *             "id": 8,
-                     *             "name": "Escalation Flag"
+                     *             "name": "Escalation Flag",
+                     *             "type": "rule"
                      *           }
-                     *         ]
+                     *         ],
+                     *         "message": "1 alert and 1 rule use this data extraction field. They will be paused, and their trigger history is kept. To turn them back on, edit each one and choose another data extraction field."
                      *       }
                      *     }
                      */
@@ -17108,19 +13779,19 @@ export interface operations {
                      *       "code": "validation_error",
                      *       "detail": {
                      *         "code": "delete_confirmation_required",
-                     *         "message": "1 alert and 1 rule use this eval. They will be paused, and their trigger history is kept. To turn them back on, edit each one and choose another eval.",
                      *         "dependents": [
                      *           {
-                     *             "type": "alert",
                      *             "id": 31,
-                     *             "name": "Identity not verified"
+                     *             "name": "Identity not verified",
+                     *             "type": "alert"
                      *           },
                      *           {
-                     *             "type": "rule",
                      *             "id": 8,
-                     *             "name": "Escalation Flag"
+                     *             "name": "Escalation Flag",
+                     *             "type": "rule"
                      *           }
-                     *         ]
+                     *         ],
+                     *         "message": "1 alert and 1 rule use this eval. They will be paused, and their trigger history is kept. To turn them back on, edit each one and choose another eval."
                      *       }
                      *     }
                      */
@@ -17138,7 +13809,7 @@ export interface operations {
             };
         };
     };
-    get_rules_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_rules_available_conditions_get: {
+    update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -17150,7 +13821,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -17158,7 +13833,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AvailableConditionsResponse"];
+                    "application/json": unknown;
                 };
             };
             /** @description Missing or invalid API key. */
@@ -17191,12 +13866,287 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent does not exist, or it has no settings record. */
+            /** @description Agent not found. */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutboundConfigResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No outbound configuration has been saved for this agent. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "No outbound config found for agent 17"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upsert_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutboundConfigUpsertRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutboundConfigResponse"];
+                };
+            };
+            /** @description The trigger URL was unreachable or returned a non-2xx response, or `phone_number_id` could not be verified. For a Vapi agent: no VAPI integration configured, the phone number was not found, or VAPI verification of it failed. For an ElevenLabs agent: no ElevenLabs integration, number not found, not a SIP trunk number, or its outbound trunk address is not Tuner's SIP route. Any other provider cannot use `phone_number_id`; use `trigger_url` instead. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "VAPI phone number not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description The trigger URL check timed out after 15 seconds. */
+            504: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "internal_error",
+                     *       "detail": "Trigger URL probe timed out"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_outbound_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_outbound_config_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
@@ -17357,6 +14307,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ValidationErrorResponse"];
+                };
+            };
+        };
+    };
+    get_rules_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_rules_available_conditions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailableConditionsResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent does not exist, or it has no settings record. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -17591,14 +14614,14 @@ export interface operations {
                      *       "code": "validation_error",
                      *       "detail": {
                      *         "code": "delete_confirmation_required",
-                     *         "message": "1 alert uses this red flag. It will be paused, and its trigger history is kept. To turn it back on, edit the alert and choose another red flag.",
                      *         "dependents": [
                      *           {
-                     *             "type": "alert",
                      *             "id": 31,
-                     *             "name": "Escalation tag spotted"
+                     *             "name": "Escalation tag spotted",
+                     *             "type": "alert"
                      *           }
-                     *         ]
+                     *         ],
+                     *         "message": "1 alert uses this red flag. It will be paused, and its trigger history is kept. To turn it back on, edit the alert and choose another red flag."
                      *       }
                      *     }
                      */
@@ -17616,7 +14639,7 @@ export interface operations {
             };
         };
     };
-    get_alerts_available_conditions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_available_conditions_get: {
+    get_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -17636,7 +14659,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AlertAvailableConditionsResponse"];
+                    "application/json": components["schemas"]["SipConfigResponse"];
                 };
             };
             /** @description Missing or invalid API key. */
@@ -17669,12 +14692,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent does not exist, or it has no settings record. */
+            /** @description No SIP configuration has been saved for this agent. */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "SIP config not found"
+                     *     }
+                     */
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
@@ -17689,7 +14718,7 @@ export interface operations {
             };
         };
     };
-    list_alert_definitions_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_get: {
+    upsert_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -17701,7 +14730,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SipConfigUpsertRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -17709,7 +14742,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AlertDefinitionResponse"][];
+                    "application/json": components["schemas"]["SipConfigResponse"];
                 };
             };
             /** @description Missing or invalid API key. */
@@ -17757,261 +14790,43 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The SIP connectivity check failed — the trunk could not be reached or did not answer the verification call. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Your SIP endpoint didn't answer our test call. Make sure your voice agent is live and answering calls, then try again."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The SIP connectivity check timed out after 12 seconds. */
+            504: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "internal_error",
+                     *       "detail": "SIP probe timed out"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
     };
-    create_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions_post: {
+    delete_sip_config_api_v1_workspaces__workspace_id__agents__agent_id__settings_sip_config_delete: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AlertDefinitionCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AlertDefinitionResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Agent not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "agent_not_found",
-                     *       "detail": "Agent with ID 17 not found"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The request body is invalid. `detail` is always a list with one item per problem, and `loc` points at the field that failed. Common causes: a field does not match its schema; `threshold_type` is missing its companion fields (`threshold_n` for `count`; `threshold_percentage` and `threshold_minimum` for `percentage`); `percentage` mode with more than one predicate; a condition tree with no predicate; a condition the agent can't evaluate (unknown field, an operator the field doesn't allow, a missing value, or a value of the wrong type); a predicate with only one of `source` and `field_id`, with a `field_id` that is not an eval or data extraction field of this agent, or with a name that matches both an eval and a data extraction field but no `source` and `field_id`; or the `webhook` channel on an agent that has no webhook URL. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidationErrorResponse"];
-                };
-            };
-        };
-    };
-    get_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the alert definition */
-                alert_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AlertDefinitionResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The agent does not exist, or no alert definition with this ID exists for it. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the alert definition */
-                alert_id: number;
-                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
-                agent_id: string;
-                /** @description Workspace ID. Find this in Workspace > General Settings. */
-                workspace_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AlertDefinitionUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AlertDefinitionResponse"];
-                };
-            };
-            /** @description Missing or invalid API key. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_api_key",
-                     *       "detail": "Not authenticated"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description You do not have access to this workspace. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "code": "insufficient_access",
-                     *       "detail": "User does not have access to workspace 42"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The agent does not exist, or no alert definition with this ID exists for it. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The request body is invalid. `detail` is always a list with one item per problem, and `loc` points at the field that failed. Common causes: a field does not match its schema; `threshold_type` is being switched without its companion fields (`threshold_n` for `count`; `threshold_percentage` and `threshold_minimum` for `percentage`); switching to `percentage` while the alert's condition tree has more than one predicate; a condition tree with no predicate; a new or changed condition the agent can't evaluate (unknown field, an operator the field doesn't allow, a missing value, or a value of the wrong type); a predicate with only one of `source` and `field_id`, with a `field_id` that is not an eval or data extraction field of this agent, or with a name that matches both an eval and a data extraction field but no `source` and `field_id`; or the `webhook` channel on an agent that has no webhook URL. Only conditions that are new or changed in a sent `condition_tree` are checked, so an alert whose existing condition can no longer be evaluated can still be paused or renamed. Setting a paused alert back to `active` checks the whole condition, sent or stored: if a field it uses no longer exists or a condition can't be evaluated, `loc` points at `state` (or at the condition in a sent `condition_tree`); fix the condition in the same request. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidationErrorResponse"];
-                };
-            };
-        };
-    };
-    delete_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ID of the alert definition */
-                alert_id: number;
                 /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
                 agent_id: string;
                 /** @description Workspace ID. Find this in Workspace > General Settings. */
@@ -18058,7 +14873,917 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent does not exist, or no alert definition with this ID exists for it. */
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_simulation_profiles_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationProfileListResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulationProfileInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationProfileResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A profile with this name already exists for this agent. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "A simulation profile named 'Frustrated caller' already exists for this agent."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the simulation profile */
+                profile_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulationProfileInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationProfileResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or profile not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Simulation profile with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Another profile with this name already exists for this agent. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "A simulation profile named 'Frustrated caller' already exists for this agent."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the simulation profile */
+                profile_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or profile not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Simulation profile with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_get: {
+        parameters: {
+            query?: {
+                /** @description Only return runs with this status. */
+                status?: ("pending" | "running" | "analyzing" | "complete" | "partial" | "failed" | "unreported" | "analysis_failed" | "canceled") | null;
+                /** @description Page number, starting at 1. */
+                page?: number;
+                /** @description Number of runs per page (1-100). */
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunsDetailResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSimulationRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunResponse"];
+                };
+            };
+            /** @description `caller_persona_id`, `simulation_profile_id` or `noise_environment_id` does not exist, or the profile belongs to a different agent. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Invalid simulation_profile_id or profile does not belong to this agent"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The workspace has no credits remaining, or its plan does not include simulations. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_credits",
+                     *       "detail": "You have no credits remaining."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A simulation run is already in progress for this agent. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "run_in_flight",
+                     *       "detail": "You have a simulation run in progress. Come back later."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or `selected_eval_ids` or `selected_intent_ids` contains an unknown id. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "simulation_not_configured",
+                     *       "detail": "Agent has no boolean (PASS_FAIL) evals. Add at least one before running a simulation."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The run was created but could not be started (for example, its calls could not be queued). The run is marked failed; retry the request. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "run_start_failed",
+                     *       "detail": "Could not start the simulation run. Please try again."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_simulation_runs_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_search_get: {
+        parameters: {
+            query: {
+                /** @description Only return runs with this status. */
+                run_status: "pending" | "running" | "analyzing" | "complete" | "partial" | "failed" | "unreported" | "analysis_failed" | "canceled";
+                /** @description Only return runs created within the last this-many minutes (1-10080, i.e. up to 7 days). Omit to search all time. */
+                minutes_back?: number | null;
+                /** @description Maximum number of runs to return (1-200). */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunSearchResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_select_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_select_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client making the request, `<client>/<semver>` (e.g. `cli/0.1.0`). */
+                "X-Tuner-Client"?: string | null;
+            };
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSelectSimulationRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunResponse"];
+                };
+            };
+            /** @description `caller_persona_id`, `simulation_profile_id` or `noise_environment_id` does not exist, or the profile belongs to a different agent. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Invalid simulation_profile_id or profile does not belong to this agent"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The workspace has no credits remaining, or its plan does not include simulations. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_credits",
+                     *       "detail": "You have no credits remaining."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A selected scenario id does not exist, is soft-deleted, or does not belong to this agent. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "scenario_not_found",
+                     *       "detail": "Scenario 501 not found for this agent."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A simulation run is already in progress for this agent. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "run_in_flight",
+                     *       "detail": "You have a simulation run in progress. Come back later."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 20 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "simulation_not_configured",
+                     *       "detail": "Agent has no boolean (PASS_FAIL) evals. Add at least one before running a simulation."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The run was created but could not be started (for example, its calls could not be queued). The run is marked failed; retry the request. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "run_start_failed",
+                     *       "detail": "Could not start the simulation run. Please try again."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the simulation run. */
+                run_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunGetResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent was not found, or the run is not one of this agent's simulation runs (replay runs included). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18078,11 +15803,18 @@ export interface operations {
             };
         };
     };
-    receive_traces_api_v1_traces_post: {
+    cancel_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__run_id__cancel_post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID of the simulation run. */
+                run_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -18093,16 +15825,71 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["SimulationRunGetResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent was not found, or the run is not one of this agent's simulation runs (replay runs included). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    get_all_providers_api_v1_providers__get: {
+    list_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_get: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID of the simulation run */
+                simulation_run_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -18113,7 +15900,2220 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProviderResponse"][];
+                    "application/json": components["schemas"]["SimulationScenariosListResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or simulation run not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Simulation run with ID 31 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_simulation_scenarios_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs__simulation_run_id__scenarios_save_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the simulation run */
+                simulation_run_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveScenariosFromRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioResponse"][];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found, or a selected scenario execution does not belong to this run/agent. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Simulation scenario execution 501 not found for this run."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The run was not found for this agent, or it has not finished executing (its `status` must be `complete`, `partial`, `analyzing`, `unreported` or `analysis_failed`), or a selected execution was already saved to the library. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "This scenario is already in your library."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A selected execution has no `situation` to save, a selection's `name` is blank after trimming, or an execution id was selected more than once. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Scenario execution 501 has no situation to save."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_voice_clip_sets_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipSetListResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoiceClipSetCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipSetResponse"];
+                };
+            };
+            /** @description `source_call_id` or `voice_clip_upload_id` does not exist or belongs to a different agent, the source call has no usable recording (its recording link is not a public https link and no uploaded audio is stored), or `caller_channel_index` is out of range for the upload. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Call with ID 123 not found for this agent."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Simulation (for a call source) or clip upload analysis (for an upload source) is not included in the workspace's current plan. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_credits",
+                     *       "detail": "Clip upload analysis not included in your current plan."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A voice clip set with this name already exists for this agent, or the upload is not awaiting a channel selection or already has a clip set. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "A voice clip set named 'Angry customer' already exists for this agent."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_source_calls_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets_source_calls_get: {
+        parameters: {
+            query?: {
+                /** @description Page number */
+                page?: number;
+                /** @description Items per page */
+                page_size?: number;
+                /** @description Search by provider call ID */
+                search?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceCallsListResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip set */
+                voice_clip_set_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipSetDetailResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or voice clip set not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip set with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_voice_clip_set_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip set */
+                voice_clip_set_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or voice clip set not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip set with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_voice_clip_set_audio_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__audio_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip set */
+                voice_clip_set_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipSetAudioResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or voice clip set not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip set with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The set has not finished extracting yet, or extraction failed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip set 9 has no playable audio yet (status='extracting')."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_voice_clip_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_sets__voice_clip_set_id__clips__turn_index__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                voice_clip_set_id: number;
+                turn_index: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoiceClipUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent, voice clip set or clip (by turn index) not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip set with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The set has not finished extracting yet. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Clip set is still being processed; clips can't be edited yet"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Empty body, `reference_transcript` longer than 5000 characters, or `verified=false` combined with `reference_transcript`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Provide reference_transcript and/or verified."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoiceClipUploadCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipUploadCreateResponse"];
+                };
+            };
+            /** @description Unsupported extension, or a declared size above the 200 MB ceiling. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Unsupported extension 'flac'. Allowed: ['m4a', 'mp3', 'wav']"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Simulation is not included in the workspace's current plan, or the workspace lacks credits for uploaded-audio analysis. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_credits",
+                     *       "detail": "Simulation not included in your current plan."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Audio uploads are currently unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "internal_error",
+                     *       "detail": "Audio uploads are not available in this environment."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip upload */
+                voice_clip_upload_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipUploadResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or upload not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip upload */
+                voice_clip_upload_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or upload not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A voice clip set was already built from the upload. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload 9 has been used to build a voice clip set."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_voice_clip_upload_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip upload */
+                voice_clip_upload_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoiceClipUploadCompleteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipUploadResponse"];
+                };
+            };
+            /** @description The reported parts do not match what was uploaded. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Parts [3] are missing from S3 or have a different ETag. Re-upload them and complete again."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or upload not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The upload was aborted, or never had an upload in progress. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload 9 has no upload in progress (status='failed')."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_voice_clip_upload_parts_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__parts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip upload */
+                voice_clip_upload_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipUploadPartsResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or upload not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The upload has already been completed or aborted. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload 9 has no upload in progress (status='uploaded')."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Audio uploads are currently unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "internal_error",
+                     *       "detail": "Audio uploads are not available in this environment."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_voice_clip_upload_sample_api_v1_workspaces__workspace_id__agents__agent_id__voice_clip_uploads__voice_clip_upload_id__samples__channel_index__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the voice clip upload */
+                voice_clip_upload_id: number;
+                /** @description `index` of the speaker channel, as listed in the upload's `speakers` */
+                channel_index: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceClipUploadSampleResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent or upload not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload with ID 9 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Analysis has not produced samples yet, or there is no such channel. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Voice clip upload 9 has no channel samples yet (status='uploaded')."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_workspace_api_keys_api_v1_workspaces__workspace_id__api_keys_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceApiKeyResponse"][];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_workspace_api_key_api_v1_workspaces__workspace_id__api_keys_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceApiKeyCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceApiKeyCreatedResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A live key of that name already exists. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Duplicate name"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_workspace_api_key_api_v1_workspaces__workspace_id__api_keys__key_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the workspace API key */
+                key_id: number;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No such key in this workspace. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "Key not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_caller_personas_api_v1_workspaces__workspace_id__caller_personas_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallerOptionsResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRetentionResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_data_retention_settings_api_v1_workspaces__workspace_id__data_retention_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataRetentionUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRetentionResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The selected retention window or erasure scope isn't included in the workspace's plan. Check `allowed_retention_periods` and `allowed_erasure_scopes` on the GET response. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_credits",
+                     *       "detail": "Selected retention period is not included in your current plan."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A retention window was set without an erasure scope, or a field failed validation (`retention_period_days` must be a positive integer or null; `erasure_scope` must be one of the known scope tokens). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "validation_error",
+                     *       "detail": "erasure_scope is required when a retention period is set."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The workspace's plan could not be verified, so the requested window and scope can't be checked against it. Retry shortly. Clearing the policy (`retention_period_days: null`) is accepted even then, since it only ever stops deletion. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "internal_error",
+                     *       "detail": "Could not verify your plan's retention options right now. Please try again."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_noise_environments_api_v1_workspaces__workspace_id__noise_environments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NoiseEnvironmentsResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PIIRedactionResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_pii_redaction_settings_api_v1_workspaces__workspace_id__pii_redaction_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PIIRedactionUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PIIRedactionResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description PII redaction isn't included in the workspace's plan. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_credits",
+                     *       "detail": "PII redaction is not included in your current plan."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Workspace not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "workspace_not_found",
+                     *       "detail": "Workspace with ID 42 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
