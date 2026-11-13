@@ -1,0 +1,51 @@
+name: Bug report
+description: Something in the CLI does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Never paste your API key, transcripts or customer data. Redact them first.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you ran, what you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and output
+      description: The exact command, its output (with `--verbose` if useful) and the exit code (`echo $?`).
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: cli-version
+    attributes:
+      label: CLI version
+      description: Output of `tuner --version`.
+    validations:
+      required: true
+  - type: input
+    id: node-version
+    attributes:
+      label: Node version
+      description: Output of `node --version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: request-id
+    attributes:
+      label: Request ID
+      description: The request ID from the error message, if there is one.
