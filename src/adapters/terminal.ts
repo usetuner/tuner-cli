@@ -1,9 +1,9 @@
-import type { Runtime, Stream } from "./ports.js";
-import { scenarioName } from "./domain/document.js";
-import type { Summary } from "./domain/run-summary.js";
-import type { SimCall, Verdict } from "./domain/types.js";
+import { scenarioName } from "../domain/document.js";
+import type { Summary } from "../domain/run-summary.js";
+import type { Run, SimCall, Verdict } from "../domain/types.js";
+import type { Output, Runtime, Stream } from "../ports.js";
 
-export function useColor(stream: Stream, runtime: Runtime): boolean {
+export function useColor(stream: Stream, runtime: Pick<Runtime, "env">): boolean {
   return Boolean(stream.isTTY) && !runtime.env.NO_COLOR;
 }
 
@@ -48,10 +48,6 @@ export function summaryLine(summary: Summary): string {
   return parts.join(" · ");
 }
 
-export function writeJson(stream: Stream, value: unknown): void {
-  stream.write(JSON.stringify(value, null, 2) + "\n");
-}
-
 /** Left-aligned columns; the last column is not padded. */
 export function table(headers: string[], rows: string[][]): string {
   const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => (r[i] ?? "").length)));
@@ -61,4 +57,21 @@ export function table(headers: string[], rows: string[][]): string {
       .join("  ")
       .trimEnd();
   return [line(headers), ...rows.map(line)].join("\n") + "\n";
+}
+
+/** `Output` for `sim run`: progress on stderr, each new verdict on the result stream. */
+export function terminalOutput(runtime: Runtime, json: boolean): Output {
+  const resultStream = json ? runtime.stderr : runtime.stdout;
+  const paint = painter(useColor(resultStream, runtime));
+  const printed = new Map<number, Verdict>();
+  return {
+    progress: (line) => runtime.stderr.write(line + "\n"),
+    run(run: Run | undefined) {
+      for (const call of run?.simulation_calls ?? []) {
+        if (call.verdict === "pending" || printed.get(call.scenario_id) === call.verdict) continue;
+        printed.set(call.scenario_id, call.verdict);
+        resultStream.write(scenarioLine(call, paint) + "\n");
+      }
+    },
+  };
 }

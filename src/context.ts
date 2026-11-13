@@ -1,4 +1,4 @@
-import { TunerClient, withRetry } from "./client.js";
+import { TunerClient, withRetry } from "./adapters/http-client.js";
 import { describeKeySource, requireApiKey } from "./config.js";
 import {
   type GlobalFlags,

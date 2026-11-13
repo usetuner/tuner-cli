@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { Runtime } from "./ports.js";
+import type { Runtime } from "../ports.js";
 
 /** Resolves early (never rejects) when `signal` aborts. */
 export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
@@ -26,46 +26,47 @@ export function defaultConfigDir(
   return join(env.XDG_CONFIG_HOME || join(home, ".config"), "tuner");
 }
 
-export function nodeRuntime(): Runtime {
+/** The real runtime, built from the process `cli/main.ts` hands in. */
+export function nodeRuntime(proc: NodeJS.Process): Runtime {
   return {
-    env: process.env,
-    stdout: process.stdout,
-    stderr: process.stderr,
-    stdinIsTTY: Boolean(process.stdin.isTTY),
+    env: proc.env,
+    stdout: proc.stdout,
+    stderr: proc.stderr,
+    stdinIsTTY: Boolean(proc.stdin.isTTY),
     fetch: globalThis.fetch.bind(globalThis),
     now: () => Date.now(),
     sleep,
-    configDir: defaultConfigDir(process.platform, process.env, homedir()),
+    configDir: defaultConfigDir(proc.platform, proc.env, homedir()),
     onSignal(handler) {
       const onInt = () => handler("SIGINT");
       const onTerm = () => handler("SIGTERM");
-      process.on("SIGINT", onInt);
-      process.on("SIGTERM", onTerm);
+      proc.on("SIGINT", onInt);
+      proc.on("SIGTERM", onTerm);
       return () => {
-        process.off("SIGINT", onInt);
-        process.off("SIGTERM", onTerm);
+        proc.off("SIGINT", onInt);
+        proc.off("SIGTERM", onTerm);
       };
     },
-    exit: (code) => process.exit(code),
+    exit: (code) => proc.exit(code),
     async readStdin() {
       const chunks: Buffer[] = [];
-      for await (const chunk of process.stdin) chunks.push(Buffer.from(chunk));
+      for await (const chunk of proc.stdin) chunks.push(Buffer.from(chunk));
       return Buffer.concat(chunks).toString("utf8");
     },
-    promptSecret,
+    promptSecret: (prompt) => promptSecret(proc, prompt),
   };
 }
 
-function promptSecret(prompt: string): Promise<string> {
-  const stdin = process.stdin;
-  process.stderr.write(prompt);
+function promptSecret(proc: NodeJS.Process, prompt: string): Promise<string> {
+  const stdin = proc.stdin;
+  proc.stderr.write(prompt);
   return new Promise((resolve) => {
     let value = "";
     const finish = () => {
       stdin.setRawMode(false);
       stdin.pause();
       stdin.off("data", onData);
-      process.stderr.write("\n");
+      proc.stderr.write("\n");
     };
     const onData = (chunk: string) => {
       for (const ch of chunk) {
@@ -75,7 +76,7 @@ function promptSecret(prompt: string): Promise<string> {
         }
         if (ch === "\u0003") {
           finish();
-          process.exit(130);
+          proc.exit(130);
         }
         if (ch === "\u007f" || ch === "\b") value = value.slice(0, -1);
         else value += ch;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VERSION } from "../src/version.js";
+import { VERSION } from "../src/adapters/version.js";
 import { DEFAULT_BASE_URL } from "../src/domain/config.js";
 import { FakeApi, happyApi, json, makeRuntime, run, whoami } from "./helpers.js";
 

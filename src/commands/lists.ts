@@ -1,7 +1,8 @@
 import { resolveTarget } from "../context.js";
 import { EXIT } from "../domain/exit.js";
 import { type OutputFormat, listDocument } from "../domain/document.js";
-import { table, writeJson } from "../render.js";
+import { table } from "../adapters/terminal.js";
+import { writeJson } from "../adapters/json.js";
 import { type CommandContext, SHORT_GIVE_UP_MS, guard, isJson } from "./shared.js";
 
 interface ListOptions {

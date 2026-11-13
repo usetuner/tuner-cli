@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { credentialsPath, writeStoredKey } from "../src/config.js";
+import { FileCredentialStore } from "../src/adapters/credential-store.js";
 import { FakeApi, apiError, json, makeRuntime, run, whoami } from "./helpers.js";
 
 const ok = () => new FakeApi().on("GET", "/api/v1/whoami", json(200, whoami(null)));
@@ -11,7 +11,7 @@ describe("auth login", () => {
     const rt = makeRuntime(api, { env: { TUNER_API_KEY: undefined } });
     expect(await run(rt, "auth", "login", "--api-key", "tr_api_new")).toBe(0);
     expect(api.requests[0]!.headers.authorization).toBe("Bearer tr_api_new");
-    const path = credentialsPath(rt);
+    const path = new FileCredentialStore(rt.configDir).path;
     expect(JSON.parse(readFileSync(path, "utf8"))).toEqual({ api_key: "tr_api_new" });
     if (process.platform !== "win32") expect(statSync(path).mode & 0o777).toBe(0o600);
     expect(rt.out()).toContain("Logged in to workspace Acme (12) with key ci-staging (…9f3a)");
@@ -25,20 +25,24 @@ describe("auth login", () => {
     );
     const rt = makeRuntime(api);
     expect(await run(rt, "auth", "login", "--api-key", "tr_api_bad")).toBe(2);
-    expect(existsSync(credentialsPath(rt))).toBe(false);
+    expect(existsSync(new FileCredentialStore(rt.configDir).path)).toBe(false);
     expect(rt.err()).toContain("API key rejected: Invalid API key.");
   });
 
   it("reads the key from stdin when not a TTY", async () => {
     const rt = makeRuntime(ok(), { stdin: "tr_api_piped\n" });
     expect(await run(rt, "auth", "login")).toBe(0);
-    expect(readFileSync(credentialsPath(rt), "utf8")).toContain("tr_api_piped");
+    expect(readFileSync(new FileCredentialStore(rt.configDir).path, "utf8")).toContain(
+      "tr_api_piped",
+    );
   });
 
   it("prompts in a TTY", async () => {
     const rt = makeRuntime(ok(), { stdinIsTTY: true, secret: "tr_api_typed" });
     expect(await run(rt, "auth", "login")).toBe(0);
-    expect(readFileSync(credentialsPath(rt), "utf8")).toContain("tr_api_typed");
+    expect(readFileSync(new FileCredentialStore(rt.configDir).path, "utf8")).toContain(
+      "tr_api_typed",
+    );
   });
 
   it("exits 2 on an empty key", async () => {
@@ -58,9 +62,9 @@ describe("auth status", () => {
 
   it("reports a stored key's path", async () => {
     const rt = makeRuntime(ok(), { env: { TUNER_API_KEY: undefined } });
-    await writeStoredKey(rt, "tr_api_s");
+    await new FileCredentialStore(rt.configDir).write("tr_api_s");
     expect(await run(rt, "auth", "status")).toBe(0);
-    expect(rt.out()).toContain(`from ${credentialsPath(rt)}`);
+    expect(rt.out()).toContain(`from ${new FileCredentialStore(rt.configDir).path}`);
   });
 
   it("exits 2 with no key", async () => {
@@ -83,9 +87,9 @@ describe("auth status", () => {
 describe("auth logout", () => {
   it("deletes the stored key", async () => {
     const rt = makeRuntime(ok(), { env: { TUNER_API_KEY: undefined } });
-    await writeStoredKey(rt, "tr_api_s");
+    await new FileCredentialStore(rt.configDir).write("tr_api_s");
     expect(await run(rt, "auth", "logout")).toBe(0);
-    expect(existsSync(credentialsPath(rt))).toBe(false);
+    expect(existsSync(new FileCredentialStore(rt.configDir).path)).toBe(false);
     expect(await run(rt, "auth", "logout")).toBe(0);
     expect(rt.out()).toContain("No stored API key.");
   });

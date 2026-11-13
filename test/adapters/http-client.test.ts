@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { TunerClient, backoffMs, withRetry } from "../src/client.js";
-import { ApiError, GaveUpError, NetworkError } from "../src/domain/errors.js";
-import { VERSION } from "../src/version.js";
+import { TunerClient, backoffMs, withRetry } from "../../src/adapters/http-client.js";
+import { ApiError, GaveUpError, NetworkError } from "../../src/domain/errors.js";
+import { VERSION } from "../../src/adapters/version.js";
 import {
   AGENT_PATH,
   BASE,
@@ -11,7 +11,7 @@ import {
   json,
   makeRuntime,
   networkError,
-} from "./helpers.js";
+} from "../helpers.js";
 
 afterEach(() => vi.useRealTimers());
 

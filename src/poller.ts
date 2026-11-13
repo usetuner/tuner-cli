@@ -1,4 +1,4 @@
-import { POLL_GIVE_UP_MS, type TunerClient, withRetry } from "./client.js";
+import { POLL_GIVE_UP_MS, type TunerClient, withRetry } from "./adapters/http-client.js";
 import { ApiError, GaveUpError, NetworkError } from "./domain/errors.js";
 import type { Signal } from "./domain/exit.js";
 import type { Runtime } from "./ports.js";

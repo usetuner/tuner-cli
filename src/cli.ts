@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { runCli } from "./program.js";
-import { nodeRuntime } from "./runtime.js";
+import { nodeRuntime } from "./adapters/node-runtime.js";
 
-runCli(process.argv.slice(2), nodeRuntime()).then(
+runCli(process.argv.slice(2), nodeRuntime(process)).then(
   (code) => {
     // Let piped stdout drain before exiting.
     process.stdout.write("", () => process.exit(code));

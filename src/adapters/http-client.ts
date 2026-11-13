@@ -1,5 +1,5 @@
-import { ApiError, GaveUpError, NetworkError, isRetryable } from "./domain/errors.js";
-import type { Runtime } from "./ports.js";
+import { ApiError, GaveUpError, NetworkError, isRetryable } from "../domain/errors.js";
+import type { Runtime, TunerApi } from "../ports.js";
 import type {
   Agent,
   CallerOptions,
@@ -10,7 +10,7 @@ import type {
   StartRunRequest,
   StartRunResponse,
   Whoami,
-} from "./domain/types.js";
+} from "../domain/types.js";
 import { CLIENT_HEADER, VERSION } from "./version.js";
 
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -19,7 +19,7 @@ const REQUEST_ID_HEADERS = ["x-request-id", "x-amzn-requestid", "x-amzn-trace-id
 export interface ClientOptions {
   baseUrl: string;
   apiKey: string;
-  runtime: Runtime;
+  runtime: Pick<Runtime, "fetch" | "now" | "stderr">;
   verbose?: boolean;
 }
 
@@ -29,7 +29,8 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
-export class TunerClient {
+/** `TunerApi` over HTTP: 30 s timeout per request, typed errors, no retries. */
+export class TunerClient implements TunerApi {
   constructor(private readonly opts: ClientOptions) {}
 
   async request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {

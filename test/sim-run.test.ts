@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { VERSION } from "../src/version.js";
+import { VERSION } from "../src/adapters/version.js";
 import {
   AGENT_PATH,
   ExitCalled,

@@ -1,5 +1,6 @@
-import { TunerClient } from "../client.js";
-import { credentialsPath, deleteStoredKey, describeKeySource, writeStoredKey } from "../config.js";
+import { TunerClient } from "../adapters/http-client.js";
+import { FileCredentialStore } from "../adapters/credential-store.js";
+import { describeKeySource } from "../config.js";
 import { resolveTarget } from "../context.js";
 import { resolveBaseUrl } from "../domain/config.js";
 import { toCliError } from "../domain/error-message.js";
@@ -30,7 +31,7 @@ export function authLogin(ctx: CommandContext): Promise<number> {
     } catch (err) {
       throw toCliError(err);
     }
-    const path = await writeStoredKey(runtime, key);
+    const path = await new FileCredentialStore(runtime.configDir).write(key);
     runtime.stdout.write(
       `Logged in to workspace ${whoami.workspace.name} (${whoami.workspace.id}) ` +
         `with key ${whoami.api_key.name} (…${whoami.api_key.last_four}).\nSaved to ${path}\n`,
@@ -42,10 +43,9 @@ export function authLogin(ctx: CommandContext): Promise<number> {
 export function authLogout(ctx: CommandContext): Promise<number> {
   const { runtime } = ctx;
   return guard(runtime, async () => {
-    const removed = await deleteStoredKey(runtime);
-    runtime.stdout.write(
-      removed ? `Removed ${credentialsPath(runtime)}\n` : "No stored API key.\n",
-    );
+    const store = new FileCredentialStore(runtime.configDir);
+    const removed = await store.delete();
+    runtime.stdout.write(removed ? `Removed ${store.path}\n` : "No stored API key.\n");
     if (runtime.env.TUNER_API_KEY) {
       runtime.stderr.write("TUNER_API_KEY is still set in this environment.\n");
     }

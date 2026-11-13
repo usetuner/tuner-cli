@@ -1,4 +1,4 @@
-import { POLL_GIVE_UP_MS, withRetry } from "../client.js";
+import { POLL_GIVE_UP_MS, withRetry } from "../adapters/http-client.js";
 import { type Target, resolveTarget } from "../context.js";
 import { resolveAgentRef } from "../domain/config.js";
 import { type OutputFormat, buildDocument } from "../domain/document.js";
@@ -7,7 +7,8 @@ import { DEFAULT_TIMEOUT, buildStartBody, parseTimeout } from "../domain/inputs.
 import { summarize } from "../domain/run-summary.js";
 import { EXIT, type RunReason, exitForRun, exitForSignal } from "../domain/exit.js";
 import { StopController, cancelAndWait, pollRun } from "../poller.js";
-import { painter, scenarioLine, summaryLine, useColor, writeJson } from "../render.js";
+import { painter, scenarioLine, summaryLine, useColor } from "../adapters/terminal.js";
+import { writeJson } from "../adapters/json.js";
 import type { Run, StartRunRequest, Verdict } from "../domain/types.js";
 import type { CommandContext } from "./shared.js";
 

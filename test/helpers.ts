@@ -7,7 +7,7 @@ import type { Runtime } from "../src/ports.js";
 import { ExitCalled } from "./fakes/signals.js";
 
 export { ExitCalled };
-import { sleep } from "../src/runtime.js";
+import { sleep } from "../src/adapters/node-runtime.js";
 import type { Run, SimCall, Whoami } from "../src/domain/types.js";
 
 export const BASE = "http://127.0.0.1:8010";
