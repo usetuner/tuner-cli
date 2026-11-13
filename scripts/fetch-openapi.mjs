@@ -63,6 +63,13 @@ function summarize(committed, remote, url) {
     lines.push(`${name}:${changes.length ? "" : " no change"}`);
     lines.push(...changes.map((c) => `  ${c}`));
   }
+  const strip = ({ paths: _p, components: { schemas: _s, ...components } = {}, ...rest }) => ({
+    ...rest,
+    components,
+  });
+  if (serialize(strip(committed)) !== serialize(strip(remote))) {
+    lines.push("other sections changed (outside paths and components.schemas)");
+  }
   lines.push("", "(+ added, - removed, ~ changed) Run `npm run gen` and commit the result.");
   return lines.join("\n");
 }
