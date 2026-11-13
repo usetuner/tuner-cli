@@ -3,7 +3,6 @@
  * Do not make direct changes to the file.
  */
 
-// hand edit to prove the drift job
 export interface paths {
     "/api/v1/providers/": {
         parameters: {
