@@ -84,9 +84,23 @@ describe("sim run: results and exit codes", () => {
   it("sends X-Tuner-Client on every request and the names in the body", async () => {
     const api = happyApi();
     const rt = makeRuntime(api);
-    await run(rt, "sim", "run", "--tag", "smoke", "--language", "en-US", "--profile", "Returning customer", "--noise", "cafe");
+    await run(
+      rt,
+      "sim",
+      "run",
+      "--tag",
+      "smoke",
+      "--language",
+      "en-US",
+      "--profile",
+      "Returning customer",
+      "--noise",
+      "cafe",
+    );
     for (const req of api.requests) expect(req.headers["x-tuner-client"]).toBe(`cli/${VERSION}`);
-    expect(api.requests[0]!.url.searchParams.get("agent_remote_identifier")).toBe("booking-staging");
+    expect(api.requests[0]!.url.searchParams.get("agent_remote_identifier")).toBe(
+      "booking-staging",
+    );
     expect(api.calls("POST", SELECT)[0]!.body).toEqual({
       tag: "smoke",
       language: "en-US",
@@ -105,7 +119,9 @@ describe("sim run: results and exit codes", () => {
   it("exits 1 when the agent failed and names the failed evals", async () => {
     const rt = makeRuntime(happyApi(failedRun()));
     expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(1);
-    expect(rt.out()).toMatch(/✗ failed\s+Caller asks for a refund\s+failed evals: Refund policy, Escalation/);
+    expect(rt.out()).toMatch(
+      /✗ failed\s+Caller asks for a refund\s+failed evals: Refund policy, Escalation/,
+    );
     expect(rt.out()).toContain("1 passed · 1 failed · 0 inconclusive");
   });
 
@@ -157,13 +173,19 @@ describe("sim run: agent resolution", () => {
     const api = happyApi();
     const rt = makeRuntime(api, { env: { TUNER_AGENT_ID: "other" } });
     await run(rt, "sim", "run", "--tag", "x", "--agent", "booking-staging");
-    expect(api.requests[0]!.url.searchParams.get("agent_remote_identifier")).toBe("booking-staging");
+    expect(api.requests[0]!.url.searchParams.get("agent_remote_identifier")).toBe(
+      "booking-staging",
+    );
   });
 
   it("looks up a numeric agent ID by path", async () => {
     const api = happyApi()
       .on("GET", "/api/v1/whoami", json(200, whoami(null)))
-      .on("GET", `/api/v1/workspaces/${WS}/agents/77`, json(200, { ...defaultAgent, call_direction: "inbound" }));
+      .on(
+        "GET",
+        `/api/v1/workspaces/${WS}/agents/77`,
+        json(200, { ...defaultAgent, call_direction: "inbound" }),
+      );
     const rt = makeRuntime(api);
     expect(await run(rt, "sim", "run", "--tag", "x", "--agent", "77")).toBe(0);
     expect(api.requests[0]!.url.search).toBe("");
@@ -222,14 +244,28 @@ describe("sim run: usage errors exit 2", () => {
 
 describe("sim run: start errors", () => {
   const cases: [string, number, string, unknown, Record<string, unknown>, string][] = [
-    ["insufficient_access", 403, "select", "Not allowed", {}, "This API key can't access this resource"],
+    [
+      "insufficient_access",
+      403,
+      "select",
+      "Not allowed",
+      {},
+      "This API key can't access this resource",
+    ],
     ["agent_not_found", 404, "select", "Agent not found", {}, "Agent 'booking-staging' not found"],
     ["scenario_not_found", 404, "select", "Scenarios not found: 9", {}, "tuner scenarios list"],
     [
       "no_scenarios_for_tag",
       422,
       "select",
-      [{ type: "value_error", loc: ["body", "tag"], msg: "No scenarios tagged 'smoke'.", input: "smoke" }],
+      [
+        {
+          type: "value_error",
+          loc: ["body", "tag"],
+          msg: "No scenarios tagged 'smoke'.",
+          input: "smoke",
+        },
+      ],
       {},
       "No scenarios tagged 'smoke'. Run `tuner scenarios list` to see tags.",
     ],
@@ -237,7 +273,14 @@ describe("sim run: start errors", () => {
       "run_too_large",
       422,
       "select",
-      [{ type: "value_error", loc: ["body", "tag"], msg: "Run has 34 scenarios; the limit is 20.", input: "smoke" }],
+      [
+        {
+          type: "value_error",
+          loc: ["body", "tag"],
+          msg: "Run has 34 scenarios; the limit is 20.",
+          input: "smoke",
+        },
+      ],
       {},
       "Run has 34 scenarios; the limit is 20.",
     ],
@@ -245,11 +288,25 @@ describe("sim run: start errors", () => {
       "unresolved_name",
       422,
       "select",
-      [{ type: "value_error", loc: ["body", "noise"], msg: "Unknown noise 'cafe2'.", input: "cafe2" }],
+      [
+        {
+          type: "value_error",
+          loc: ["body", "noise"],
+          msg: "Unknown noise 'cafe2'.",
+          input: "cafe2",
+        },
+      ],
       {},
       "Unknown noise 'cafe2'. Run `tuner noise list`.",
     ],
-    ["insufficient_credits", 402, "select", { code: "no_credits", message: "No credits remaining" }, {}, "No credits left for this workspace: No credits remaining"],
+    [
+      "insufficient_credits",
+      402,
+      "select",
+      { code: "no_credits", message: "No credits remaining" },
+      {},
+      "No credits left for this workspace: No credits remaining",
+    ],
     [
       "run_in_flight",
       409,
@@ -258,13 +315,54 @@ describe("sim run: start errors", () => {
       { run_id: 4820, dashboard_url: "https://app.usetuner.ai/simulations?agent=77&run=4820" },
       "tuner runs get 4820",
     ],
-    ["simulation_not_configured", 422, "select", "No PASS_FAIL eval", {}, "The agent isn't set up for simulations: No PASS_FAIL eval"],
-    ["validation_error", 422, "select", [{ type: "value_error", loc: ["body", "tag"], msg: "Send exactly one of tag or selected_scenario_ids." }], {}, "Send exactly one of tag"],
+    [
+      "simulation_not_configured",
+      422,
+      "select",
+      "No PASS_FAIL eval",
+      {},
+      "The agent isn't set up for simulations: No PASS_FAIL eval",
+    ],
+    [
+      "validation_error",
+      422,
+      "select",
+      [
+        {
+          type: "value_error",
+          loc: ["body", "tag"],
+          msg: "Send exactly one of tag or selected_scenario_ids.",
+        },
+      ],
+      {},
+      "Send exactly one of tag",
+    ],
     ["validation_error", 400, "select", "Invalid caller persona", {}, "Invalid caller persona"],
     ["workspace_not_found", 404, "select", "Workspace not found", {}, "Workspace not found"],
-    ["invalid_api_key", 401, "whoami", "This endpoint requires a Tuner API key.", {}, "API key rejected: This endpoint requires a Tuner API key. (key from TUNER_API_KEY)"],
-    ["invalid_api_key", 403, "whoami", "Invalid API key.", {}, "API key rejected: Invalid API key."],
-    ["agent_not_found", 404, "whoami", "Agent with remote identifier booking-staging not found", {}, "Agent 'booking-staging' not found"],
+    [
+      "invalid_api_key",
+      401,
+      "whoami",
+      "This endpoint requires a Tuner API key.",
+      {},
+      "API key rejected: This endpoint requires a Tuner API key. (key from TUNER_API_KEY)",
+    ],
+    [
+      "invalid_api_key",
+      403,
+      "whoami",
+      "Invalid API key.",
+      {},
+      "API key rejected: Invalid API key.",
+    ],
+    [
+      "agent_not_found",
+      404,
+      "whoami",
+      "Agent with remote identifier booking-staging not found",
+      {},
+      "Agent 'booking-staging' not found",
+    ],
   ];
 
   it.each(cases)("%s (%d at %s) exits 2", async (code, status, where, detail, extra, message) => {
@@ -303,25 +401,35 @@ describe("sim run: start errors", () => {
     ["run_start_failed", apiError(503, "run_start_failed", "Could not queue calls")],
     ["internal_error", apiError(500, "internal_error", "Internal Server Error")],
     ["network", networkError()],
-  ])("%s at start retries for 5 minutes, then reason tuner_error exit 0 (1 with flag)", async (_n, reply) => {
-    vi.useFakeTimers();
-    for (const [flag, expected] of [[[], 0], [["--fail-on-inconclusive"], 1]] as const) {
-      const api = happyApi().on("POST", SELECT, reply);
-      const rt = makeRuntime(api);
-      const p = run(rt, "sim", "run", "--tag", "smoke", "--output", "json", ...flag);
-      await vi.advanceTimersByTimeAsync(400_000);
-      expect(await p).toBe(expected);
-      const doc = JSON.parse(rt.out());
-      expect(doc.reason).toBe("tuner_error");
-      expect(doc.exit_code).toBe(expected);
-      expect(api.calls("POST", SELECT).length).toBeGreaterThan(5);
-      expect(rt.err()).toContain("retrying in 3s");
-    }
-  });
+  ])(
+    "%s at start retries for 5 minutes, then reason tuner_error exit 0 (1 with flag)",
+    async (_n, reply) => {
+      vi.useFakeTimers();
+      for (const [flag, expected] of [
+        [[], 0],
+        [["--fail-on-inconclusive"], 1],
+      ] as const) {
+        const api = happyApi().on("POST", SELECT, reply);
+        const rt = makeRuntime(api);
+        const p = run(rt, "sim", "run", "--tag", "smoke", "--output", "json", ...flag);
+        await vi.advanceTimersByTimeAsync(400_000);
+        expect(await p).toBe(expected);
+        const doc = JSON.parse(rt.out());
+        expect(doc.reason).toBe("tuner_error");
+        expect(doc.exit_code).toBe(expected);
+        expect(api.calls("POST", SELECT).length).toBeGreaterThan(5);
+        expect(rt.err()).toContain("retrying in 3s");
+      }
+    },
+  );
 
   it("whoami 5xx retries too and ends as tuner_error", async () => {
     vi.useFakeTimers();
-    const api = happyApi().on("GET", "/api/v1/whoami", apiError(502, "internal_error", "Bad gateway"));
+    const api = happyApi().on(
+      "GET",
+      "/api/v1/whoami",
+      apiError(502, "internal_error", "Bad gateway"),
+    );
     const rt = makeRuntime(api);
     const p = run(rt, "sim", "run", "--tag", "smoke");
     await vi.advanceTimersByTimeAsync(400_000);
@@ -351,15 +459,28 @@ describe("sim run: --no-wait", () => {
 });
 
 describe("sim run: stop paths", () => {
-  const stoppable = () =>
-    happyApi(pendingRun()).on("POST", CANCEL, json(200, canceledRun()));
+  const stoppable = () => happyApi(pendingRun()).on("POST", CANCEL, json(200, canceledRun()));
 
   it("--timeout cancels the run and reports reason timeout (exit 0, 1 with flag)", async () => {
     vi.useFakeTimers();
-    for (const [flag, expected] of [[[], 0], [["--fail-on-inconclusive"], 1]] as const) {
+    for (const [flag, expected] of [
+      [[], 0],
+      [["--fail-on-inconclusive"], 1],
+    ] as const) {
       const api = stoppable();
       const rt = makeRuntime(api);
-      const p = run(rt, "sim", "run", "--tag", "smoke", "--timeout", "90s", "--output", "json", ...flag);
+      const p = run(
+        rt,
+        "sim",
+        "run",
+        "--tag",
+        "smoke",
+        "--timeout",
+        "90s",
+        "--output",
+        "json",
+        ...flag,
+      );
       await vi.advanceTimersByTimeAsync(89_000);
       expect(api.calls("POST", CANCEL)).toHaveLength(0);
       await vi.advanceTimersByTimeAsync(2_000);
@@ -422,14 +543,20 @@ describe("sim run: stop paths", () => {
 
   it("prints that analysis continues when cancel returns analyzing", async () => {
     vi.useFakeTimers();
-    const api = happyApi(pendingRun()).on("POST", CANCEL, json(200, pendingRun({ status: "analyzing" })));
+    const api = happyApi(pendingRun()).on(
+      "POST",
+      CANCEL,
+      json(200, pendingRun({ status: "analyzing" })),
+    );
     const rt = makeRuntime(api);
     const p = run(rt, "sim", "run", "--tag", "smoke");
     await vi.advanceTimersByTimeAsync(1_000);
     rt.emit("SIGINT");
     await vi.advanceTimersByTimeAsync(0);
     expect(await p).toBe(130);
-    expect(rt.err()).toContain(`Run ${RUN} is analyzing: its calls are done and analysis continues.`);
+    expect(rt.err()).toContain(
+      `Run ${RUN} is analyzing: its calls are done and analysis continues.`,
+    );
     expect(rt.out()).toContain("https://app.usetuner.ai/simulations?agent=77&run=4821");
     expect(api.calls("GET", GET)).toHaveLength(1);
   });
@@ -463,7 +590,12 @@ describe("sim run: stop paths", () => {
 
   it("gives up after 5 minutes of poll failures with reason tuner_error and the run ID", async () => {
     vi.useFakeTimers();
-    const api = happyApi().on("GET", GET, json(200, pendingRun()), apiError(503, "internal_error", "down"));
+    const api = happyApi().on(
+      "GET",
+      GET,
+      json(200, pendingRun()),
+      apiError(503, "internal_error", "down"),
+    );
     const rt = makeRuntime(api);
     const p = run(rt, "sim", "run", "--tag", "smoke", "--output", "json");
     await vi.advanceTimersByTimeAsync(400_000);

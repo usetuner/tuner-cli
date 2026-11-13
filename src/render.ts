@@ -52,10 +52,22 @@ export interface Summary {
   pending: number;
 }
 
-const INCONCLUSIVE: Verdict[] = ["not_connected", "platform_error", "unreported", "analysis_failed"];
+const INCONCLUSIVE: Verdict[] = [
+  "not_connected",
+  "platform_error",
+  "unreported",
+  "analysis_failed",
+];
 
 export function summarize(run: Run | undefined): Summary {
-  const summary: Summary = { total: 0, passed: 0, failed: 0, inconclusive: 0, canceled: 0, pending: 0 };
+  const summary: Summary = {
+    total: 0,
+    passed: 0,
+    failed: 0,
+    inconclusive: 0,
+    canceled: 0,
+    pending: 0,
+  };
   for (const call of run?.simulation_calls ?? []) {
     summary.total += 1;
     if (call.verdict === "passed" || call.verdict === "ran") summary.passed += 1;
@@ -68,7 +80,11 @@ export function summarize(run: Run | undefined): Summary {
 }
 
 export function summaryLine(summary: Summary): string {
-  const parts = [`${summary.passed} passed`, `${summary.failed} failed`, `${summary.inconclusive} inconclusive`];
+  const parts = [
+    `${summary.passed} passed`,
+    `${summary.failed} failed`,
+    `${summary.inconclusive} inconclusive`,
+  ];
   if (summary.canceled) parts.push(`${summary.canceled} canceled`);
   if (summary.pending) parts.push(`${summary.pending} pending`);
   return parts.join(" · ");
@@ -97,7 +113,11 @@ export function buildDocument(input: DocumentInput): Record<string, unknown> {
           dashboard_url: run?.dashboard_url ?? null,
           workspace: input.workspace ?? null,
           agent: input.agent
-            ? { id: input.agent.id, remote_id: input.agent.remote_identifier, name: input.agent.name }
+            ? {
+                id: input.agent.id,
+                remote_id: input.agent.remote_identifier,
+                name: input.agent.name,
+              }
             : null,
           config: {
             language: run?.caller_persona?.code ?? null,

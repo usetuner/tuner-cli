@@ -34,10 +34,16 @@ export interface SimRunOptions {
 export const DEFAULT_TIMEOUT = "60m";
 
 export function parseScenarioIds(values: string[]): number[] {
-  const ids = values.flatMap((v) => v.split(",")).map((v) => v.trim()).filter(Boolean);
+  const ids = values
+    .flatMap((v) => v.split(","))
+    .map((v) => v.trim())
+    .filter(Boolean);
   for (const id of ids) {
     if (!/^\d+$/.test(id) || Number(id) <= 0) {
-      throw new CliError(`Invalid scenario ID '${id}'. Use numeric IDs from \`tuner scenarios list\`.`, "usage_error");
+      throw new CliError(
+        `Invalid scenario ID '${id}'. Use numeric IDs from \`tuner scenarios list\`.`,
+        "usage_error",
+      );
     }
   }
   return ids.map(Number);
@@ -93,7 +99,11 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
     if (cli.reason === "tuner_error") {
       const exitCode = exitForRun(null, "tuner_error", failOnInconclusive);
       warnInconclusive(progress, "tuner_error", exitCode);
-      return finish({ reason: "tuner_error", exitCode, error: { code: "tuner_error", message: cli.message } });
+      return finish({
+        reason: "tuner_error",
+        exitCode,
+        error: { code: "tuner_error", message: cli.message },
+      });
     }
     return finish({
       reason: cli.reason,
@@ -129,12 +139,16 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
         runtime,
         giveUpMs: POLL_GIVE_UP_MS,
         signal: stop.abortSignal,
-        onRetry: (err, delay) => progress(`Tuner unavailable (${err.message}); retrying in ${Math.round(delay / 1000)}s...`),
+        onRetry: (err, delay) =>
+          progress(
+            `Tuner unavailable (${err.message}); retrying in ${Math.round(delay / 1000)}s...`,
+          ),
       });
     } catch (err) {
       return fail(err, opts.tag);
     }
-    if (!started) return finish({ reason: "canceled", exitCode: exitForSignal(stop.signal ?? "SIGINT") });
+    if (!started)
+      return finish({ reason: "canceled", exitCode: exitForSignal(stop.signal ?? "SIGINT") });
     runId = started.simulation_run_id;
     progress(`Running ${started.generated_count} scenarios (run ${runId})...`);
 
@@ -147,7 +161,8 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
       } catch {
         // the run started; the URL is a convenience
       }
-      if (!json) runtime.stdout.write(`${runId}\n${run?.dashboard_url ? run.dashboard_url + "\n" : ""}`);
+      if (!json)
+        runtime.stdout.write(`${runId}\n${run?.dashboard_url ? run.dashboard_url + "\n" : ""}`);
       return finish({ run, reason: null, exitCode: EXIT.OK });
     }
 
@@ -170,7 +185,10 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
           ...ref,
           stop,
           onUpdate: printNew,
-          onRetry: (err, delay) => progress(`Tuner unavailable (${err.message}); retrying in ${Math.round(delay / 1000)}s...`),
+          onRetry: (err, delay) =>
+            progress(
+              `Tuner unavailable (${err.message}); retrying in ${Math.round(delay / 1000)}s...`,
+            ),
         });
       } finally {
         clearTimeout(timer);
@@ -194,19 +212,26 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
       const canceled = await cancelAndWait(ref);
       run = canceled.run ?? run;
       if (canceled.error) {
-        progress(`Could not cancel run ${runId}: ${canceled.error instanceof Error ? canceled.error.message : String(canceled.error)}. It may still be running.`);
+        progress(
+          `Could not cancel run ${runId}: ${canceled.error instanceof Error ? canceled.error.message : String(canceled.error)}. It may still be running.`,
+        );
       } else if (run?.status === "analyzing") {
         progress(`Run ${runId} is analyzing: its calls are done and analysis continues.`);
       } else if (!canceled.terminal) {
         progress(`Run ${runId} did not reach a final state within 10s.`);
       }
       reason = bySignal ? "canceled" : "timeout";
-      exitCode = bySignal ? exitForSignal(bySignal) : exitForRun(null, "timeout", failOnInconclusive);
+      exitCode = bySignal
+        ? exitForSignal(bySignal)
+        : exitForRun(null, "timeout", failOnInconclusive);
     } else {
-      const message = outcome.kind === "gave_up"
-        ? `Tuner unreachable for 5 minutes (${outcome.error.message}).`
-        : `Could not read run ${runId}: ${toCliError(outcome.error).message}`;
-      progress(`${message} Run ${runId} may still be going; check it with \`tuner runs get ${runId}\`.`);
+      const message =
+        outcome.kind === "gave_up"
+          ? `Tuner unreachable for 5 minutes (${outcome.error.message}).`
+          : `Could not read run ${runId}: ${toCliError(outcome.error).message}`;
+      progress(
+        `${message} Run ${runId} may still be going; check it with \`tuner runs get ${runId}\`.`,
+      );
       reason = "tuner_error";
       exitCode = exitForRun(null, "tuner_error", failOnInconclusive);
     }
@@ -218,7 +243,12 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
     } else if (run?.dashboard_url) {
       progress(run.dashboard_url);
     }
-    if (reason && reason !== "agent_failed" && exitCode !== EXIT.SIGINT && exitCode !== EXIT.SIGTERM) {
+    if (
+      reason &&
+      reason !== "agent_failed" &&
+      exitCode !== EXIT.SIGINT &&
+      exitCode !== EXIT.SIGTERM
+    ) {
       warnInconclusive(progress, reason, exitCode);
     } else if (reason === "agent_failed") {
       progress("Result: failed (agent_failed)");
@@ -229,7 +259,11 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
   }
 }
 
-function warnInconclusive(progress: (line: string) => void, reason: string, exitCode: number): void {
+function warnInconclusive(
+  progress: (line: string) => void,
+  reason: string,
+  exitCode: number,
+): void {
   const hint = exitCode === EXIT.OK ? " Pass --fail-on-inconclusive to exit 1 instead." : "";
   progress(`Warning: run not conclusive (reason: ${reason}); exiting ${exitCode}.${hint}`);
 }

@@ -68,10 +68,7 @@ export async function resolveApiKey(
 export async function requireApiKey(flags: GlobalFlags, runtime: Runtime): Promise<ResolvedKey> {
   const key = await resolveApiKey(flags, runtime);
   if (!key) {
-    throw new CliError(
-      "No API key. Set TUNER_API_KEY or run `tuner auth login`.",
-      "config_error",
-    );
+    throw new CliError("No API key. Set TUNER_API_KEY or run `tuner auth login`.", "config_error");
   }
   return key;
 }
@@ -96,7 +93,10 @@ export function resolveBaseUrl(flags: GlobalFlags, runtime: Runtime): string {
   return raw.replace(/\/+$/, "");
 }
 
-export function resolveAgentRef(flagAgent: string | undefined, runtime: Runtime): string | undefined {
+export function resolveAgentRef(
+  flagAgent: string | undefined,
+  runtime: Runtime,
+): string | undefined {
   const value = flagAgent?.trim() || runtime.env.TUNER_AGENT_ID?.trim();
   return value || undefined;
 }

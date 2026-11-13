@@ -31,7 +31,12 @@ function printRun(ctx: CommandContext, run: Run): void {
 export function runsGet(ctx: CommandContext, id: string, opts: RunsOptions): Promise<number> {
   return guard(ctx.runtime, async () => {
     const runId = parseRunId(id);
-    const t = await resolveTarget({ ...ctx, agent: opts.agent, needAgent: true, giveUpMs: SHORT_GIVE_UP_MS });
+    const t = await resolveTarget({
+      ...ctx,
+      agent: opts.agent,
+      needAgent: true,
+      giveUpMs: SHORT_GIVE_UP_MS,
+    });
     const run = (await withRetry(() => t.client.getRun(t.workspace.id, t.agent!.id, runId), {
       runtime: ctx.runtime,
       giveUpMs: SHORT_GIVE_UP_MS,
@@ -39,7 +44,13 @@ export function runsGet(ctx: CommandContext, id: string, opts: RunsOptions): Pro
     if (isJson(opts.output)) {
       writeJson(
         ctx.runtime.stdout,
-        buildDocument({ run, workspace: t.workspace, agent: t.agent, reason: run.reason ?? null, exitCode: EXIT.OK }),
+        buildDocument({
+          run,
+          workspace: t.workspace,
+          agent: t.agent,
+          reason: run.reason ?? null,
+          exitCode: EXIT.OK,
+        }),
       );
     } else {
       printRun(ctx, run);
@@ -51,12 +62,23 @@ export function runsGet(ctx: CommandContext, id: string, opts: RunsOptions): Pro
 export function runsCancel(ctx: CommandContext, id: string, opts: RunsOptions): Promise<number> {
   return guard(ctx.runtime, async () => {
     const runId = parseRunId(id);
-    const t = await resolveTarget({ ...ctx, agent: opts.agent, needAgent: true, giveUpMs: SHORT_GIVE_UP_MS });
+    const t = await resolveTarget({
+      ...ctx,
+      agent: opts.agent,
+      needAgent: true,
+      giveUpMs: SHORT_GIVE_UP_MS,
+    });
     const run = await t.client.cancelRun(t.workspace.id, t.agent!.id, runId);
     if (isJson(opts.output)) {
       writeJson(
         ctx.runtime.stdout,
-        buildDocument({ run, workspace: t.workspace, agent: t.agent, reason: run.reason ?? null, exitCode: EXIT.OK }),
+        buildDocument({
+          run,
+          workspace: t.workspace,
+          agent: t.agent,
+          reason: run.reason ?? null,
+          exitCode: EXIT.OK,
+        }),
       );
       return EXIT.OK;
     }
