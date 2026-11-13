@@ -84,4 +84,11 @@ jobs:
       - run: npm ci
       - run: npm run gen:types
       - name: Generated types match openapi/openapi.json
-        run: git diff --exit-code src/generated/ || { echo "::error::src/generated/ is out of date or was edited by hand. Run npm run gen:types and commit the result."; exit 1; }
+        run: |
+          changes=$(git status --porcelain src/generated)
+          if [ -n "$changes" ]; then
+            echo "$changes"
+            git diff src/generated
+            echo "::error::src/generated/ is out of date or was edited by hand. Run npm run gen:types and commit the result."
+            exit 1
+          fi
