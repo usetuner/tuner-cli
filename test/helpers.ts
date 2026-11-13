@@ -3,7 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Signal } from "../src/domain/exit.js";
 import { runCli } from "../src/program.js";
-import { type Runtime, sleep } from "../src/runtime.js";
+import type { Runtime } from "../src/ports.js";
+import { ExitCalled } from "./fakes/signals.js";
+
+export { ExitCalled };
+import { sleep } from "../src/runtime.js";
 import type { Run, SimCall, Whoami } from "../src/domain/types.js";
 
 export const BASE = "http://127.0.0.1:8010";
@@ -84,12 +88,6 @@ export class FakeApi {
     if (typeof reply === "function") return (await reply(req)).clone();
     return reply.clone();
   }) as typeof fetch;
-}
-
-export class ExitCalled extends Error {
-  constructor(readonly code: number) {
-    super(`exit ${code}`);
-  }
 }
 
 export interface TestRuntime extends Runtime {

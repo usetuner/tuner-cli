@@ -1,5 +1,5 @@
 import { ApiError, GaveUpError, NetworkError, isRetryable } from "./domain/errors.js";
-import type { Runtime } from "./runtime.js";
+import type { Runtime } from "./ports.js";
 import type {
   Agent,
   CallerOptions,

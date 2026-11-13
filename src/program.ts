@@ -13,7 +13,7 @@ import type { CommandContext } from "./commands/shared.js";
 import { simRun } from "./commands/sim-run.js";
 import { DEFAULT_TIMEOUT } from "./domain/inputs.js";
 import { EXIT } from "./domain/exit.js";
-import type { Runtime } from "./runtime.js";
+import type { Runtime } from "./ports.js";
 import { VERSION } from "./version.js";
 
 const outputOption = () =>

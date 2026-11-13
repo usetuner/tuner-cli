@@ -8,7 +8,7 @@ import {
 } from "./domain/config.js";
 import { toCliError } from "./domain/error-message.js";
 import { CliError } from "./domain/errors.js";
-import type { Runtime } from "./runtime.js";
+import type { Runtime } from "./ports.js";
 import type { ResolvedAgent, Whoami } from "./domain/types.js";
 
 export interface Target {

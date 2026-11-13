@@ -1,28 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { Signal } from "./domain/exit.js";
-
-export interface Stream {
-  write(text: string): void;
-  isTTY?: boolean;
-}
-
-/** Everything the CLI touches outside itself, so tests can replace it. */
-export interface Runtime {
-  env: Record<string, string | undefined>;
-  stdout: Stream;
-  stderr: Stream;
-  stdinIsTTY: boolean;
-  fetch: typeof fetch;
-  now(): number;
-  sleep(ms: number, signal?: AbortSignal): Promise<void>;
-  configDir: string;
-  onSignal(handler: (signal: Signal) => void): () => void;
-  /** Exits the process at once (second signal). */
-  exit(code: number): never;
-  readStdin(): Promise<string>;
-  promptSecret(prompt: string): Promise<string>;
-}
+import type { Runtime } from "./ports.js";
 
 /** Resolves early (never rejects) when `signal` aborts. */
 export function sleep(ms: number, signal?: AbortSignal): Promise<void> {

@@ -2,7 +2,7 @@ import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { type GlobalFlags, type KeySource, type ResolvedKey } from "./domain/config.js";
 import { CliError } from "./domain/errors.js";
-import type { Runtime } from "./runtime.js";
+import type { Runtime } from "./ports.js";
 
 const CREDENTIALS_FILE = "credentials.json";
 

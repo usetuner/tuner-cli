@@ -1,4 +1,4 @@
-import type { Runtime, Stream } from "./runtime.js";
+import type { Runtime, Stream } from "./ports.js";
 import { scenarioName } from "./domain/document.js";
 import type { Summary } from "./domain/run-summary.js";
 import type { SimCall, Verdict } from "./domain/types.js";
