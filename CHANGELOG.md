@@ -18,6 +18,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP client with request timeouts, retries with backoff for safe requests, and typed error codes.
 - SIGINT, SIGTERM and `--timeout` cancel the run once and wait for it before exiting.
 - Exit codes: 0 passed or inconclusive, 1 agent failed, 2 input or account error, 130 SIGINT, 143 SIGTERM.
-- Types generated from the public OpenAPI schema.
-- CI for lint, format, types, tests, build and `npm audit` on Linux and macOS.
-- Coverage thresholds, CodeQL, Dependabot, and contributor and security docs.
