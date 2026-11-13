@@ -13,8 +13,16 @@
         {
           "type": "object",
           "required": [
-            "id", "status", "result", "is_terminal", "dashboard_url", "workspace", "agent",
-            "config", "started_at", "completed_at"
+            "id",
+            "status",
+            "result",
+            "is_terminal",
+            "dashboard_url",
+            "workspace",
+            "agent",
+            "config",
+            "started_at",
+            "completed_at"
           ],
           "additionalProperties": false,
           "properties": {
@@ -84,8 +92,13 @@
       "items": {
         "type": "object",
         "required": [
-          "scenario_id", "library_scenario_id", "name", "verdict", "failure_category",
-          "failed_evals", "call_id"
+          "scenario_id",
+          "library_scenario_id",
+          "name",
+          "verdict",
+          "failure_category",
+          "failed_evals",
+          "call_id"
         ],
         "additionalProperties": false,
         "properties": {
@@ -94,8 +107,15 @@
           "name": { "type": "string" },
           "verdict": {
             "enum": [
-              "passed", "failed", "not_connected", "platform_error", "unreported",
-              "analysis_failed", "ran", "pending", "canceled"
+              "passed",
+              "failed",
+              "not_connected",
+              "platform_error",
+              "unreported",
+              "analysis_failed",
+              "ran",
+              "pending",
+              "canceled"
             ]
           },
           "failure_category": { "enum": ["agent_failed", "tuner_error", "canceled", null] },

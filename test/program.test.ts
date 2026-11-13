@@ -13,7 +13,16 @@ describe("program", () => {
   it("--help lists every command", async () => {
     const rt = makeRuntime(new FakeApi());
     expect(await run(rt, "--help")).toBe(0);
-    for (const c of ["sim", "runs", "scenarios", "languages", "noise", "profiles", "agents", "auth"]) {
+    for (const c of [
+      "sim",
+      "runs",
+      "scenarios",
+      "languages",
+      "noise",
+      "profiles",
+      "agents",
+      "auth",
+    ]) {
       expect(rt.out()).toContain(c);
     }
   });
@@ -34,7 +43,17 @@ describe("program", () => {
     const api = happyApi();
     const rt = makeRuntime(api, { env: { TUNER_BASE_URL: undefined, TUNER_API_KEY: undefined } });
     expect(
-      await run(rt, "sim", "run", "--tag", "x", "--api-key", "tr_api_flag", "--base-url", "http://127.0.0.1:8010"),
+      await run(
+        rt,
+        "sim",
+        "run",
+        "--tag",
+        "x",
+        "--api-key",
+        "tr_api_flag",
+        "--base-url",
+        "http://127.0.0.1:8010",
+      ),
     ).toBe(0);
     expect(api.requests[0]!.headers.authorization).toBe("Bearer tr_api_flag");
     expect(api.requests[0]!.url.origin).toBe("http://127.0.0.1:8010");

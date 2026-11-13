@@ -1,7 +1,13 @@
 import { Command, CommanderError, Option } from "commander";
 import type { GlobalFlags } from "./config.js";
 import { authLogin, authLogout, authStatus } from "./commands/auth.js";
-import { agentsList, languagesList, noiseList, profilesList, scenariosList } from "./commands/lists.js";
+import {
+  agentsList,
+  languagesList,
+  noiseList,
+  profilesList,
+  scenariosList,
+} from "./commands/lists.js";
 import { runsCancel, runsGet } from "./commands/runs.js";
 import type { CommandContext } from "./commands/shared.js";
 import { DEFAULT_TIMEOUT, simRun } from "./commands/sim-run.js";
@@ -12,7 +18,10 @@ import { VERSION } from "./version.js";
 const outputOption = () =>
   new Option("--output <format>", "output format").choices(["text", "json"]).default("text");
 const agentOption = () =>
-  new Option("--agent <agent-id>", "agent ID (remote identifier) or numeric ID; overrides TUNER_AGENT_ID");
+  new Option(
+    "--agent <agent-id>",
+    "agent ID (remote identifier) or numeric ID; overrides TUNER_AGENT_ID",
+  );
 
 const collect = (value: string, previous: string[] = []) => [...previous, value];
 
@@ -59,14 +68,22 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
     .command("run")
     .description("start a simulation run and wait for its result")
     .option("--tag <tag>", "run the agent's scenarios with this tag")
-    .option("--scenario <id>", "run this scenario ID; repeat or comma-separate for several", collect)
+    .option(
+      "--scenario <id>",
+      "run this scenario ID; repeat or comma-separate for several",
+      collect,
+    )
     .addOption(agentOption())
     .option("--language <language>", "caller language: a code (en-US) or full name")
     .option("--profile <name>", "test profile name")
     .option("--noise <slug>", "background noise slug")
     .addOption(outputOption())
     .option("--no-wait", "print the run ID and exit without waiting")
-    .option("--timeout <duration>", "cancel the run after this long, e.g. 30m, 90s", DEFAULT_TIMEOUT)
+    .option(
+      "--timeout <duration>",
+      "cancel the run after this long, e.g. 30m, 90s",
+      DEFAULT_TIMEOUT,
+    )
     .option("--fail-on-inconclusive", "exit 1 on inconclusive, timeout or canceled runs")
     .action(action((cmd) => simRun(ctx(cmd), cmd.opts())));
 
@@ -158,7 +175,9 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
     await program.parseAsync(argv, { from: "user" });
   } catch (err) {
     if (err instanceof CommanderError) {
-      const ok = ["commander.helpDisplayed", "commander.version", "commander.help"].includes(err.code);
+      const ok = ["commander.helpDisplayed", "commander.version", "commander.help"].includes(
+        err.code,
+      );
       if (ok) return EXIT.OK;
       return EXIT.NOTHING_RAN;
     }

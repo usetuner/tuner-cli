@@ -18,7 +18,11 @@ describe("auth login", () => {
   });
 
   it("does not save a rejected key", async () => {
-    const api = new FakeApi().on("GET", "/api/v1/whoami", apiError(403, "invalid_api_key", "Invalid API key."));
+    const api = new FakeApi().on(
+      "GET",
+      "/api/v1/whoami",
+      apiError(403, "invalid_api_key", "Invalid API key."),
+    );
     const rt = makeRuntime(api);
     expect(await run(rt, "auth", "login", "--api-key", "tr_api_bad")).toBe(2);
     expect(existsSync(credentialsPath(rt))).toBe(false);
@@ -65,7 +69,11 @@ describe("auth status", () => {
   });
 
   it("exits 2 with a rejected key and names its source", async () => {
-    const api = new FakeApi().on("GET", "/api/v1/whoami", apiError(403, "invalid_api_key", "Invalid API key."));
+    const api = new FakeApi().on(
+      "GET",
+      "/api/v1/whoami",
+      apiError(403, "invalid_api_key", "Invalid API key."),
+    );
     const rt = makeRuntime(api);
     expect(await run(rt, "--api-key", "tr_api_x", "auth", "status")).toBe(2);
     expect(rt.err()).toContain("(key from --api-key)");

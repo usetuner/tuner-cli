@@ -31,7 +31,13 @@ function setup(api: FakeApi) {
 
 describe("pollRun", () => {
   it("polls every 3 s until the run is terminal", async () => {
-    const api = new FakeApi().on("GET", GET, json(200, pendingRun()), json(200, pendingRun()), json(200, makeRun()));
+    const api = new FakeApi().on(
+      "GET",
+      GET,
+      json(200, pendingRun()),
+      json(200, pendingRun()),
+      json(200, makeRun()),
+    );
     const { ref } = setup(api);
     const updates: Run[] = [];
     const p = pollRun({ ...ref, stop: new StopController(), onUpdate: (r) => updates.push(r) });
@@ -58,7 +64,12 @@ describe("pollRun", () => {
     );
     const { ref } = setup(api);
     const delays: number[] = [];
-    const p = pollRun({ ...ref, stop: new StopController(), onUpdate: () => {}, onRetry: (_e, d) => delays.push(d) });
+    const p = pollRun({
+      ...ref,
+      stop: new StopController(),
+      onUpdate: () => {},
+      onRetry: (_e, d) => delays.push(d),
+    });
     await vi.advanceTimersByTimeAsync(21_000);
     expect((await p).kind).toBe("terminal");
     expect(delays).toEqual([3_000, 6_000, 12_000]);
@@ -80,7 +91,12 @@ describe("pollRun", () => {
   });
 
   it("gives up after 5 minutes of consecutive failures", async () => {
-    const api = new FakeApi().on("GET", GET, json(200, pendingRun()), apiError(502, "internal_error", "x"));
+    const api = new FakeApi().on(
+      "GET",
+      GET,
+      json(200, pendingRun()),
+      apiError(502, "internal_error", "x"),
+    );
     const { ref } = setup(api);
     const p = pollRun({ ...ref, stop: new StopController(), onUpdate: () => {} });
     await vi.advanceTimersByTimeAsync(3_000 + 290_000);
@@ -131,7 +147,11 @@ describe("pollRun", () => {
 
 describe("cancelAndWait", () => {
   it("returns at once when cancel returns a terminal run", async () => {
-    const api = new FakeApi().on("POST", CANCEL, json(200, makeRun({ status: "canceled", result: "canceled", reason: "canceled" })));
+    const api = new FakeApi().on(
+      "POST",
+      CANCEL,
+      json(200, makeRun({ status: "canceled", result: "canceled", reason: "canceled" })),
+    );
     const { ref } = setup(api);
     const outcome = await cancelAndWait(ref);
     expect(outcome.terminal).toBe(true);
@@ -141,7 +161,12 @@ describe("cancelAndWait", () => {
   it("polls until terminal within 10 s", async () => {
     const api = new FakeApi()
       .on("POST", CANCEL, json(200, pendingRun()))
-      .on("GET", GET, json(200, pendingRun()), json(200, makeRun({ status: "canceled", result: "canceled" })));
+      .on(
+        "GET",
+        GET,
+        json(200, pendingRun()),
+        json(200, makeRun({ status: "canceled", result: "canceled" })),
+      );
     const { ref } = setup(api);
     const p = cancelAndWait(ref);
     await vi.advanceTimersByTimeAsync(4_000);
@@ -149,7 +174,9 @@ describe("cancelAndWait", () => {
   });
 
   it("stops waiting after 10 s", async () => {
-    const api = new FakeApi().on("POST", CANCEL, json(200, pendingRun())).on("GET", GET, json(200, pendingRun()));
+    const api = new FakeApi()
+      .on("POST", CANCEL, json(200, pendingRun()))
+      .on("GET", GET, json(200, pendingRun()));
     const { ref, runtime } = setup(api);
     const start = runtime.now();
     const p = cancelAndWait(ref);

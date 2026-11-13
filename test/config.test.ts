@@ -17,7 +17,10 @@ describe("config", () => {
   it("resolves the API key from flag, then env, then the stored file", async () => {
     const rt = makeRuntime(new FakeApi(), { env: { TUNER_API_KEY: "tr_api_env" } });
     await writeStoredKey(rt, "tr_api_stored");
-    expect(await resolveApiKey({ apiKey: "tr_api_flag" }, rt)).toEqual({ key: "tr_api_flag", source: "flag" });
+    expect(await resolveApiKey({ apiKey: "tr_api_flag" }, rt)).toEqual({
+      key: "tr_api_flag",
+      source: "flag",
+    });
     expect(await resolveApiKey({}, rt)).toEqual({ key: "tr_api_env", source: "env" });
     rt.env.TUNER_API_KEY = undefined;
     expect(await resolveApiKey({}, rt)).toEqual({ key: "tr_api_stored", source: "stored" });
@@ -37,7 +40,9 @@ describe("config", () => {
   });
 
   it("resolves the base URL from flag, env, then production", () => {
-    const rt = makeRuntime(new FakeApi(), { env: { TUNER_BASE_URL: "https://staging.example.com/" } });
+    const rt = makeRuntime(new FakeApi(), {
+      env: { TUNER_BASE_URL: "https://staging.example.com/" },
+    });
     expect(resolveBaseUrl({ baseUrl: "http://127.0.0.1:8010" }, rt)).toBe("http://127.0.0.1:8010");
     expect(resolveBaseUrl({}, rt)).toBe("https://staging.example.com");
     rt.env.TUNER_BASE_URL = undefined;
@@ -62,7 +67,11 @@ describe("config", () => {
   it("uses the OS config dir", () => {
     expect(defaultConfigDir("linux", {}, "/home/u")).toBe("/home/u/.config/tuner");
     expect(defaultConfigDir("linux", { XDG_CONFIG_HOME: "/xdg" }, "/home/u")).toBe("/xdg/tuner");
-    expect(defaultConfigDir("darwin", {}, "/Users/u")).toBe("/Users/u/Library/Application Support/tuner");
-    expect(defaultConfigDir("win32", { APPDATA: "C:\\AppData" }, "C:\\Users\\u")).toContain("tuner");
+    expect(defaultConfigDir("darwin", {}, "/Users/u")).toBe(
+      "/Users/u/Library/Application Support/tuner",
+    );
+    expect(defaultConfigDir("win32", { APPDATA: "C:\\AppData" }, "C:\\Users\\u")).toContain(
+      "tuner",
+    );
   });
 });

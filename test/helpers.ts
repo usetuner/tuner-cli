@@ -22,7 +22,11 @@ export interface Recorded {
 
 type Reply = Response | Error | ((req: Recorded) => Response | Promise<Response>);
 
-export function json(status: number, body: unknown, headers: Record<string, string> = {}): Response {
+export function json(
+  status: number,
+  body: unknown,
+  headers: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json", ...headers },
@@ -72,7 +76,8 @@ export class FakeApi {
     };
     this.requests.push(req);
     const route = this.routes.find((r) => r.method === req.method && r.path === req.path);
-    if (!route) return apiError(404, "validation_error", `No fake route for ${req.method} ${req.path}`);
+    if (!route)
+      return apiError(404, "validation_error", `No fake route for ${req.method} ${req.path}`);
     const reply = route.replies[Math.min(route.calls, route.replies.length - 1)]!;
     route.calls += 1;
     if (reply instanceof Error) throw reply;
@@ -96,14 +101,24 @@ export interface TestRuntime extends Runtime {
 
 export function makeRuntime(
   api: FakeApi,
-  opts: { env?: Record<string, string | undefined>; stdinIsTTY?: boolean; stdin?: string; secret?: string } = {},
+  opts: {
+    env?: Record<string, string | undefined>;
+    stdinIsTTY?: boolean;
+    stdin?: string;
+    secret?: string;
+  } = {},
 ): TestRuntime {
   let out = "";
   let err = "";
   const handlers = new Set<(s: Signal) => void>();
   const exits: number[] = [];
   return {
-    env: { TUNER_BASE_URL: BASE, TUNER_API_KEY: "tr_api_test", TUNER_AGENT_ID: "booking-staging", ...opts.env },
+    env: {
+      TUNER_BASE_URL: BASE,
+      TUNER_API_KEY: "tr_api_test",
+      TUNER_AGENT_ID: "booking-staging",
+      ...opts.env,
+    },
     stdout: { write: (s: string) => void (out += s), isTTY: false },
     stderr: { write: (s: string) => void (err += s), isTTY: false },
     stdinIsTTY: opts.stdinIsTTY ?? false,
@@ -140,7 +155,11 @@ export const whoami = (agent: Whoami["agent"] = defaultAgent): Whoami => ({
   agent,
 });
 
-export const defaultAgent = { id: AGENT, remote_identifier: "booking-staging", name: "Booking (staging)" };
+export const defaultAgent = {
+  id: AGENT,
+  remote_identifier: "booking-staging",
+  name: "Booking (staging)",
+};
 
 export function call(overrides: Partial<SimCall> = {}): SimCall {
   return {

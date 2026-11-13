@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { AGENT_PATH, FakeApi, RUN, apiError, json, makeRun, makeRuntime, pendingRun, run, whoami } from "./helpers.js";
+import {
+  AGENT_PATH,
+  FakeApi,
+  RUN,
+  apiError,
+  json,
+  makeRun,
+  makeRuntime,
+  pendingRun,
+  run,
+  whoami,
+} from "./helpers.js";
 
 const GET = `${AGENT_PATH}/simulation-runs/${RUN}`;
 const CANCEL = `${GET}/cancel`;
@@ -24,7 +35,9 @@ describe("runs get", () => {
   });
 
   it("exits 2 on run_not_found", async () => {
-    const rt = makeRuntime(base().on("GET", GET, apiError(404, "run_not_found", "Simulation run not found")));
+    const rt = makeRuntime(
+      base().on("GET", GET, apiError(404, "run_not_found", "Simulation run not found")),
+    );
     expect(await run(rt, "runs", "get", String(RUN))).toBe(2);
     expect(rt.err()).toContain("Simulation run not found");
   });
@@ -45,7 +58,11 @@ describe("runs get", () => {
 
 describe("runs cancel", () => {
   it("cancels a running run", async () => {
-    const api = base().on("POST", CANCEL, json(200, makeRun({ status: "canceled", result: "canceled", reason: "canceled" })));
+    const api = base().on(
+      "POST",
+      CANCEL,
+      json(200, makeRun({ status: "canceled", result: "canceled", reason: "canceled" })),
+    );
     const rt = makeRuntime(api);
     expect(await run(rt, "runs", "cancel", String(RUN))).toBe(0);
     expect(rt.out()).toContain(`Run ${RUN} canceled.`);
@@ -53,7 +70,9 @@ describe("runs cancel", () => {
   });
 
   it("says analysis continues for an analyzing run", async () => {
-    const rt = makeRuntime(base().on("POST", CANCEL, json(200, pendingRun({ status: "analyzing" }))));
+    const rt = makeRuntime(
+      base().on("POST", CANCEL, json(200, pendingRun({ status: "analyzing" }))),
+    );
     expect(await run(rt, "runs", "cancel", String(RUN))).toBe(0);
     expect(rt.out()).toContain("analysis continues");
     expect(rt.out()).toContain("https://app.usetuner.ai/simulations?agent=77&run=4821");
@@ -66,12 +85,20 @@ describe("runs cancel", () => {
   });
 
   it("exits 2 on run_not_found", async () => {
-    const rt = makeRuntime(base().on("POST", CANCEL, apiError(404, "run_not_found", "Simulation run not found")));
+    const rt = makeRuntime(
+      base().on("POST", CANCEL, apiError(404, "run_not_found", "Simulation run not found")),
+    );
     expect(await run(rt, "runs", "cancel", String(RUN))).toBe(2);
   });
 
   it("prints JSON", async () => {
-    const rt = makeRuntime(base().on("POST", CANCEL, json(200, makeRun({ status: "canceled", result: "canceled", reason: "canceled" }))));
+    const rt = makeRuntime(
+      base().on(
+        "POST",
+        CANCEL,
+        json(200, makeRun({ status: "canceled", result: "canceled", reason: "canceled" })),
+      ),
+    );
     expect(await run(rt, "runs", "cancel", String(RUN), "--output", "json")).toBe(0);
     expect(JSON.parse(rt.out()).reason).toBe("canceled");
   });
