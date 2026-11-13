@@ -1,5 +1,5 @@
 import { writeJson } from "../adapters/json.js";
-import { summaryLine, terminalOutput } from "../adapters/terminal.js";
+import { noiseLine, summaryLine, terminalOutput } from "../adapters/terminal.js";
 import { runSimulation } from "../app/sim-run.js";
 import { type OutputFormat, buildDocument } from "../domain/document.js";
 import { EXIT } from "../domain/exit.js";
@@ -42,10 +42,14 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
     if (r.reason === "tuner_error") warnInconclusive(output, "tuner_error", r.exitCode);
   } else if (r.kind === "started" && !json) {
     runtime.stdout.write(`${r.runId}\n${r.run?.dashboard_url ? r.run.dashboard_url + "\n" : ""}`);
+    const noise = noiseLine(r.run);
+    if (noise) output.progress(noise);
   } else if (r.kind === "finished") {
     const { run, reason, exitCode } = r;
     output.run(run);
     if (!json) {
+      const noise = noiseLine(run);
+      if (noise) output.progress(noise);
       runtime.stdout.write(`\n${summaryLine(summarize(run))}\n`);
       if (run?.dashboard_url) runtime.stdout.write(`${run.dashboard_url}\n`);
     } else if (run?.dashboard_url) {

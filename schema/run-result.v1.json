@@ -65,7 +65,8 @@
               "properties": {
                 "language": { "type": ["string", "null"] },
                 "profile": { "type": ["string", "null"] },
-                "noise": { "type": ["string", "null"] }
+                "noise": { "type": ["string", "null"] },
+                "noise_intensity": { "type": ["number", "null"] }
               }
             },
             "started_at": { "type": ["string", "null"] },

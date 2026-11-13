@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  intensitiesText,
+  noiseLine,
   painter,
   scenarioLine,
   summaryLine,
@@ -37,6 +39,21 @@ describe("terminal renderer", () => {
       ),
     ).toContain("! platform error  Reschedule an existing booking   SIP 503");
     expect(scenarioLine(call({ verdict: "brand_new" as never }), plain)).toContain("? brand_new");
+  });
+
+  it("prints intensities and the run's noise as the API sends them", () => {
+    expect(
+      intensitiesText([
+        { name: "low", value: 0.5 },
+        { name: "medium", value: 1 },
+      ]),
+    ).toBe("low 0.5 · medium 1.0");
+    expect(intensitiesText(undefined)).toBe("-");
+    expect(intensitiesText([])).toBe("-");
+    expect(noiseLine(makeRun({ noise_intensity: 1.5 }))).toBe("Noise: cafe · intensity 1.5");
+    expect(noiseLine(makeRun({ noise_intensity: null }))).toBe("Noise: cafe");
+    expect(noiseLine(makeRun({ noise_environment: null }))).toBeUndefined();
+    expect(noiseLine(undefined)).toBeUndefined();
   });
 
   it("joins the summary and pads the table", () => {

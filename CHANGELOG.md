@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `sim run` and `runs get` print the run's noise and intensity; `--output json` adds `run.config.noise_intensity` (additive, `schema_version` stays 1).
 - `tuner sim run --noise-intensity <level>`: a name (`low`, `medium`, `high`) or a gain (`0.5`, `1.0`, `1.5`), passed to the API as-is. Needs `--noise`.
 - `tuner noise list` shows each environment's intensities from the API (`-` when the API sends none).
 - `tuner sim run`: start a simulation run for an agent, wait for it, and exit with a code that reflects the server's verdict.

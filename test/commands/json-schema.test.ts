@@ -44,7 +44,7 @@ describe("--output json matches schema_version 1", () => {
         is_terminal: true,
         workspace: { id: 12, name: "Acme" },
         agent: { id: 77, remote_id: "booking-staging", name: "Booking (staging)" },
-        config: { language: "en-US", profile: null, noise: "cafe" },
+        config: { language: "en-US", profile: null, noise: "cafe", noise_intensity: 1 },
         started_at: "2026-11-04T10:00:00Z",
       },
       summary: { total: 1, passed: 1, failed: 0, inconclusive: 0, canceled: 0, pending: 0 },

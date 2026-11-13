@@ -20,7 +20,9 @@ describe("runs get", () => {
   it("prints the run in text", async () => {
     const rt = makeRuntime(base().on("GET", GET, json(200, makeRun())));
     expect(await run(rt, "runs", "get", String(RUN))).toBe(0);
-    expect(rt.out()).toContain(`Run ${RUN} · completed · result passed`);
+    expect(rt.out()).toContain(
+      `Run ${RUN} · completed · result passed\nNoise: cafe · intensity 1.0\n`,
+    );
     expect(rt.out()).toContain("✓ passed");
     expect(rt.out()).toContain("https://app.usetuner.ai/simulations");
   });
@@ -32,6 +34,7 @@ describe("runs get", () => {
     expect(doc.schema_version).toBe(1);
     expect(doc.run.id).toBe(RUN);
     expect(doc.run.agent.remote_id).toBe("booking-staging");
+    expect(doc.run.config.noise_intensity).toBe(1);
   });
 
   it("exits 2 on run_not_found", async () => {

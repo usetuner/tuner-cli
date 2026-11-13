@@ -79,6 +79,7 @@ describe("sim run: results and exit codes", () => {
     expect(rt.out()).toContain("Reschedule an existing booking");
     expect(rt.out()).toContain("1 passed · 0 failed · 0 inconclusive");
     expect(rt.out()).toContain("https://app.usetuner.ai/simulations?agent=77&run=4821");
+    expect(rt.err()).toContain("Noise: cafe · intensity 1.0");
   });
 
   it("sends X-Tuner-Client on every request and the names in the body", async () => {
@@ -475,6 +476,7 @@ describe("sim run: --no-wait", () => {
     const rt = makeRuntime(api);
     expect(await run(rt, "sim", "run", "--tag", "smoke", "--no-wait")).toBe(0);
     expect(rt.out()).toBe(`${RUN}\nhttps://app.usetuner.ai/simulations?agent=77&run=${RUN}\n`);
+    expect(rt.err()).toContain("Noise: cafe · intensity 1.0");
     expect(api.calls("GET", GET)).toHaveLength(1);
     expect(api.calls("POST", CANCEL)).toHaveLength(0);
   });
