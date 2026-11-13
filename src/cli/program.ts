@@ -79,6 +79,10 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
     .option("--language <language>", "caller language: a code (en-US) or full name")
     .option("--profile <name>", "test profile name")
     .option("--noise <slug>", "background noise slug")
+    .option(
+      "--noise-intensity <level>",
+      "noise level: low, medium (default) or high, or 0.5, 1.0, 1.5; see tuner noise list",
+    )
     .addOption(outputOption())
     .option("--no-wait", "print the run ID and exit without waiting")
     .option(

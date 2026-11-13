@@ -14,6 +14,7 @@ export interface SimRunOptions {
   language?: string;
   profile?: string;
   noise?: string;
+  noiseIntensity?: string;
   output?: OutputFormat;
   wait?: boolean;
   timeout?: string;

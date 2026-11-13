@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CliError } from "../../src/domain/errors.js";
 import {
   buildStartBody,
+  parseNoiseIntensity,
   parseRunId,
   parseScenarioIds,
   parseTimeout,
@@ -47,10 +48,44 @@ describe("buildStartBody", () => {
       noise: "cafe",
     });
   });
+  it("sends a noise intensity name as a string and a gain as a number", () => {
+    expect(buildStartBody({ tag: "t", noise: "office", noiseIntensity: "high" })).toEqual({
+      tag: "t",
+      noise: "office",
+      noise_intensity: "high",
+    });
+    expect(buildStartBody({ tag: "t", noise: "office", noiseIntensity: "0.5" })).toEqual({
+      tag: "t",
+      noise: "office",
+      noise_intensity: 0.5,
+    });
+  });
+  it("needs --noise for --noise-intensity", () => {
+    expect(() => buildStartBody({ tag: "t", noiseIntensity: "high" })).toThrow(
+      "--noise-intensity needs --noise <slug>.",
+    );
+  });
   it("builds a scenario run", () => {
     expect(buildStartBody({ scenario: ["1", "2"] })).toEqual({ selected_scenario_ids: [1, 2] });
   });
   it.each([{}, { tag: "t", scenario: ["1"] }])("needs exactly one selector: %j", (opts) => {
     expect(() => buildStartBody(opts)).toThrow("Pass exactly one of --tag or --scenario.");
+  });
+});
+
+describe("parseNoiseIntensity", () => {
+  it.each([
+    ["high", "high"],
+    ["Medium", "Medium"],
+    ["loud", "loud"],
+    ["0.5", 0.5],
+    ["1.0", 1],
+    ["1.", 1],
+    [".5", 0.5],
+    ["2", 2],
+    ["-1", "-1"],
+    ["1e3", "1e3"],
+  ])("%s -> %j, unvalidated", (value, expected) => {
+    expect(parseNoiseIntensity(value)).toBe(expected);
   });
 });

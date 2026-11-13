@@ -109,6 +109,22 @@ describe("sim run: results and exit codes", () => {
     });
   });
 
+  it.each([
+    ["high", "high"],
+    ["0.5", 0.5],
+    ["loud", "loud"],
+  ])("sends --noise-intensity %s as %j without checking it", async (value, sent) => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    const argv = ["--tag", "smoke", "--noise", "office", "--noise-intensity", value];
+    expect(await run(rt, "sim", "run", ...argv)).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).toEqual({
+      tag: "smoke",
+      noise: "office",
+      noise_intensity: sent,
+    });
+  });
+
   it("sends selected_scenario_ids for --scenario, repeated or comma-separated", async () => {
     const api = happyApi();
     const rt = makeRuntime(api);
@@ -228,6 +244,7 @@ describe("sim run: usage errors exit 2", () => {
     [["sim", "run", "--scenario", "abc"], "Invalid scenario ID 'abc'"],
     [["sim", "run", "--tag", "a", "--timeout", "soon"], "Invalid duration 'soon'"],
     [["sim", "run", "--tag", "a", "--base-url", "ftp://x"], "Base URL must be http or https"],
+    [["sim", "run", "--tag", "a", "--noise-intensity", "high"], "--noise-intensity needs --noise"],
   ])("%j", async (argv, message) => {
     const api = happyApi();
     const rt = makeRuntime(api);
@@ -336,6 +353,20 @@ describe("sim run: start errors", () => {
       ],
       {},
       "Send exactly one of tag",
+    ],
+    [
+      "validation_error",
+      422,
+      "select",
+      [
+        {
+          type: "value_error",
+          loc: ["body", "noise_intensity"],
+          msg: "Value error, noise_intensity must be one of 'low' (0.5), 'medium' (1.0), 'high' (1.5)",
+        },
+      ],
+      {},
+      "noise_intensity must be one of 'low' (0.5)",
     ],
     ["validation_error", 400, "select", "Invalid caller persona", {}, "Invalid caller persona"],
     ["workspace_not_found", 404, "select", "Workspace not found", {}, "Workspace not found"],
