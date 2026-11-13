@@ -19,7 +19,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "gen:openapi": "sh scripts/gen-openapi.sh",
-    "gen:types": "openapi-typescript openapi/openapi.json -o src/generated/api.ts",
+    "gen:types": "openapi-typescript openapi/openapi.json --default-non-nullable false -o src/generated/api.ts",
     "gen": "npm run gen:openapi && npm run gen:types",
     "prepack": "npm run build"
   },

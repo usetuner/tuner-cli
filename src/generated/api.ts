@@ -1724,7 +1724,7 @@ export interface components {
              * @description How this agent's config was set up: 'pending', 'template', 'manual', 'mcp', or 'skipped'.
              * @default pending
              */
-            setup_method: string;
+            setup_method?: string;
             /**
              * Setup Code Confirmed At
              * @description Timestamp when the integration/code step of the setup wizard was confirmed. Null if not yet confirmed.
@@ -1740,7 +1740,7 @@ export interface components {
              * @description True for the auto-provisioned demo/sample agent. Excluded from real-agent counts that drive the welcome flow and zero-agent empty state.
              * @default false
              */
-            is_sample: boolean;
+            is_sample?: boolean;
             /**
              * Deleted At
              * @description Timestamp when the agent was deleted. Null if the agent is active.
@@ -1816,7 +1816,7 @@ export interface components {
              * @description Whether this agent handles 'inbound' (customer-initiated) or 'outbound' (agent-initiated) calls. Defaults to 'inbound'.
              * @default inbound
              */
-            call_direction: string;
+            call_direction?: string;
             /**
              * Prompt
              * @description System prompt or instructions given to the agent.
@@ -1903,27 +1903,27 @@ export interface components {
              * Intents Created
              * @default 0
              */
-            intents_created: number;
+            intents_created?: number;
             /**
              * Evals Created
              * @default 0
              */
-            evals_created: number;
+            evals_created?: number;
             /**
              * Data Extractions Created
              * @default 0
              */
-            data_extractions_created: number;
+            data_extractions_created?: number;
             /**
              * Rules Created
              * @default 0
              */
-            rules_created: number;
+            rules_created?: number;
             /**
              * Alerts Created
              * @default 0
              */
-            alerts_created: number;
+            alerts_created?: number;
         };
         /**
          * AgentUpdateRequest
@@ -1953,7 +1953,7 @@ export interface components {
              * @description Whether this agent handles 'inbound' (customer-initiated) or 'outbound' (agent-initiated) calls.
              * @default inbound
              */
-            call_direction: string;
+            call_direction?: string;
             /**
              * Provider Name
              * @description Voice provider this agent is connected to (e.g., 'retell', 'vapi'). Must match a provider name supported by Tuner. Changing it re-links the agent to the matching integration, creating one if none exists.
@@ -2197,13 +2197,13 @@ export interface components {
              * @default info
              * @example warning
              */
-            severity: components["schemas"]["AlertSeverity"];
+            severity?: components["schemas"]["AlertSeverity"];
             /**
              * @description Alert state (active or paused)
              * @default active
              * @example active
              */
-            state: components["schemas"]["AlertState"];
+            state?: components["schemas"]["AlertState"];
             /**
              * Window Ms
              * @description Rolling time window in milliseconds (e.g. 300000 for 5 minutes).
@@ -2216,7 +2216,7 @@ export interface components {
              * @default 900000
              * @example 900000
              */
-            cooldown_ms: number;
+            cooldown_ms?: number;
             /**
              * Threshold N
              * @description Number of qualifying calls to trigger alert. Required when threshold_type='count'.
@@ -2228,7 +2228,7 @@ export interface components {
              * @default count
              * @example count
              */
-            threshold_type: components["schemas"]["ThresholdType"];
+            threshold_type?: components["schemas"]["ThresholdType"];
             /**
              * Threshold Percentage
              * @description Required when threshold_type='percentage': percentage threshold (0 < x <= 100)
@@ -2399,7 +2399,7 @@ export interface components {
              * @default count
              * @example percentage
              */
-            threshold_type: string;
+            threshold_type?: string;
             /**
              * Threshold N
              * @description Matching calls needed to fire. Set in `count` mode.
@@ -2685,12 +2685,12 @@ export interface components {
              * Period
              * @default []
              */
-            period: unknown[];
+            period?: unknown[];
             /**
              * Scope
              * @default []
              */
-            scope: unknown[];
+            scope?: unknown[];
         };
         /**
          * AttachRequest
@@ -2705,14 +2705,14 @@ export interface components {
              * Force Checkout
              * @default false
              */
-            force_checkout: boolean;
+            force_checkout?: boolean;
             /** Promo Code */
             promo_code?: string | null;
             /**
              * Confirm Replace
              * @default false
              */
-            confirm_replace: boolean;
+            confirm_replace?: boolean;
             /** Replace Discount Ids */
             replace_discount_ids?: string[] | null;
         };
@@ -2772,7 +2772,7 @@ export interface components {
              *       "default_retention_policy": {}
              *     }
              */
-            retention_policy: components["schemas"]["RetentionPolicyMetadata"];
+            retention_policy?: components["schemas"]["RetentionPolicyMetadata"];
         };
         /**
          * AvailableConditionSource
@@ -2889,7 +2889,7 @@ export interface components {
              * Plan Changes
              * @default []
              */
-            plan_changes: components["schemas"]["PlanChangeEnding"][];
+            plan_changes?: components["schemas"]["PlanChangeEnding"][];
         };
         /** Body_update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put */
         Body_update_intent_detection_api_v1_workspaces__workspace_id__agents__agent_id__settings_intent_detection_put: {
@@ -2991,22 +2991,22 @@ export interface components {
              * Call Outcomes
              * @default []
              */
-            call_outcomes: components["schemas"]["CallOutcomeResponse"][];
+            call_outcomes?: components["schemas"]["CallOutcomeResponse"][];
             /**
              * Call Intents
              * @default []
              */
-            call_intents: components["schemas"]["CallIntentResponse"][];
+            call_intents?: components["schemas"]["CallIntentResponse"][];
             /**
              * Data Extraction Fields
              * @default []
              */
-            data_extraction_fields: components["schemas"]["DataExtractionFieldResponse"][];
+            data_extraction_fields?: components["schemas"]["DataExtractionFieldResponse"][];
             /**
              * Intent Detection Enabled
              * @default true
              */
-            intent_detection_enabled: boolean;
+            intent_detection_enabled?: boolean;
         };
         /**
          * CallDetailsResponse
@@ -3050,7 +3050,7 @@ export interface components {
              * @description Call cost in cents (e.g. 125 for $1.25).
              * @default 0
              */
-            cost: number;
+            cost?: number;
             /**
              * Latency
              * @description Raw latency payload with top-level keys (for example: e2e/llm/stt/tts/eou). Any metadata key is excluded.
@@ -3065,7 +3065,7 @@ export interface components {
              * @description Customer phone number
              * @default
              */
-            customer_number: string;
+            customer_number?: string;
             /**
              * Caller Phone Number
              * @description Caller phone number (for phone_call type)
@@ -3247,7 +3247,7 @@ export interface components {
              * @description Call cost in cents (e.g. 125 for $1.25).
              * @default 0
              */
-            cost: number;
+            cost?: number;
             /**
              * Start Time
              * @description Formatted timestamp (M/D HH:MM)
@@ -3268,7 +3268,7 @@ export interface components {
              * @description True if this call is a simulation call
              * @default false
              */
-            is_simulated: boolean;
+            is_simulated?: boolean;
             /**
              * Pii Redaction Status
              * @description PII redaction outcome. Null when redaction was not attempted (disabled workspace, simulation call, or pre-feature call); otherwise one of 'redacted', 'partial_failure', or 'failed'.
@@ -3407,7 +3407,7 @@ export interface components {
              * @default false
              * @example false
              */
-            stop_analysis: boolean;
+            stop_analysis?: boolean;
         };
         /**
          * CallOutcomeResponse
@@ -3663,7 +3663,7 @@ export interface components {
              * @default cancel_immediately
              * @enum {string}
              */
-            cancel_action: "cancel_immediately" | "cancel_end_of_cycle" | "uncancel";
+            cancel_action?: "cancel_immediately" | "cancel_end_of_cycle" | "uncancel";
         };
         /**
          * CancelResponseSchema
@@ -3710,7 +3710,7 @@ export interface components {
              * Confirm Replace
              * @default false
              */
-            confirm_replace: boolean;
+            confirm_replace?: boolean;
             /** Replace Discount Ids */
             replace_discount_ids?: string[] | null;
         };
@@ -3747,7 +3747,7 @@ export interface components {
              * @default group
              * @constant
              */
-            type: "group";
+            type?: "group";
             /**
              * Id
              * @description Optional identifier for this node.
@@ -3772,7 +3772,7 @@ export interface components {
              * @default predicate
              * @constant
              */
-            type: "predicate";
+            type?: "predicate";
             /**
              * Id
              * @description Optional identifier for this node.
@@ -3843,12 +3843,12 @@ export interface components {
              * Replaces
              * @default []
              */
-            replaces: components["schemas"]["CouponInfo"][];
+            replaces?: components["schemas"]["CouponInfo"][];
             /**
              * Ending
              * @default []
              */
-            ending: components["schemas"]["CouponInfo"][];
+            ending?: components["schemas"]["CouponInfo"][];
         };
         /**
          * CouponPreviewRequest
@@ -4147,14 +4147,14 @@ export interface components {
              * @default 1
              * @example 2
              */
-            repeat_count: number;
+            repeat_count?: number;
             /**
              * Max Call Duration Minutes
              * @description Maximum length of each replayed call, in minutes (1-12). Defaults to 3. A clip set whose worst-case call duration exceeds this is rejected.
              * @default 3
              * @example 3
              */
-            max_call_duration_minutes: number;
+            max_call_duration_minutes?: number;
             /**
              * Selected Eval Ids
              * @description IDs of `PASS_FAIL` evals to grade the replayed calls with. Omit, `null` or `[]` means no evals are run (a latency-only run).
@@ -4193,7 +4193,7 @@ export interface components {
              * @default 3
              * @example 3
              */
-            max_call_duration_minutes: number;
+            max_call_duration_minutes?: number;
             /**
              * Caller Persona Id
              * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas. When neither this nor `language` is sent, the agent's language picks the persona (English (American) by default).
@@ -4275,7 +4275,7 @@ export interface components {
              * @default 3
              * @example 3
              */
-            max_call_duration_minutes: number;
+            max_call_duration_minutes?: number;
             /**
              * Caller Persona Id
              * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas.
@@ -4492,7 +4492,7 @@ export interface components {
              * @default false
              * @example false
              */
-            is_system: boolean;
+            is_system?: boolean;
         };
         /**
          * DataRetentionResponse
@@ -5230,7 +5230,7 @@ export interface components {
              * Answered
              * @default false
              */
-            answered: boolean;
+            answered?: boolean;
         };
         /**
          * OnboardingUpdate
@@ -5436,7 +5436,7 @@ export interface components {
              * Score
              * @default 0.6
              */
-            score: number;
+            score?: number;
         };
         /**
          * PIIRegexPatternListResponse
@@ -6030,7 +6030,7 @@ export interface components {
              * Confirm Replace
              * @default false
              */
-            confirm_replace: boolean;
+            confirm_replace?: boolean;
             /** Replace Discount Ids */
             replace_discount_ids?: string[] | null;
         };
@@ -6181,7 +6181,7 @@ export interface components {
              * @description Whether the calls are graded by evals. False only for replay runs started without evals.
              * @default true
              */
-            evals_expected: boolean;
+            evals_expected?: boolean;
             /**
              * Selected Evals
              * @description The evals the calls are graded with. Empty if none were selected.
@@ -6207,19 +6207,19 @@ export interface components {
              * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
              * @default 0
              */
-            ran_count: number;
+            ran_count?: number;
             /**
              * Unreported Count
              * @description Number of calls that completed but whose call data never arrived.
              * @default 0
              */
-            unreported_count: number;
+            unreported_count?: number;
             /**
              * Analysis Failed Count
              * @description Number of calls that arrived but whose evals never came back.
              * @default 0
              */
-            analysis_failed_count: number;
+            analysis_failed_count?: number;
             /**
              * Simulation Calls
              * @description The replayed calls in the run, one per clip set and repetition.
@@ -6308,9 +6308,9 @@ export interface components {
              *       "scope": []
              *     }
              */
-            allowed_retention_policy: components["schemas"]["AllowedRetentionPolicy"];
+            allowed_retention_policy?: components["schemas"]["AllowedRetentionPolicy"];
             /** @default {} */
-            default_retention_policy: components["schemas"]["DefaultRetentionPolicy"];
+            default_retention_policy?: components["schemas"]["DefaultRetentionPolicy"];
         };
         /**
          * RuleConditionGroup
@@ -6323,7 +6323,7 @@ export interface components {
              * @default group
              * @constant
              */
-            type: "group";
+            type?: "group";
             /**
              * Id
              * @description Optional identifier for this node.
@@ -6348,7 +6348,7 @@ export interface components {
              * @default predicate
              * @constant
              */
-            type: "predicate";
+            type?: "predicate";
             /**
              * Id
              * @description Optional identifier for this node.
@@ -6566,7 +6566,7 @@ export interface components {
              * @default active
              * @example active
              */
-            state: components["schemas"]["RuleState"];
+            state?: components["schemas"]["RuleState"];
         };
         /**
          * RuleResponse
@@ -6959,13 +6959,13 @@ export interface components {
              * @description Whether the call completed but no call data ever arrived.
              * @default false
              */
-            unreported: boolean;
+            unreported?: boolean;
             /**
              * Analysis Failed
              * @description Whether the call arrived but its evals never came back.
              * @default false
              */
-            analysis_failed: boolean;
+            analysis_failed?: boolean;
             /**
              * Target Eval Label
              * @description Name of the eval or call outcome the scenario targeted in this execution.
@@ -7029,7 +7029,7 @@ export interface components {
              * @default
              * @example The caller was charged twice for the same order and wants one charge refunded.
              */
-            situation: string;
+            situation?: string;
             /**
              * Goal
              * @description What the caller is trying to achieve, up to 2000 characters.
@@ -7254,19 +7254,19 @@ export interface components {
              * @description Whether the call outcome is one that stops further analysis.
              * @default false
              */
-            analysis_stopped: boolean;
+            analysis_stopped?: boolean;
             /**
              * Unreported
              * @description Whether the call completed but no call data ever arrived.
              * @default false
              */
-            unreported: boolean;
+            unreported?: boolean;
             /**
              * Analysis Failed
              * @description Whether the call arrived but its evals never came back.
              * @default false
              */
-            analysis_failed: boolean;
+            analysis_failed?: boolean;
             /** @description Why the call, or its scenario before any call was placed, failed. Null unless it failed. */
             failure?: components["schemas"]["SimulationCallFailure"] | null;
             /**
@@ -7633,7 +7633,7 @@ export interface components {
              * @default generated
              * @enum {string}
              */
-            scenario_source: "generated" | "recorded_clips";
+            scenario_source?: "generated" | "recorded_clips";
             /**
              * Voice Clip Sets
              * @description Voice clip sets played by a replay run. Empty otherwise.
@@ -7656,7 +7656,7 @@ export interface components {
              * @description Whether the calls are graded by evals. False only for replay runs started without evals.
              * @default true
              */
-            evals_expected: boolean;
+            evals_expected?: boolean;
             /**
              * Selected Evals
              * @description The evals the calls are graded with. Empty if none were selected.
@@ -7687,19 +7687,19 @@ export interface components {
              * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
              * @default 0
              */
-            ran_count: number;
+            ran_count?: number;
             /**
              * Unreported Count
              * @description Number of calls that completed but whose call data never arrived.
              * @default 0
              */
-            unreported_count: number;
+            unreported_count?: number;
             /**
              * Analysis Failed Count
              * @description Number of calls that arrived but whose evals never came back.
              * @default 0
              */
-            analysis_failed_count: number;
+            analysis_failed_count?: number;
             /**
              * Simulation Calls
              * @description The simulated calls in the run, one per scenario.
@@ -7714,7 +7714,7 @@ export interface components {
              * @description `generate` for runs with generated scenarios, `select` for library scenarios.
              * @default generate
              */
-            run_mode: string;
+            run_mode?: string;
         };
         /**
          * SimulationRunGetResponse
@@ -7804,7 +7804,7 @@ export interface components {
              * @default generated
              * @enum {string}
              */
-            scenario_source: "generated" | "recorded_clips";
+            scenario_source?: "generated" | "recorded_clips";
             /**
              * Voice Clip Sets
              * @description Voice clip sets played by a replay run. Empty otherwise.
@@ -7827,7 +7827,7 @@ export interface components {
              * @description Whether the calls are graded by evals. False only for replay runs started without evals.
              * @default true
              */
-            evals_expected: boolean;
+            evals_expected?: boolean;
             /**
              * Selected Evals
              * @description The evals the calls are graded with. Empty if none were selected.
@@ -7858,19 +7858,19 @@ export interface components {
              * @description Number of calls that completed in a run started without evals, so there was nothing to grade them.
              * @default 0
              */
-            ran_count: number;
+            ran_count?: number;
             /**
              * Unreported Count
              * @description Number of calls that completed but whose call data never arrived.
              * @default 0
              */
-            unreported_count: number;
+            unreported_count?: number;
             /**
              * Analysis Failed Count
              * @description Number of calls that arrived but whose evals never came back.
              * @default 0
              */
-            analysis_failed_count: number;
+            analysis_failed_count?: number;
             /**
              * Simulation Calls
              * @description The simulated calls in the run, one per scenario.
@@ -7885,7 +7885,7 @@ export interface components {
              * @description `generate` for runs with generated scenarios, `select` for library scenarios.
              * @default generate
              */
-            run_mode: string;
+            run_mode?: string;
             /**
              * Is Terminal
              * @description Whether the run has finished: `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `analyzing` is not terminal.
@@ -8039,7 +8039,7 @@ export interface components {
              * @default generated
              * @enum {string}
              */
-            scenario_source: "generated" | "recorded_clips";
+            scenario_source?: "generated" | "recorded_clips";
             /**
              * Voice Clip Sets
              * @description Voice clip sets played by a replay run. Empty otherwise.
@@ -8062,13 +8062,13 @@ export interface components {
              * @description Whether the calls are graded by evals. False only for replay runs started without evals.
              * @default true
              */
-            evals_expected: boolean;
+            evals_expected?: boolean;
             /**
              * Run Mode
              * @description `generate` for runs with generated scenarios, `select` for library scenarios.
              * @default generate
              */
-            run_mode: string;
+            run_mode?: string;
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
             /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
@@ -8571,7 +8571,7 @@ export interface components {
              * Value
              * @default 1
              */
-            value: number;
+            value?: number;
         };
         /**
          * TrackResponseSchema
@@ -8960,7 +8960,7 @@ export interface components {
              * @description Whether a person has checked this clip's transcript.
              * @default false
              */
-            verified: boolean;
+            verified?: boolean;
             /**
              * Verified At
              * @description When the transcript was verified. Empty if it is not verified.
@@ -8976,7 +8976,7 @@ export interface components {
              * @description Goes up each time the transcript is edited.
              * @default 1
              */
-            reference_version: number;
+            reference_version?: number;
             /**
              * Draft Source
              * @description Which speech-to-text model or voice platform produced the first draft.
@@ -9116,13 +9116,13 @@ export interface components {
              * @description Goes up whenever any clip's transcript is edited, verified or unverified.
              * @default 1
              */
-            transcripts_version: number;
+            transcripts_version?: number;
             /**
              * Verified Count
              * @description Number of clips whose transcript has been verified.
              * @default 0
              */
-            verified_count: number;
+            verified_count?: number;
             /**
              * Created At
              * Format: date-time
@@ -9227,13 +9227,13 @@ export interface components {
              * @description Goes up whenever any clip's transcript is edited, verified or unverified.
              * @default 1
              */
-            transcripts_version: number;
+            transcripts_version?: number;
             /**
              * Verified Count
              * @description Number of clips whose transcript has been verified.
              * @default 0
              */
-            verified_count: number;
+            verified_count?: number;
             /**
              * Created At
              * Format: date-time
@@ -9523,7 +9523,7 @@ export interface components {
              * Enabled
              * @default true
              */
-            enabled: boolean;
+            enabled?: boolean;
             /** Status */
             status?: string | null;
             /** Configuration */
@@ -9797,7 +9797,7 @@ export interface components {
              * @description List of integrations to set up
              * @default []
              */
-            integrations: components["schemas"]["IntegrationInput"][];
+            integrations?: components["schemas"]["IntegrationInput"][];
         };
         /**
          * WorkspaceResponse
@@ -9812,7 +9812,7 @@ export interface components {
              * Integrations
              * @default []
              */
-            integrations: components["schemas"]["IntegrationResponse"][];
+            integrations?: components["schemas"]["IntegrationResponse"][];
         };
     };
     responses: never;
