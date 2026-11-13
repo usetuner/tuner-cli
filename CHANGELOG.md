@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `tuner noise list` shows each environment's intensities from the API (`-` when the API sends none).
 - `tuner sim run`: start a simulation run for an agent, wait for it, and exit with a code that reflects the server's verdict.
 - `tuner runs`: inspect and cancel runs.
 - `tuner scenarios`, `languages`, `noise`, `profiles` and `agents`: list workspace resources.

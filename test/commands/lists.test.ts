@@ -50,7 +50,30 @@ describe("list commands", () => {
     expect(rt.out()).toMatch(/en-US\s+English \(American\)/);
   });
 
-  it("noise list shows slugs", async () => {
+  it("noise list shows intensities from the API", async () => {
+    const intensities = [
+      { name: "low", value: 0.5 },
+      { name: "medium", value: 1 },
+      { name: "high", value: 1.5 },
+    ];
+    const api = base().on(
+      "GET",
+      `${WS_PATH}/noise-environments`,
+      json(200, { environments: [{ id: 2, name: "Café", slug: "cafe", intensities }] }),
+    );
+    const rt = makeRuntime(api);
+    expect(await run(rt, "noise", "list")).toBe(0);
+    expect(rt.out()).toMatch(/SLUG\s+NAME\s+INTENSITIES\n/);
+    expect(rt.out()).toMatch(/cafe\s+Café\s+low 0\.5 · medium 1\.0 · high 1\.5\n/);
+    const jsonRt = makeRuntime(api);
+    expect(await run(jsonRt, "noise", "list", "--output", "json")).toBe(0);
+    expect(JSON.parse(jsonRt.out())).toEqual({
+      schema_version: 1,
+      noise_environments: [{ id: 2, name: "Café", slug: "cafe", intensities }],
+    });
+  });
+
+  it("noise list shows - when an older API sends no intensities", async () => {
     const api = base().on(
       "GET",
       `${WS_PATH}/noise-environments`,
@@ -58,7 +81,7 @@ describe("list commands", () => {
     );
     const rt = makeRuntime(api);
     expect(await run(rt, "noise", "list")).toBe(0);
-    expect(rt.out()).toMatch(/cafe\s+Café/);
+    expect(rt.out()).toMatch(/cafe\s+Café\s+-\n/);
   });
 
   it("profiles list uses --agent", async () => {

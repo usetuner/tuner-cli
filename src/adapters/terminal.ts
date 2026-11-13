@@ -48,6 +48,17 @@ export function summaryLine(summary: Summary): string {
   return parts.join(" · ");
 }
 
+/** A gain as the API lists it: `1` prints as `1.0`. */
+export function gainText(value: number): string {
+  return Number.isInteger(value) ? value.toFixed(1) : String(value);
+}
+
+/** `low 0.5 · medium 1.0 · high 1.5`, or `-` when the API sends none. */
+export function intensitiesText(intensities?: { name: string; value: number }[]): string {
+  if (!intensities?.length) return "-";
+  return intensities.map((i) => `${i.name} ${gainText(i.value)}`).join(" · ");
+}
+
 /** Left-aligned columns; the last column is not padded. */
 export function table(headers: string[], rows: string[][]): string {
   const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => (r[i] ?? "").length)));

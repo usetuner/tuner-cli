@@ -1,5 +1,5 @@
 import { writeJson } from "../adapters/json.js";
-import { table } from "../adapters/terminal.js";
+import { intensitiesText, table } from "../adapters/terminal.js";
 import { listAgents, listLanguages, listNoise, listProfiles, listScenarios } from "../app/lists.js";
 import { type OutputFormat, listDocument } from "../domain/document.js";
 import { EXIT } from "../domain/exit.js";
@@ -75,8 +75,8 @@ export function noiseList(ctx: CommandContext, opts: ListOptions): Promise<numbe
       opts.output,
       "noise_environments",
       await listNoise(ctx.deps, ctx.flags),
-      ["SLUG", "NAME"],
-      (n) => [n.slug, n.name],
+      ["SLUG", "NAME", "INTENSITIES"],
+      (n) => [n.slug, n.name, intensitiesText(n.intensities)],
     ),
   );
 }
