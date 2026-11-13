@@ -25,7 +25,9 @@ async function download(baseUrl) {
   const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
   if (!res.ok) throw new Error(`GET ${url} answered ${res.status}`);
   const spec = await res.json();
-  if (typeof spec?.openapi !== "string" || typeof spec.paths !== "object") {
+  const isObject = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  const badComponents = spec?.components !== undefined && !isObject(spec.components);
+  if (typeof spec?.openapi !== "string" || !isObject(spec.paths) || badComponents) {
     throw new Error(`GET ${url} did not return an OpenAPI document`);
   }
   return { url, spec };
