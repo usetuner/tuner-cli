@@ -8,7 +8,8 @@
     "tuner": "dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "schema"
   ],
   "engines": {
     "node": ">=20"

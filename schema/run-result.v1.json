@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://usetuner.ai/schemas/cli/run-result.v1.json",
+  "title": "tuner sim run --output json (schema_version 1)",
+  "type": "object",
+  "required": ["schema_version", "run", "summary", "scenarios", "reason", "exit_code"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "run": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": [
+            "id", "status", "result", "is_terminal", "dashboard_url", "workspace", "agent",
+            "config", "started_at", "completed_at"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "integer" },
+            "status": { "type": ["string", "null"] },
+            "result": {
+              "enum": ["passed", "failed", "inconclusive", "canceled", "pending", null]
+            },
+            "is_terminal": { "type": "boolean" },
+            "dashboard_url": { "type": ["string", "null"] },
+            "workspace": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "object",
+                  "required": ["id", "name"],
+                  "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+                }
+              ]
+            },
+            "agent": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "object",
+                  "required": ["id", "remote_id", "name"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "remote_id": { "type": "string" },
+                    "name": { "type": "string" }
+                  }
+                }
+              ]
+            },
+            "config": {
+              "type": "object",
+              "required": ["language", "profile", "noise"],
+              "additionalProperties": false,
+              "properties": {
+                "language": { "type": ["string", "null"] },
+                "profile": { "type": ["string", "null"] },
+                "noise": { "type": ["string", "null"] }
+              }
+            },
+            "started_at": { "type": ["string", "null"] },
+            "completed_at": { "type": ["string", "null"] }
+          }
+        }
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total", "passed", "failed", "inconclusive", "canceled", "pending"],
+      "additionalProperties": false,
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "inconclusive": { "type": "integer", "minimum": 0 },
+        "canceled": { "type": "integer", "minimum": 0 },
+        "pending": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "scenario_id", "library_scenario_id", "name", "verdict", "failure_category",
+          "failed_evals", "call_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "scenario_id": { "type": "integer" },
+          "library_scenario_id": { "type": ["integer", "null"] },
+          "name": { "type": "string" },
+          "verdict": {
+            "enum": [
+              "passed", "failed", "not_connected", "platform_error", "unreported",
+              "analysis_failed", "ran", "pending", "canceled"
+            ]
+          },
+          "failure_category": { "enum": ["agent_failed", "tuner_error", "canceled", null] },
+          "failed_evals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "value"],
+              "additionalProperties": false,
+              "properties": { "name": { "type": "string" }, "value": { "type": "string" } }
+            }
+          },
+          "call_id": { "type": ["integer", "null"] }
+        }
+      }
+    },
+    "reason": {
+      "description": "agent_failed, tuner_error, timeout or canceled for a run that started; the error code when nothing ran; null when the run passed.",
+      "type": ["string", "null"]
+    },
+    "exit_code": { "enum": [0, 1, 2, 130, 143] },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": { "code": { "type": "string" }, "message": { "type": "string" } }
+    }
+  }
+}
