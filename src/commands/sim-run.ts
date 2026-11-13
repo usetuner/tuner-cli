@@ -1,4 +1,5 @@
 import { POLL_GIVE_UP_MS, withRetry } from "../client.js";
+import { resolveAgentRef } from "../config.js";
 import { type Target, resolveTarget, toCliError } from "../context.js";
 import { parseDuration } from "../duration.js";
 import { CliError, detailText } from "../errors.js";
@@ -87,7 +88,7 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
 
   const fail = (err: unknown, tag?: string): number => {
     if (stop.signal) return finish({ reason: "canceled", exitCode: exitForSignal(stop.signal) });
-    const cli = toCliError(err, { tag, agentRef: opts.agent });
+    const cli = toCliError(err, { tag, agentRef: resolveAgentRef(opts.agent, runtime) });
     progress(`Error: ${cli.message}`);
     if (cli.reason === "tuner_error") {
       const exitCode = exitForRun(null, "tuner_error", failOnInconclusive);
