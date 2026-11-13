@@ -39,7 +39,9 @@ npm ci && npm run lint && npm run format:check && npm run typecheck && npm run t
 2. Run `npm run gen:types`.
 3. Commit both files together.
 
-## Layering
+## Layering (target)
+
+`src/` is flat today and moves to this layout over time.
 
 | Layer      | Holds                                                       | Rule                                                                         |
 | ---------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
