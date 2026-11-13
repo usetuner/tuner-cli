@@ -1,23 +1,13 @@
-import type { GlobalFlags } from "../config.js";
-import { toCliError } from "../context.js";
-import { CliError } from "../errors.js";
-import { EXIT } from "../exit.js";
-import type { OutputFormat } from "../render.js";
-import type { Runtime } from "../runtime.js";
-
-/** Retry budget for commands other than `sim run`. */
-export const SHORT_GIVE_UP_MS = 30_000;
+import type { GlobalFlags } from "../domain/config.js";
+import type { OutputFormat } from "../domain/document.js";
+import { toCliError } from "../domain/error-message.js";
+import { EXIT } from "../domain/exit.js";
+import type { AppDeps, Runtime } from "../ports.js";
 
 export interface CommandContext {
   flags: GlobalFlags;
   runtime: Runtime;
-}
-
-export function parseRunId(value: string): number {
-  if (!/^\d+$/.test(value) || Number(value) <= 0) {
-    throw new CliError(`Invalid run ID '${value}'. Use the numeric run ID.`, "usage_error");
-  }
-  return Number(value);
+  deps: AppDeps;
 }
 
 export function printError(runtime: Runtime, message: string): void {

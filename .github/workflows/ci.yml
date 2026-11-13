@@ -38,7 +38,7 @@ jobs:
       - run: npm run test:coverage
         if: matrix.node == 24
       - run: npm run build
-      - run: node dist/cli.js --version
+      - run: node dist/cli/main.js --version
 
   check-os:
     name: check-os (macos)
@@ -55,7 +55,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - run: node dist/cli.js --help
+      - run: node dist/cli/main.js --help
 
   audit:
     runs-on: ubuntu-24.04

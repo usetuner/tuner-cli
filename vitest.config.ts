@@ -9,7 +9,7 @@ export default defineConfig({
       exclude: ["src/generated/**"],
       reporter: ["text", "text-summary"],
       // Set just below current numbers; raise them as coverage grows, never lower them.
-      thresholds: { statements: 89, branches: 81, functions: 88, lines: 91 },
+      thresholds: { statements: 91, branches: 88, functions: 92, lines: 93 },
     },
   },
 });
