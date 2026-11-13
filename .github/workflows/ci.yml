@@ -34,6 +34,9 @@ jobs:
       - run: npm run format:check
       - run: npm run typecheck
       - run: npm test
+        if: matrix.node != 24
+      - run: npm run test:coverage
+        if: matrix.node == 24
       - run: npm run build
       - run: node dist/cli.js --version
 
