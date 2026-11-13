@@ -39,19 +39,19 @@ npm ci && npm run lint && npm run format:check && npm run typecheck && npm run t
 2. Run `npm run gen:types`.
 3. Commit both files together.
 
-## Layering (target)
+## Layering
 
-`src/` is flat today and moves to this layout over time.
+Each layer is a directory under `src/`. The ports (`TunerApi`, `CredentialStore`, `Clock`, `Signals`, `Output`) live in `src/ports.ts`, and their test fakes in `test/fakes/`.
 
-| Layer      | Holds                                                       | Rule                                                                         |
-| ---------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| CLI wiring | commander setup, help text                                  | No logic. Parse argv, call one command.                                      |
-| Commands   | one file per command group                                  | Flags to a typed input, call one use case, map typed errors to an exit code. |
-| Use cases  | start, wait, cancel, list, auth                             | Business flow only. Talk to ports, never to `fetch`, `process` or `fs`.      |
-| Domain     | exit codes, result classification, durations, output models | Pure functions, tested without mocks.                                        |
-| Adapters   | HTTP client, credential store, renderers, signals           | All I/O lives here.                                                          |
+| Layer                  | Holds                                                       | Rule                                                                         |
+| ---------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| CLI wiring (`cli/`)    | commander setup, help text                                  | No logic. Parse argv, call one command.                                      |
+| Commands (`commands/`) | one file per command group                                  | Flags to a typed input, call one use case, map typed errors to an exit code. |
+| Use cases (`app/`)     | start, wait, cancel, list, auth                             | Business flow only. Talk to ports, never to `fetch`, `process` or `fs`.      |
+| Domain (`domain/`)     | exit codes, result classification, durations, output models | Pure functions, tested without mocks.                                        |
+| Adapters (`adapters/`) | HTTP client, credential store, renderers, signals           | All I/O lives here.                                                          |
 
-- The runtime (env, stdout, stderr, clock, fetch, signals) is injected. Only the entry point reads `process.*`.
+- The runtime (env, stdout, stderr, clock, fetch, signals) is injected. Only the entry point, `src/cli/main.ts`, reads `process.*`.
 - stdout is data, stderr is for people. With `--output json`, stdout holds exactly one JSON document.
 - The server decides verdicts. The CLI never derives its own.
 - The API key never appears in output, logs, errors or test snapshots.
