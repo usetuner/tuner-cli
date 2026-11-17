@@ -292,8 +292,12 @@ Codes from the Tuner API that the CLI explains:
 
 Any other API `code` is passed through with the API's message, for example `run_not_found`,
 `run_too_large` (more than 20 scenarios), `workspace_not_found`, `validation_error`,
-`rate_limited` and `internal_error`. All of these exit 2, except that `rate_limited` and 5xx
-errors are retried first.
+`rate_limited` and `internal_error`. All of these exit 2, with one exception: in `sim run`, a
+`rate_limited` or 5xx error that is still failing after retries becomes `tuner_error` and exits
+0, or 1 with `--fail-on-inconclusive`.
+
+Only commands that read data retry `rate_limited`, 5xx and network errors. `runs cancel` and
+`auth login` send their request once.
 
 ## JSON output
 
