@@ -248,8 +248,8 @@ Exit codes are a contract: changing one is a breaking change.
 | 0    | Success. The run passed; or it was inconclusive (`tuner_error`), timed out or canceled without `--fail-on-inconclusive`. Also `--no-wait`, `runs`, the lists and `auth` on success. |
 | 1    | The agent failed: at least one scenario's verdict is `failed` (`reason: agent_failed`). With `--fail-on-inconclusive`, also inconclusive, timed-out and canceled runs.              |
 | 2    | Nothing ran: a usage or config error, a rejected key, an unknown agent, tag, scenario or name, no credits, a run already in flight, or any other error.                             |
-| 130  | Interrupted by SIGINT (Ctrl-C). The run was canceled first.                                                                                                                         |
-| 143  | Stopped by SIGTERM, for example a CI job that was canceled or timed out. The run was canceled first.                                                                                |
+| 130  | Interrupted by SIGINT: Ctrl-C, or a canceled GitHub Actions job (see [CI usage](#ci-usage)). The run was canceled first.                                                            |
+| 143  | Stopped by SIGTERM, for example from `kill` or a process manager. The run was canceled first.                                                                                       |
 
 One exception to exit 2: in `sim run`, Tuner being unreachable (after retries) is
 `tuner_error` and exits 0, or 1 with `--fail-on-inconclusive`. Other commands exit 2 when Tuner
@@ -373,7 +373,8 @@ jobs:
         env:
           TUNER_API_KEY: ${{ secrets.TUNER_API_KEY }}
           TUNER_AGENT_ID: ${{ vars.TUNER_AGENT_ID }}
-        run: tuner sim run --tag smoke --timeout 60m --output json > tuner-result.json
+        # exec replaces the step's shell with the CLI, so a job cancel's SIGINT reaches it.
+        run: exec tuner sim run --tag smoke --timeout 60m --output json > tuner-result.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -383,8 +384,10 @@ jobs:
 
 - The step fails (exit 1) only when the agent fails. Add `--fail-on-inconclusive` to also fail
   on Tuner errors and timeouts.
-- When GitHub cancels the job or it times out, the runner sends SIGTERM. The CLI cancels the
-  run and exits 143, so no run is left going.
+- When GitHub cancels the job or it times out, the runner sends SIGINT to the step's shell,
+  then SIGTERM 7.5 s later, then kills the process tree. Without `exec` the CLI is a child of
+  that shell, gets no signal, and the run is left going. With `exec` the CLI gets the SIGINT,
+  cancels the run and exits 130.
 - Runners must be Linux or macOS.
 
 ## Development
