@@ -71,6 +71,17 @@ describe("program", () => {
     expect(rt.err()).toBe("");
   });
 
+  it.each([
+    ["--api-key", "tr_api_secret"],
+    ["--verbose"],
+    ["--base-url", "http://127.0.0.1:8010", "--verbose"],
+  ])("global flags before help %j still show the leaf's help", async (...flags) => {
+    const rt = makeRuntime(new FakeApi());
+    expect(await run(rt, ...flags, "help", "sim", "run")).toBe(0);
+    expect(rt.out().startsWith("Usage: tuner sim run [options]")).toBe(true);
+    expect(rt.out() + rt.err()).not.toContain("tr_api_secret");
+  });
+
   it("unknown options exit 2 and show the command's help after the error", async () => {
     const rt = makeRuntime(new FakeApi());
     expect(await run(rt, "sim", "run", "--bogus")).toBe(2);
