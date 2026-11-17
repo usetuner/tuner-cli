@@ -168,8 +168,8 @@ Exit codes are a contract: changing one is a breaking change.
 | 130  | Interrupted by SIGINT: Ctrl-C, or a canceled GitHub Actions job. The run was canceled first.                                                                                        |
 | 143  | Stopped by SIGTERM, for example from `kill` or a process manager. The run was canceled first.                                                                                       |
 
-In `sim run`, Tuner being unreachable after retries exits 0, not 2. See
-[Errors and retries](docs/errors.md#retries).
+In `sim run`, Tuner being unreachable after retries is `tuner_error`: it exits 0, or 1 with
+`--fail-on-inconclusive`, not 2. See [Errors and retries](docs/errors.md#retries).
 
 ## Documentation
 
