@@ -307,7 +307,6 @@ result.json` is safe.
 
 Every document has `schema_version: 1`. Version 1 only ever gains fields; a removed or renamed
 field means a new version. The `sim run` and `runs` document is described by
-
 [`schema/run-result.v1.json`](schema/run-result.v1.json). An abbreviated example:
 
 ```json
