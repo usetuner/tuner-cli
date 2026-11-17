@@ -178,7 +178,7 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
   }
 
   try {
-    await program.parseAsync(argv, { from: "user" });
+    await program.parseAsync(expandHelpPath(argv), { from: "user" });
   } catch (err) {
     if (err instanceof CommanderError) {
       const ok = ["commander.helpDisplayed", "commander.version", "commander.help"].includes(
@@ -190,4 +190,14 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
     throw err;
   }
   return exitCode;
+}
+
+const VALUE_FLAGS = new Set(["--api-key", "--base-url"]);
+
+/** Commander's `help <cmd>` reads one name, so `help sim run` becomes `sim run --help`. */
+function expandHelpPath(argv: string[]): string[] {
+  let i = 0;
+  while (i < argv.length && argv[i]!.startsWith("-")) i += VALUE_FLAGS.has(argv[i]!) ? 2 : 1;
+  if (argv[i] !== "help" || argv.length - i < 3) return argv;
+  return [...argv.slice(0, i), ...argv.slice(i + 1), "--help"];
 }
