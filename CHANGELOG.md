@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `README.md`: install from source, auth and config, every command with an example, exit and error codes, JSON output and a GitHub Actions example.
+- `README.md` (install, quick start, common tasks, config, exit codes) and `docs/` (commands, errors, JSON output, CI and signals).
 - `sim run` and `runs get` print the run's noise and intensity; `--output json` adds `run.config.noise_intensity` (additive, `schema_version` stays 1).
 - `tuner sim run --noise-intensity <level>`: a name (`low`, `medium`, `high`) or a gain (`0.5`, `1.0`, `1.5`), passed to the API as-is. Needs `--noise`.
 - `tuner noise list` shows each environment's intensities from the API (`-` when the API sends none).
