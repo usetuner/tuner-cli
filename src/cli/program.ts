@@ -178,7 +178,9 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
   }
 
   try {
-    await program.parseAsync(argv, { from: "user" });
+    // Commander's `help <cmd>` reads one name, so `help sim run` would show the group's help.
+    const args = argv[0] === "help" && argv.length > 2 ? [...argv.slice(1), "--help"] : argv;
+    await program.parseAsync(args, { from: "user" });
   } catch (err) {
     if (err instanceof CommanderError) {
       const ok = ["commander.helpDisplayed", "commander.version", "commander.help"].includes(

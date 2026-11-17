@@ -64,6 +64,13 @@ describe("program", () => {
     expect(rt.out().startsWith(usage)).toBe(true);
   });
 
+  it.each(leaves)("help %j prints its own usage", async (path, usage) => {
+    const rt = makeRuntime(new FakeApi());
+    expect(await run(rt, "help", ...path)).toBe(0);
+    expect(rt.out().startsWith(usage)).toBe(true);
+    expect(rt.err()).toBe("");
+  });
+
   it("unknown options exit 2 and show the command's help after the error", async () => {
     const rt = makeRuntime(new FakeApi());
     expect(await run(rt, "sim", "run", "--bogus")).toBe(2);
