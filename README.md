@@ -260,6 +260,13 @@ is unreachable.
 When a command stops, it prints `Error: <message>` to stderr. In `sim run --output json`, the
 `code` is also in the document's `reason` and `error.code`.
 
+Two exceptions:
+
+- `canceled` prints no `Error:` line, and its JSON document has no `error` object: only
+  `reason: "canceled"` and `exit_code` 130 or 143.
+- Flag parsing errors (an unknown flag, a bad `--output` value) print a lowercase `error:` line
+  and the command's usage, exit 2, and write no JSON document, even with `--output json`.
+
 Codes the CLI raises itself:
 
 | `code`         | Meaning                                                                                                                    |
@@ -335,7 +342,8 @@ field means a new version. The `sim run` and `runs` document is described by
 
 - `reason` is `null` for a passed run; `agent_failed`, `tuner_error`, `timeout` or `canceled`
   for a run that started; or the error `code` when nothing ran. Then `run` is `null` and an
-  `error` object holds `code` and `message`.
+  `error` object holds `code` and `message`, except for `canceled`, which has no `error`.
+- Flag parsing errors write no JSON document; see [Error codes](#error-codes).
 - `exit_code` is the process exit code.
 - The list commands print `{ "schema_version": 1, "<items>": [...] }`, for example
   `scenarios`, `languages`, `noise_environments`, `profiles` or `agents`.
