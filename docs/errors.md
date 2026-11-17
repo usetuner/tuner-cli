@@ -42,10 +42,15 @@ Any other API `code` is passed through with the API's message, for example `run_
 
 ## Retries
 
-Only commands that read data retry `rate_limited`, 5xx and network errors, with backoff.
-`runs cancel` and `auth login` send their request once.
+The CLI retries `rate_limited`, 5xx and network errors with backoff, in these places:
 
-`sim run` keeps retrying for up to 5 minutes of consecutive failures. If Tuner is still failing,
-the error becomes `tuner_error` and the command exits 0, or 1 with `--fail-on-inconclusive`. A
-Tuner outage is inconclusive, not your agent's failure. Every other command exits 2 when Tuner
-stays unreachable.
+- `sim run`: the key and agent lookup, the start request and the polling, for up to 5 minutes of
+  consecutive failures each, and the cancel it sends on a timeout or signal, for up to 10 seconds.
+- `runs get`, `runs cancel`, `auth status` and the list commands: the key and agent lookup and
+  their reads, for up to 30 seconds.
+
+`runs cancel` sends its cancel request once, and `auth login` sends its key check once.
+
+In `sim run`, if Tuner is still failing when the retries run out, the error becomes `tuner_error`
+and the command exits 0, or 1 with `--fail-on-inconclusive`. A Tuner outage is inconclusive, not
+your agent's failure. Every other command exits 2 when Tuner stays unreachable.
