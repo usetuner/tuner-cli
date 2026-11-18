@@ -650,10 +650,32 @@ describe("sim run: stop paths", () => {
     expect(api.calls("POST", CANCEL)).toHaveLength(0);
   });
 
-  it("a non-retryable poll error stops with tuner_error", async () => {
-    const api = happyApi().on("GET", GET, apiError(404, "run_not_found", "Run not found"));
-    const rt = makeRuntime(api);
-    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(3);
-    expect(rt.err()).toContain("Could not read run 4821: Run not found");
-  });
+  it.each([
+    [apiError(404, "run_not_found", "Run not found"), "run_not_found", 2, "Run not found"],
+    [
+      apiError(403, "invalid_api_key", "Invalid API key."),
+      "invalid_api_key",
+      4,
+      "API key rejected",
+    ],
+    [
+      apiError(401, "invalid_api_key", "Not authenticated"),
+      "invalid_api_key",
+      4,
+      "API key rejected",
+    ],
+  ])(
+    "a non-retryable poll error exits with its own code (%#)",
+    async (reply, code, exit, message) => {
+      const api = happyApi().on("GET", GET, reply);
+      const rt = makeRuntime(api);
+      expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(exit);
+      expect(rt.err()).toContain(`Could not read run 4821: ${message}`);
+      expect(rt.err()).toContain("tuner runs get 4821");
+      const doc = JSON.parse(rt.out());
+      expect(doc.reason).toBe(code);
+      expect(doc.exit_code).toBe(exit);
+      expect(api.calls("POST", CANCEL)).toHaveLength(0);
+    },
+  );
 });

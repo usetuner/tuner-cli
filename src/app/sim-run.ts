@@ -160,12 +160,13 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     }
 
     let run = outcome.run;
-    let reason: RunReason | null;
+    let reason: string | null;
     let exitCode: number;
     if (outcome.kind === "terminal") {
       run = outcome.run;
-      reason = (run.reason as RunReason | null) ?? null;
-      exitCode = exitForRun(run.result, reason);
+      const runReason = (run.reason as RunReason | null) ?? null;
+      reason = runReason;
+      exitCode = exitForRun(run.result, runReason);
     } else if (outcome.kind === "stopped") {
       const bySignal = stop.signal;
       output.progress(
@@ -186,19 +187,23 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       }
       reason = bySignal ? "canceled" : "timeout";
       exitCode = bySignal ? exitForSignal(bySignal) : exitForRun(run?.result ?? null, "timeout");
-    } else {
-      const message =
-        outcome.kind === "gave_up"
-          ? `Tuner unreachable for 5 minutes (${outcome.error.message}).`
-          : `Could not read run ${runId}: ${toCliError(outcome.error).message}`;
+    } else if (outcome.kind === "gave_up") {
       output.progress(
-        `${message} Run ${runId} may still be going; check it with \`tuner runs get ${runId}\`.`,
+        `Tuner unreachable for 5 minutes (${outcome.error.message}). ${stillGoing(runId)}`,
       );
       reason = "tuner_error";
       exitCode = exitForRun(run?.result ?? null, "tuner_error");
+    } else {
+      const cli = toCliError(outcome.error);
+      output.progress(`Could not read run ${runId}: ${cli.message} ${stillGoing(runId)}`);
+      reason = cli.reason;
+      exitCode = cli.exitCode;
     }
     return result({ kind: "finished", run, reason, exitCode });
   } finally {
     unsubscribe();
   }
 }
+
+const stillGoing = (runId: number) =>
+  `Run ${runId} may still be going; check it with \`tuner runs get ${runId}\`.`;

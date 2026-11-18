@@ -172,7 +172,7 @@ describe("runSimulation", () => {
       }),
     );
     const r = await runSimulation(f, input());
-    expect(r.reason).toBe("tuner_error");
+    expect(r).toMatchObject({ kind: "finished", reason: "run_not_found", exitCode: 2 });
     expect(f.output.lines.at(-1)).toContain("Could not read run 4821: gone");
   });
 });
