@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { parseDuration } from "../../src/domain/duration.js";
 import { detailText } from "../../src/domain/errors.js";
-import { EXIT, exitForError, exitForRun, exitForSignal, worstExit } from "../../src/domain/exit.js";
+import {
+  EXIT,
+  exitForError,
+  exitForRun,
+  exitForSignal,
+  exitForTimeout,
+  worstExit,
+} from "../../src/domain/exit.js";
 
 describe("exitForRun", () => {
   it.each([
@@ -35,6 +42,20 @@ describe("exitForRun", () => {
   it("maps signals", () => {
     expect(exitForSignal("SIGINT")).toBe(EXIT.SIGINT);
     expect(exitForSignal("SIGTERM")).toBe(EXIT.SIGTERM);
+  });
+});
+
+describe("exitForTimeout", () => {
+  it.each([
+    ["canceled", "canceled", 124],
+    [null, null, 124],
+    ["pending", null, 124],
+    ["passed", null, 124],
+    ["inconclusive", "tuner_error", 3],
+    ["failed", "agent_failed", 1],
+    ["failed", null, 1],
+  ] as const)("%s/%s -> %d", (result, reason, code) => {
+    expect(exitForTimeout(result, reason)).toBe(code);
   });
 });
 

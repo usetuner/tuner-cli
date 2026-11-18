@@ -49,6 +49,17 @@ export function exitForRun(result: RunResult | null, reason: RunReason | null): 
   return result === "passed" ? EXIT.OK : EXIT.TUNER_FAULT;
 }
 
+/**
+ * Exit code for a run we stopped at `--timeout`. Our cancel makes the server say `canceled`,
+ * so only its `agent_failed` or `tuner_error` can beat 124.
+ */
+export function exitForTimeout(result: RunResult | null, serverReason: RunReason | null): number {
+  const codes: number[] = [EXIT.TIMEOUT];
+  if (result === "failed" || serverReason === "agent_failed") codes.push(EXIT.AGENT_FAILED);
+  if (serverReason === "tuner_error") codes.push(EXIT.TUNER_FAULT);
+  return worstExit(codes);
+}
+
 /** Exit code for an error `code` (API or CLI), with the HTTP status when there is one. */
 export function exitForError(code: string, status?: number): number {
   if (AUTH_CODES.has(code) || status === 401 || status === 403) return EXIT.AUTH;

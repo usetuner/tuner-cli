@@ -1,6 +1,6 @@
 import { type GlobalFlags, resolveAgentRef } from "../domain/config.js";
 import { toCliError } from "../domain/error-message.js";
-import { EXIT, type RunReason, exitForRun, exitForSignal } from "../domain/exit.js";
+import { EXIT, type RunReason, exitForRun, exitForSignal, exitForTimeout } from "../domain/exit.js";
 import {
   DEFAULT_TIMEOUT,
   type StartOptions,
@@ -185,8 +185,14 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       } else if (!canceled.terminal) {
         output.progress(`Run ${runId} did not reach a final state within 10s.`);
       }
-      reason = bySignal ? "canceled" : "timeout";
-      exitCode = bySignal ? exitForSignal(bySignal) : exitForRun(run?.result ?? null, "timeout");
+      if (bySignal) {
+        reason = "canceled";
+        exitCode = exitForSignal(bySignal);
+      } else {
+        const serverReason = (run?.reason as RunReason | null | undefined) ?? null;
+        exitCode = exitForTimeout(run?.result ?? null, serverReason);
+        reason = exitCode === EXIT.TIMEOUT ? "timeout" : serverReason;
+      }
     } else if (outcome.kind === "gave_up") {
       output.progress(
         `Tuner unreachable for 5 minutes (${outcome.error.message}). ${stillGoing(runId)}`,

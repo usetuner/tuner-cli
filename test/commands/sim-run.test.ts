@@ -538,6 +538,20 @@ describe("sim run: stop paths", () => {
     expect(JSON.parse(rt.out()).exit_code).toBe(1);
   });
 
+  it("--timeout on a run that just ended inconclusive exits 3 (3 beats 124)", async () => {
+    vi.useFakeTimers();
+    const api = happyApi(pendingRun()).on("POST", CANCEL, json(200, inconclusiveRun()));
+    const rt = makeRuntime(api);
+    const p = run(rt, "sim", "run", "--tag", "smoke", "--timeout", "90s", "--output", "json");
+    await vi.advanceTimersByTimeAsync(91_000);
+    expect(await p).toBe(3);
+    expect(api.calls("POST", CANCEL)).toHaveLength(1);
+    const doc = JSON.parse(rt.out());
+    expect(doc.exit_code).toBe(3);
+    expect(doc.reason).toBe("tuner_error");
+    expect(rt.err()).toContain("exiting 3.");
+  });
+
   it.each([
     ["SIGINT", 130],
     ["SIGTERM", 143],
