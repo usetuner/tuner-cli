@@ -19,7 +19,6 @@ export interface SimRunInput {
   start: StartOptions;
   wait: boolean;
   timeout?: string;
-  failOnInconclusive: boolean;
 }
 
 export interface SimRunDeps extends AppDeps {
@@ -44,7 +43,6 @@ export interface SimRunResult {
 /** Starts a run, waits for its result, and cancels it on a signal or the timeout. */
 export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promise<SimRunResult> {
   const { output, signals } = deps;
-  const { failOnInconclusive } = input;
   const timeout = input.timeout ?? DEFAULT_TIMEOUT;
   const stop = new StopController();
   let runId: number | undefined;
@@ -74,7 +72,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       return result({
         kind: "error",
         reason: "tuner_error",
-        exitCode: exitForRun(null, "tuner_error", failOnInconclusive),
+        exitCode: exitForRun(null, "tuner_error"),
         error: { code: "tuner_error", message: cli.message },
       });
     }
@@ -167,7 +165,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     if (outcome.kind === "terminal") {
       run = outcome.run;
       reason = (run.reason as RunReason | null) ?? null;
-      exitCode = exitForRun(run.result, reason, failOnInconclusive);
+      exitCode = exitForRun(run.result, reason);
     } else if (outcome.kind === "stopped") {
       const bySignal = stop.signal;
       output.progress(
@@ -187,9 +185,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
         output.progress(`Run ${runId} did not reach a final state within 10s.`);
       }
       reason = bySignal ? "canceled" : "timeout";
-      exitCode = bySignal
-        ? exitForSignal(bySignal)
-        : exitForRun(null, "timeout", failOnInconclusive);
+      exitCode = bySignal ? exitForSignal(bySignal) : exitForRun(run?.result ?? null, "timeout");
     } else {
       const message =
         outcome.kind === "gave_up"
@@ -199,7 +195,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
         `${message} Run ${runId} may still be going; check it with \`tuner runs get ${runId}\`.`,
       );
       reason = "tuner_error";
-      exitCode = exitForRun(null, "tuner_error", failOnInconclusive);
+      exitCode = exitForRun(run?.result ?? null, "tuner_error");
     }
     return result({ kind: "finished", run, reason, exitCode });
   } finally {

@@ -11,7 +11,6 @@ const input = (over: Partial<SimRunInput> = {}): SimRunInput => ({
   agent: "booking-staging",
   start: { tag: "smoke" },
   wait: true,
-  failOnInconclusive: false,
   ...over,
 });
 
@@ -96,7 +95,7 @@ describe("runSimulation", () => {
     expect(r.target?.workspace.id).toBe(12);
   });
 
-  it("treats a start that never got through as inconclusive", async () => {
+  it("treats a start that never got through as a tuner fault", async () => {
     const f = fakeDeps(
       api({
         startRun: async () => {
@@ -104,8 +103,8 @@ describe("runSimulation", () => {
         },
       }),
     );
-    const r = await runSimulation(f, input({ failOnInconclusive: true }));
-    expect(r).toMatchObject({ kind: "error", reason: "tuner_error", exitCode: 1 });
+    const r = await runSimulation(f, input());
+    expect(r).toMatchObject({ kind: "error", reason: "tuner_error", exitCode: 3 });
     expect(
       f.output.lines.some((l) => l.startsWith("Tuner unavailable (down); retrying in 3s")),
     ).toBe(true);
@@ -158,7 +157,7 @@ describe("runSimulation", () => {
       }),
     );
     const r = await runSimulation(f, input());
-    expect(r).toMatchObject({ kind: "finished", reason: "tuner_error", exitCode: 0 });
+    expect(r).toMatchObject({ kind: "finished", reason: "tuner_error", exitCode: 3 });
     expect(f.output.lines.at(-1)).toBe(
       "Tuner unreachable for 5 minutes (down). Run 4821 may still be going; check it with `tuner runs get 4821`.",
     );

@@ -27,6 +27,25 @@ describe("program", () => {
     }
   });
 
+  it("--help lists every exit code", async () => {
+    const rt = makeRuntime(new FakeApi());
+    expect(await run(rt, "--help")).toBe(0);
+    for (const code of [
+      "0 passed",
+      "1 agent failed",
+      "2 usage",
+      "3 the run did not test",
+      "4 API key",
+      "5 nothing to run",
+      "124 --timeout",
+      "130 SIGINT",
+      "143 SIGTERM",
+    ]) {
+      expect(rt.out().replace(/\s+/g, " ")).toContain(code);
+    }
+    expect(rt.out()).not.toContain("without --fail-on-inconclusive");
+  });
+
   it("runs --help shows get and cancel", async () => {
     const rt = makeRuntime(new FakeApi());
     expect(await run(rt, "runs", "--help")).toBe(0);

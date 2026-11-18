@@ -24,7 +24,7 @@ describe("auth login", () => {
       apiError(403, "invalid_api_key", "Invalid API key."),
     );
     const rt = makeRuntime(api);
-    expect(await run(rt, "auth", "login", "--api-key", "tr_api_bad")).toBe(2);
+    expect(await run(rt, "auth", "login", "--api-key", "tr_api_bad")).toBe(4);
     expect(existsSync(new FileCredentialStore(rt.configDir).path)).toBe(false);
     expect(rt.err()).toContain("API key rejected: Invalid API key.");
   });
@@ -72,14 +72,14 @@ describe("auth status", () => {
     expect(await run(rt, "auth", "status")).toBe(2);
   });
 
-  it("exits 2 with a rejected key and names its source", async () => {
+  it("exits 4 with a rejected key and names its source", async () => {
     const api = new FakeApi().on(
       "GET",
       "/api/v1/whoami",
       apiError(403, "invalid_api_key", "Invalid API key."),
     );
     const rt = makeRuntime(api);
-    expect(await run(rt, "--api-key", "tr_api_x", "auth", "status")).toBe(2);
+    expect(await run(rt, "--api-key", "tr_api_x", "auth", "status")).toBe(4);
     expect(rt.err()).toContain("(key from --api-key)");
   });
 });

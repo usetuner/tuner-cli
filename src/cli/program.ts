@@ -60,9 +60,11 @@ export async function runCli(argv: string[], runtime: Runtime): Promise<number> 
       `
 Environment: TUNER_API_KEY, TUNER_AGENT_ID, TUNER_WORKSPACE_ID, TUNER_BASE_URL (default https://api.usetuner.ai)
 
-Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-inconclusive),
-1 agent failed, 2 your input or account stopped the run (bad key, unknown name, no credits),
-130 SIGINT, 143 SIGTERM. Tuner being unreachable is inconclusive, not 2.`,
+Exit codes: 0 passed, 1 agent failed, 2 usage or config error, 3 the run did not test
+your agent (a Tuner or provider fault: outage, 5xx, inconclusive, canceled elsewhere),
+4 API key rejected, 5 nothing to run (no scenarios for the tag, unknown workspace, agent
+or scenario), 124 --timeout reached, 130 SIGINT, 143 SIGTERM.
+When several apply, the worst wins: 1, then 3, then 124.`,
     );
 
   const sim = program.command("sim").description("run simulations");
@@ -90,7 +92,10 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
       "cancel the run after this long, e.g. 30m, 90s",
       DEFAULT_TIMEOUT,
     )
-    .option("--fail-on-inconclusive", "exit 1 on inconclusive, timeout or canceled runs")
+    .option(
+      "--fail-on-inconclusive",
+      "exit 1 on inconclusive, timeout or canceled runs",
+    )
     .action(action((cmd) => simRun(ctx(cmd), cmd.opts())));
 
   const runs = program.command("runs").description("inspect or cancel runs");
@@ -185,7 +190,7 @@ Exit codes: 0 passed (or inconclusive, timeout, canceled without --fail-on-incon
         err.code,
       );
       if (ok) return EXIT.OK;
-      return EXIT.NOTHING_RAN;
+      return EXIT.USAGE;
     }
     throw err;
   }

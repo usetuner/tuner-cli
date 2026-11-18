@@ -142,22 +142,20 @@ describe("sim run: results and exit codes", () => {
     expect(rt.out()).toContain("1 passed · 1 failed · 0 inconclusive");
   });
 
-  it("exits 0 with a warning on inconclusive, 1 with --fail-on-inconclusive", async () => {
+  it("exits 3 with a warning on an inconclusive run (tuner_error)", async () => {
     const rt = makeRuntime(happyApi(inconclusiveRun()));
-    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(0);
-    expect(rt.err()).toContain("Warning: run not conclusive (reason: tuner_error); exiting 0");
+    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(3);
+    expect(rt.err()).toContain("Warning: run not conclusive (reason: tuner_error); exiting 3.");
+    expect(rt.err()).not.toContain("--fail-on-inconclusive");
     expect(rt.out()).toContain("! not connected");
-    const rt2 = makeRuntime(happyApi(inconclusiveRun()));
-    expect(await run(rt2, "sim", "run", "--tag", "smoke", "--fail-on-inconclusive")).toBe(1);
   });
 
-  it("treats a run canceled elsewhere like a timeout", async () => {
+  it("exits 3 on a run canceled elsewhere", async () => {
     const rt = makeRuntime(happyApi(canceledRun()));
-    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(0);
+    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(3);
     expect(rt.err()).toContain("reason: canceled");
-    const rt2 = makeRuntime(happyApi(canceledRun()));
-    expect(await run(rt2, "sim", "run", "--tag", "smoke", "--fail-on-inconclusive")).toBe(1);
   });
+
 
   it("prints each scenario once as its verdict becomes final", async () => {
     vi.useFakeTimers();
@@ -397,22 +395,35 @@ describe("sim run: start errors", () => {
     ],
   ];
 
-  it.each(cases)("%s (%d at %s) exits 2", async (code, status, where, detail, extra, message) => {
-    const api = happyApi();
-    if (where === "whoami") api.on("GET", "/api/v1/whoami", apiError(status, code, detail));
-    else api.on("POST", SELECT, apiError(status, code, detail, extra));
-    const rt = makeRuntime(api);
-    expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(2);
-    expect(rt.err()).toContain(message);
-    const doc = JSON.parse(rt.out());
-    expect(doc.reason).toBe(code);
-    expect(doc.exit_code).toBe(2);
-    expect(doc.run).toBeNull();
-    expect(doc.error.code).toBe(code);
-    if (code === "run_in_flight") expect(doc.error.run_id).toBe(4820);
-    if (code === "unresolved_name") expect(doc.error.field).toBe("noise");
-    expect(api.calls("GET", GET)).toHaveLength(0);
-  });
+  const EXPECTED_EXIT: Record<string, number> = {
+    invalid_api_key: 4,
+    insufficient_access: 4,
+    agent_not_found: 5,
+    scenario_not_found: 5,
+    no_scenarios_for_tag: 5,
+    workspace_not_found: 5,
+  };
+
+  it.each(cases)(
+    "%s (%d at %s) exits its code",
+    async (code, status, where, detail, extra, message) => {
+      const exit = EXPECTED_EXIT[code] ?? 2;
+      const api = happyApi();
+      if (where === "whoami") api.on("GET", "/api/v1/whoami", apiError(status, code, detail));
+      else api.on("POST", SELECT, apiError(status, code, detail, extra));
+      const rt = makeRuntime(api);
+      expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(exit);
+      expect(rt.err()).toContain(message);
+      const doc = JSON.parse(rt.out());
+      expect(doc.reason).toBe(code);
+      expect(doc.exit_code).toBe(exit);
+      expect(doc.run).toBeNull();
+      expect(doc.error.code).toBe(code);
+      if (code === "run_in_flight") expect(doc.error.run_id).toBe(4820);
+      if (code === "unresolved_name") expect(doc.error.field).toBe("noise");
+      expect(api.calls("GET", GET)).toHaveLength(0);
+    },
+  );
 
   it("retries rate_limited at start, then runs", async () => {
     vi.useFakeTimers();
@@ -433,27 +444,20 @@ describe("sim run: start errors", () => {
     ["run_start_failed", apiError(503, "run_start_failed", "Could not queue calls")],
     ["internal_error", apiError(500, "internal_error", "Internal Server Error")],
     ["network", networkError()],
-  ])(
-    "%s at start retries for 5 minutes, then reason tuner_error exit 0 (1 with flag)",
-    async (_n, reply) => {
-      vi.useFakeTimers();
-      for (const [flag, expected] of [
-        [[], 0],
-        [["--fail-on-inconclusive"], 1],
-      ] as const) {
-        const api = happyApi().on("POST", SELECT, reply);
-        const rt = makeRuntime(api);
-        const p = run(rt, "sim", "run", "--tag", "smoke", "--output", "json", ...flag);
-        await vi.advanceTimersByTimeAsync(400_000);
-        expect(await p).toBe(expected);
-        const doc = JSON.parse(rt.out());
-        expect(doc.reason).toBe("tuner_error");
-        expect(doc.exit_code).toBe(expected);
-        expect(api.calls("POST", SELECT).length).toBeGreaterThan(5);
-        expect(rt.err()).toContain("retrying in 3s");
-      }
-    },
-  );
+  ])("%s at start retries for 5 minutes, then reason tuner_error exit 3", async (_n, reply) => {
+    vi.useFakeTimers();
+    const api = happyApi().on("POST", SELECT, reply);
+    const rt = makeRuntime(api);
+    const p = run(rt, "sim", "run", "--tag", "smoke", "--output", "json");
+    await vi.advanceTimersByTimeAsync(400_000);
+    expect(await p).toBe(3);
+    const doc = JSON.parse(rt.out());
+    expect(doc.reason).toBe("tuner_error");
+    expect(doc.exit_code).toBe(3);
+    expect(api.calls("POST", SELECT).length).toBeGreaterThan(5);
+    expect(rt.err()).toContain("retrying in 3s");
+    expect(rt.err()).toContain("exiting 3.");
+  });
 
   it("whoami 5xx retries too and ends as tuner_error", async () => {
     vi.useFakeTimers();
@@ -465,7 +469,7 @@ describe("sim run: start errors", () => {
     const rt = makeRuntime(api);
     const p = run(rt, "sim", "run", "--tag", "smoke");
     await vi.advanceTimersByTimeAsync(400_000);
-    expect(await p).toBe(0);
+    expect(await p).toBe(3);
     expect(rt.err()).toContain("Tuner is unavailable");
   });
 });
@@ -494,37 +498,33 @@ describe("sim run: --no-wait", () => {
 describe("sim run: stop paths", () => {
   const stoppable = () => happyApi(pendingRun()).on("POST", CANCEL, json(200, canceledRun()));
 
-  it("--timeout cancels the run and reports reason timeout (exit 0, 1 with flag)", async () => {
+  it("--timeout cancels the run once and exits 124 with reason timeout", async () => {
     vi.useFakeTimers();
-    for (const [flag, expected] of [
-      [[], 0],
-      [["--fail-on-inconclusive"], 1],
-    ] as const) {
-      const api = stoppable();
-      const rt = makeRuntime(api);
-      const p = run(
-        rt,
-        "sim",
-        "run",
-        "--tag",
-        "smoke",
-        "--timeout",
-        "90s",
-        "--output",
-        "json",
-        ...flag,
-      );
-      await vi.advanceTimersByTimeAsync(89_000);
-      expect(api.calls("POST", CANCEL)).toHaveLength(0);
-      await vi.advanceTimersByTimeAsync(2_000);
-      expect(await p).toBe(expected);
-      expect(api.calls("POST", CANCEL)).toHaveLength(1);
-      expect(rt.err()).toContain(`Timeout of 90s reached. Canceling run ${RUN}...`);
-      const doc = JSON.parse(rt.out());
-      expect(doc.reason).toBe("timeout");
-      expect(doc.run.status).toBe("canceled");
-      expect(doc.exit_code).toBe(expected);
-    }
+    const api = stoppable();
+    const rt = makeRuntime(api);
+    const p = run(rt, "sim", "run", "--tag", "smoke", "--timeout", "90s", "--output", "json");
+    await vi.advanceTimersByTimeAsync(89_000);
+    expect(api.calls("POST", CANCEL)).toHaveLength(0);
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(await p).toBe(124);
+    expect(api.calls("POST", CANCEL)).toHaveLength(1);
+    expect(rt.err()).toContain(`Timeout of 90s reached. Canceling run ${RUN}...`);
+    expect(rt.err()).toContain("exiting 124.");
+    const doc = JSON.parse(rt.out());
+    expect(doc.reason).toBe("timeout");
+    expect(doc.run.status).toBe("canceled");
+    expect(doc.exit_code).toBe(124);
+  });
+
+  it("--timeout on a run the server already marked failed exits 1 (1 beats 124)", async () => {
+    vi.useFakeTimers();
+    const failedCancel = makeRun({ status: "canceled", result: "failed", reason: "agent_failed" });
+    const api = happyApi(pendingRun()).on("POST", CANCEL, json(200, failedCancel));
+    const rt = makeRuntime(api);
+    const p = run(rt, "sim", "run", "--tag", "smoke", "--timeout", "90s", "--output", "json");
+    await vi.advanceTimersByTimeAsync(91_000);
+    expect(await p).toBe(1);
+    expect(JSON.parse(rt.out()).exit_code).toBe(1);
   });
 
   it.each([
@@ -632,7 +632,7 @@ describe("sim run: stop paths", () => {
     const rt = makeRuntime(api);
     const p = run(rt, "sim", "run", "--tag", "smoke", "--output", "json");
     await vi.advanceTimersByTimeAsync(400_000);
-    expect(await p).toBe(0);
+    expect(await p).toBe(3);
     expect(rt.err()).toContain(`Tuner unreachable for 5 minutes`);
     expect(rt.err()).toContain(`tuner runs get ${RUN}`);
     expect(JSON.parse(rt.out()).reason).toBe("tuner_error");
@@ -642,7 +642,7 @@ describe("sim run: stop paths", () => {
   it("a non-retryable poll error stops with tuner_error", async () => {
     const api = happyApi().on("GET", GET, apiError(404, "run_not_found", "Run not found"));
     const rt = makeRuntime(api);
-    expect(await run(rt, "sim", "run", "--tag", "smoke", "--fail-on-inconclusive")).toBe(1);
+    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(3);
     expect(rt.err()).toContain("Could not read run 4821: Run not found");
   });
 });

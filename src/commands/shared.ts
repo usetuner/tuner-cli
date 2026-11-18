@@ -14,14 +14,14 @@ export function printError(runtime: Runtime, message: string): void {
   runtime.stderr.write(`Error: ${message}\n`);
 }
 
-/** Runs a command body; any error is printed and exits 2. */
+/** Runs a command body; any error is printed and exits with its code (2 by default). */
 export async function guard(runtime: Runtime, body: () => Promise<number>): Promise<number> {
   try {
     return await body();
   } catch (err) {
     const cli = toCliError(err);
     printError(runtime, cli.message);
-    return cli.exitCode || EXIT.NOTHING_RAN;
+    return cli.exitCode || EXIT.USAGE;
   }
 }
 

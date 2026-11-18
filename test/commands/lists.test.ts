@@ -123,7 +123,30 @@ describe("list commands", () => {
       apiError(403, "insufficient_access", "No access"),
     );
     const rt = makeRuntime(api);
-    expect(await run(rt, "languages", "list")).toBe(2);
+    expect(await run(rt, "languages", "list")).toBe(4);
     expect(rt.err()).toContain("No access");
+  });
+
+  it.each([
+    [apiError(401, "invalid_api_key", "Not authenticated"), 4],
+    [apiError(403, "invalid_api_key", "Invalid API key."), 4],
+    [apiError(500, "internal_error", "Internal Server Error"), 3],
+    [apiError(503, "run_start_failed", "down"), 3],
+    [apiError(404, "workspace_not_found", "Workspace not found"), 5],
+    [apiError(400, "validation_error", "Bad request"), 2],
+  ])("languages list maps an API error to its exit code (%#)", async (reply, code) => {
+    const api = base().on("GET", `${WS_PATH}/caller-personas`, reply);
+    const rt = makeRuntime(api);
+    expect(await run(rt, "languages", "list")).toBe(code);
+    expect(rt.err()).toMatch(/^Error: /);
+  });
+
+  it("scenarios list exits 5 on an unknown agent", async () => {
+    const api = base().on(
+      "GET",
+      `${AGENT_PATH}/scenarios`,
+      apiError(404, "agent_not_found", "Agent not found"),
+    );
+    expect(await run(makeRuntime(api), "scenarios", "list")).toBe(5);
   });
 });

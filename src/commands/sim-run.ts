@@ -33,7 +33,6 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
       start: opts,
       wait: opts.wait !== false,
       timeout: opts.timeout,
-      failOnInconclusive: Boolean(opts.failOnInconclusive),
     },
   );
 
@@ -85,6 +84,5 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
 }
 
 function warnInconclusive(output: Output, reason: string, exitCode: number): void {
-  const hint = exitCode === EXIT.OK ? " Pass --fail-on-inconclusive to exit 1 instead." : "";
-  output.progress(`Warning: run not conclusive (reason: ${reason}); exiting ${exitCode}.${hint}`);
+  output.progress(`Warning: run not conclusive (reason: ${reason}); exiting ${exitCode}.`);
 }

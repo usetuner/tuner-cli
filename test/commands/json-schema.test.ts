@@ -94,8 +94,9 @@ describe("--output json matches schema_version 1", () => {
         ]),
       ),
     );
-    expect(await run(rt, "sim", "run", "--tag", "x", "--output", "json")).toBe(2);
+    expect(await run(rt, "sim", "run", "--tag", "x", "--output", "json")).toBe(5);
     const doc = check(rt.out());
+    expect(doc.exit_code).toBe(5);
     expect(doc.run).toBeNull();
     expect(doc.error.code).toBe("no_scenarios_for_tag");
   });
@@ -124,8 +125,9 @@ describe("--output json matches schema_version 1", () => {
     const rt = makeRuntime(api);
     const p = run(rt, "sim", "run", "--tag", "smoke", "--timeout", "10s", "--output", "json");
     await vi.advanceTimersByTimeAsync(11_000);
-    expect(await p).toBe(0);
+    expect(await p).toBe(124);
     const doc = check(rt.out());
+    expect(doc.exit_code).toBe(124);
     expect(doc.reason).toBe("timeout");
     expect(doc.summary.canceled).toBe(1);
   });
