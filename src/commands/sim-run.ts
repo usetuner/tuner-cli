@@ -18,6 +18,7 @@ export interface SimRunOptions {
   output?: OutputFormat;
   wait?: boolean;
   timeout?: string;
+  /** Deprecated no-op, kept for one minor version. */
   failOnInconclusive?: boolean;
 }
 
@@ -25,6 +26,11 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
   const { runtime } = ctx;
   const json = opts.output === "json";
   const output = terminalOutput(runtime, json);
+  if (opts.failOnInconclusive) {
+    runtime.stderr.write(
+      "Warning: --fail-on-inconclusive is deprecated and has no effect; inconclusive runs now exit 3 and timeouts 124.\n",
+    );
+  }
   const r = await runSimulation(
     { ...ctx.deps, signals: runtime, output },
     {

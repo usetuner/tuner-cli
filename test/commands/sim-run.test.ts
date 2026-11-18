@@ -156,6 +156,17 @@ describe("sim run: results and exit codes", () => {
     expect(rt.err()).toContain("reason: canceled");
   });
 
+  it("accepts --fail-on-inconclusive as a deprecated no-op", async () => {
+    const rt = makeRuntime(happyApi(inconclusiveRun()));
+    const argv = ["sim", "run", "--tag", "smoke", "--output", "json", "--fail-on-inconclusive"];
+    expect(await run(rt, ...argv)).toBe(3);
+    expect(rt.err()).toContain(
+      "Warning: --fail-on-inconclusive is deprecated and has no effect; inconclusive runs now exit 3 and timeouts 124.",
+    );
+    expect(JSON.parse(rt.out()).exit_code).toBe(3);
+    const ok = makeRuntime(happyApi());
+    expect(await run(ok, "sim", "run", "--tag", "smoke", "--fail-on-inconclusive")).toBe(0);
+  });
 
   it("prints each scenario once as its verdict becomes final", async () => {
     vi.useFakeTimers();

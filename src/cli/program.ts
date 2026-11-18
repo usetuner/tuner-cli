@@ -94,7 +94,7 @@ When several apply, the worst wins: 1, then 3, then 124.`,
     )
     .option(
       "--fail-on-inconclusive",
-      "exit 1 on inconclusive, timeout or canceled runs",
+      "deprecated, no effect: inconclusive runs exit 3, timeouts 124",
     )
     .action(action((cmd) => simRun(ctx(cmd), cmd.opts())));
 
