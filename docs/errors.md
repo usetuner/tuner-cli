@@ -62,21 +62,22 @@ json`, the `code` below is also in the document's `reason` and `error.code`, and
 | `validation_error`          | 4xx     | `Tuner rejected the request (422): <detail>.`                                                         | Fix the value it names.                             |
 | any other code              | 4xx     | `<detail> (<status> <code>).`                                                                         | Read the detail.                                    |
 
-A `run_in_flight` after `sim run` retried a start that lost its connection adds: `An earlier
-attempt lost its connection, so that run may be the one this command started.`
+A `run_in_flight` always means a run that was already going: the start request is retried only
+when it never reached Tuner, so a retry can't collide with a run of its own.
 
 ## Problems on Tuner's side (exit 3)
 
-| Trigger                                        | `code`                | Message                                                                                             |
-| ---------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
-| Can't connect (DNS, refused, reset, TLS, 30 s) | `tuner_error`         | `Could not reach https://… (ENOTFOUND), and retries ran out. Check your network and --base-url …`   |
-| 5xx until retries run out                      | `tuner_error`         | `Tuner kept failing (502 internal_error), and retries ran out. Try again later.`                    |
-| 429 until retries run out                      | `tuner_error`         | `Tuner kept rate limiting requests (429 rate_limited), and retries ran out. …`                      |
-| `run_start_failed` (503) at start              | `run_start_failed`    | `Tuner couldn't start the run: <detail>.` then `Tuner couldn't finish this run (run_start_failed).` |
-| `internal_error` (500) at start                | `internal_error`      | `Tuner had an internal error (500): <detail>.`                                                      |
-| Any other 5xx code                             | that code             | `<detail> (<status> <code>).`                                                                       |
-| A 2xx that is empty or not JSON                | `unexpected_response` | `Tuner sent a response this CLI can't read (200, not JSON) from GET …. Check --base-url …`          |
-| A crash in the CLI                             | `tuner_error`         | `Unexpected error: <message>. Re-run with --verbose and report it.`                                 |
+| Trigger                                        | `code`                  | Message                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Can't connect (DNS, refused, reset, TLS, 30 s) | `tuner_error`           | `Could not reach https://… (ENOTFOUND), and retries ran out. Check your network and --base-url …`                                                                                                                                                                                                                                                                |
+| 5xx until retries run out                      | `tuner_error`           | `Tuner kept failing (502 internal_error), and retries ran out. Try again later.`                                                                                                                                                                                                                                                                                 |
+| 429 until retries run out                      | `tuner_error`           | `Tuner kept rate limiting requests (429 rate_limited), and retries ran out. …`                                                                                                                                                                                                                                                                                   |
+| `run_start_failed` (503) at start              | `run_start_failed`      | `Tuner couldn't start the run: <detail>.` then `Tuner couldn't finish this run (run_start_failed).`                                                                                                                                                                                                                                                              |
+| `internal_error` (500) at start                | `internal_error`        | `Tuner had an internal error (500): <detail>.`                                                                                                                                                                                                                                                                                                                   |
+| Any other 5xx code                             | that code               | `<detail> (<status> <code>).`                                                                                                                                                                                                                                                                                                                                    |
+| Start sent, then timed out or reset            | `start_outcome_unknown` | `The connection to Tuner was lost after the start request was sent (…), so a run may have started.` then the agent's run in progress, if any: `Run 4830 is in progress for this agent and may be the one this command started. Check it with tuner runs get 4830, or cancel it with tuner runs cancel 4830.` The CLI never retries, watches or cancels that run. |
+| A 2xx that is empty or not JSON                | `unexpected_response`   | `Tuner sent a response this CLI can't read (200, not JSON) from GET …. Check --base-url …`                                                                                                                                                                                                                                                                       |
+| A crash in the CLI                             | `tuner_error`           | `Unexpected error: <message>. Re-run with --verbose and report it.`                                                                                                                                                                                                                                                                                              |
 
 Unknown codes fall back by HTTP status: 4xx exits 2 and 5xx exits 3, so a newer API never crashes
 an older CLI. An error page from a proxy is named by its status (`502 Bad Gateway from https://…`),
@@ -125,8 +126,11 @@ The CLI retries 429, 5xx and network errors with backoff (3, 6, 12, 24 s, then 3
 
 - `sim run`: the key and agent lookup and the polling, for up to 5 minutes of consecutive
   failures each, and the cancel it sends on a timeout or signal, for up to 10 seconds.
-- `sim run` start request: only when Tuner never answered (a network error) or answered 429.
-  A 5xx may have created a run, so it is not retried: `run_start_failed` exits 3 at once.
+- `sim run` start request: only when no connection was made (DNS failure, connection refused,
+  connect timeout) or Tuner answered 429, since then no run can exist. A 5xx may have created a
+  run, so `run_start_failed` exits 3 at once. A timeout or reset after the request was sent leaves
+  the outcome unknown: the CLI doesn't retry, looks up the agent's run in progress (the API
+  doesn't say who started a run, so the CLI can't claim it), names it and exits 3.
 - `runs get`, `runs cancel`, the list commands, `auth login` and `auth status`: every request,
   for up to 30 seconds. Cancel is safe to repeat: a finished run comes back unchanged.
 

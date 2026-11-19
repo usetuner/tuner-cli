@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `sim run` no longer retries its start request on a 5xx: a `run_start_failed` exits 3 at once instead of creating more failed runs. It still retries a network error and a 429.
+- `sim run` no longer retries its start request on a 5xx: a `run_start_failed` exits 3 at once instead of creating more failed runs. It retries only a request that never reached Tuner (DNS, refused) or a 429. A start that timed out or was reset after it was sent is not retried: it exits 3 with `start_outcome_unknown` and names the agent's run in progress, if any.
 - `runs cancel`, the list reads and `auth login` retry 429, 5xx and network errors for up to 30 seconds, like `runs get`.
 - Every failure has its own message that says what to do: `run_in_flight` names the agent and the run, `insufficient_credits` says the run can't start, a run canceled elsewhere says so, a broken credentials file is named instead of reported as no key, and a proxy's HTML error page is named by its status instead of printed.
 - A 2xx response that is empty or not JSON exits 3 with `unexpected_response`, and an unknown `result` or `reason` asks you to upgrade.
