@@ -59,7 +59,8 @@ npm link
    Result: failed (agent_failed)
    ```
 
-5. Read the exit code: `0` passed, `1` the agent failed. See [Exit codes](#exit-codes).
+5. Read the exit code: `0` passed, `1` the agent failed, `2` a problem to fix, `3` Tuner
+   couldn't finish the run. See [Exit codes](#exit-codes).
 
 ## Common tasks
 
@@ -160,16 +161,17 @@ to another workspace, the command stops with `config_error`. For where the key f
 
 Exit codes are a contract: changing one is a breaking change.
 
-| Exit | Meaning                                                                                                                                                                             |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | Success. The run passed; or it was inconclusive (`tuner_error`), timed out or canceled without `--fail-on-inconclusive`. Also `--no-wait`, `runs`, the lists and `auth` on success. |
-| 1    | The agent failed: at least one scenario's verdict is `failed` (`reason: agent_failed`). With `--fail-on-inconclusive`, also inconclusive, timed-out and canceled runs.              |
-| 2    | Nothing ran: a usage or config error, a rejected key, an unknown agent, tag, scenario or name, no credits, a run already in flight, or any other error.                             |
-| 130  | Interrupted by SIGINT: Ctrl-C, or a canceled GitHub Actions job. The run was canceled first.                                                                                        |
-| 143  | Stopped by SIGTERM, for example from `kill` or a process manager. The run was canceled first.                                                                                       |
+| Exit | Meaning                                                                                                                                                         |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Every scenario passed. Also `--no-wait`, `runs`, the lists and `auth` on success.                                                                               |
+| 1    | At least one scenario failed its evals (`result: failed`, `reason: agent_failed`).                                                                              |
+| 2    | A problem you must fix: a bad flag, a rejected key, an unknown agent, tag, scenario or workspace, no credits, the agent busy, `run_not_found` or any other 4xx. |
+| 3    | Tuner couldn't finish the run: unreachable after retries, a 5xx, `run_start_failed`, `reason: tuner_error`, a run canceled elsewhere, or `--timeout` reached.   |
+| 130  | Interrupted by SIGINT: Ctrl-C, or a canceled GitHub Actions job. The run was canceled first.                                                                    |
+| 143  | Stopped by SIGTERM, for example from `kill` or a process manager. The run was canceled first.                                                                   |
 
-In `sim run`, Tuner being unreachable after retries is `tuner_error`: it exits 0, or 1 with
-`--fail-on-inconclusive`, not 2. See [Errors and retries](docs/errors.md#retries).
+When several apply, the worst wins: 1, then 2, then 3. The JSON `reason` and `error.code`
+keep the detail. Per-code exits are in [Errors and retries](docs/errors.md).
 
 ## Documentation
 

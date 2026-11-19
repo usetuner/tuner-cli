@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
-- New exit codes. 3: the run did not test your agent (Tuner unreachable after retries, 5xx, `run_start_failed`, `reason: tuner_error`, or a run canceled elsewhere); these used to exit 0. 4: the API key was rejected (401/403), on every command; was 2. 5: nothing to run (tag matches no scenario, unknown workspace, agent or scenario ID); was 2. 124: `--timeout` reached; was 0. When several apply, the worst wins: 1, then 3, then 124. `schema/run-result.v1.json` allows the new `exit_code` values; `schema_version` stays 1.
+- Exit codes follow the CI/CD spec: 0 every scenario passed, 1 a scenario failed its evals, 2 a problem you must fix, 3 Tuner couldn't finish the run. Runs that end `tuner_error`, are canceled elsewhere, or reach `--timeout` now exit 3 (were 0). When several apply, the worst wins: 1, then 2, then 3. `schema/run-result.v1.json` allows `exit_code` 3; `schema_version` stays 1.
 
 ### Deprecated
 
@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- On `--timeout`, `sim run` prints the elapsed time and the `--timeout` value.
 - `tuner sim run` names the agent and its numeric ID in the start banner, e.g. `Agent: booking-staging (616)`.
 
 ### Added
@@ -33,4 +34,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Config from flags, then environment variables, then the stored credentials file.
 - HTTP client with request timeouts, retries with backoff for safe requests, and typed error codes.
 - SIGINT, SIGTERM and `--timeout` cancel the run once and wait for it before exiting.
-- Exit codes: 0 passed, 1 agent failed, 2 usage or config error, 3 run did not test the agent, 4 auth error, 5 nothing to run, 124 timeout, 130 SIGINT, 143 SIGTERM.
+- Exit codes: 0 passed, 1 agent failed, 2 a problem you must fix, 3 Tuner couldn't finish the run, 130 SIGINT, 143 SIGTERM.
