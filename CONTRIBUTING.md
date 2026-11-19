@@ -74,6 +74,8 @@ Publishing to npm is manual. You need to be a member of the `usetuner.ai` npm or
 2. From an up-to-date `main`, run `npm login`, then `npm run release:patch` (or `release:minor`, `release:major`).
 3. Push the version commit and tag: `git push --follow-tags`.
 
+For the first release (0.1.0), run `npm publish` instead: `release:patch` would bump to 0.1.1 first.
+
 `release:*` runs `npm version` and `npm publish`. `prepublishOnly` runs typecheck, lint and tests, and `prepack` builds `dist/`.
 
 ## Security
