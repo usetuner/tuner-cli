@@ -90,14 +90,14 @@ never printed.
 A run that started ends with the server's `result` and `reason`. `sim run` prints the line below
 after the summary:
 
-| `result`       | `reason`       | Exit | Line                                                                                                                                                                                                                                                                 |
-| -------------- | -------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `passed`       | `null`         | 0    | none                                                                                                                                                                                                                                                                 |
-| `failed`       | `agent_failed` | 1    | `Result: failed (agent_failed)`                                                                                                                                                                                                                                      |
-| `inconclusive` | `setup_error`  | 2    | `The run couldn't test your agent (setup_error). Check your voice provider account's credits or quota, and that your agent's line is free, then run it again.` Your provider account (Retell, ElevenLabs) is out of credits or quota, or your agent's line was busy. |
-| `inconclusive` | `tuner_error`  | 3    | `Tuner couldn't finish this run (tuner_error).` A call never connected, a platform error, a call unreported, or analysis failed.                                                                                                                                     |
-| `canceled`     | `canceled`     | 3    | `Run 4821 was canceled outside this command (the dashboard or tuner runs cancel).`                                                                                                                                                                                   |
-| anything else  | anything else  | 3    | `Tuner returned a result this CLI doesn't know (result: …, reason: …). Upgrade tuner-cli.`                                                                                                                                                                           |
+| `result`       | `reason`       | Exit | Line                                                                                                                                                                                                  |
+| -------------- | -------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `passed`       | `null`         | 0    | none                                                                                                                                                                                                  |
+| `failed`       | `agent_failed` | 1    | `Result: failed (agent_failed)`                                                                                                                                                                       |
+| `inconclusive` | `setup_error`  | 2    | `The run couldn't test your agent (setup_error). Check your voice provider account's credits or quota, then run it again.` Your own provider account (Retell, ElevenLabs) is out of credits or quota. |
+| `inconclusive` | `tuner_error`  | 3    | `Tuner couldn't finish this run (tuner_error).` A call never connected, a platform error, a call unreported, or analysis failed.                                                                      |
+| `canceled`     | `canceled`     | 3    | `Run 4821 was canceled outside this command (the dashboard or tuner runs cancel).`                                                                                                                    |
+| anything else  | anything else  | 3    | `Tuner returned a result this CLI doesn't know (result: …, reason: …). Upgrade tuner-cli.`                                                                                                            |
 
 The CLI's own stops:
 
@@ -119,8 +119,8 @@ it. The list and `auth` commands exit 0 on success.
 ### Known gaps
 
 An agent that never answered the call is labeled `tuner_error` (exit 3), though it may be yours
-to fix. A Tuner server that predates `setup_error` labels provider credits or quota and a busy
-line `tuner_error` too. A crash
+to fix. A Tuner server that predates `setup_error` labels
+provider credits or quota `tuner_error` too. A crash
 of Tuner's own caller in the middle of a call can show as `agent_failed` (exit 1). Check the
 scenario's message and the dashboard before acting on the exit code alone.
 

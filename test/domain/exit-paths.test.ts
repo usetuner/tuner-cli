@@ -383,11 +383,11 @@ const RUN_ENDS: [string, string | null, string | null, number, string | undefine
   ["every scenario passed", "passed", null, 0, undefined],
   ["a scenario failed its evals", "failed", "agent_failed", 1, "Result: failed (agent_failed)"],
   [
-    "a setup problem to fix (provider credits or quota, agent's line busy)",
+    "a setup problem to fix (provider credits or quota)",
     "inconclusive",
     "setup_error",
     2,
-    "The run couldn't test your agent (setup_error). Check your voice provider account's credits or quota, and that your agent's line is free",
+    "The run couldn't test your agent (setup_error). Check your voice provider account's credits or quota, then run it again.",
   ],
   [
     "a scenario failed and another hit a setup problem",

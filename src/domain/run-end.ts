@@ -26,7 +26,7 @@ export function runEndMessage(
   if (reason === "setup_error") {
     return (
       "The run couldn't test your agent (setup_error). Check your voice provider account's " +
-      "credits or quota, and that your agent's line is free, then run it again."
+      "credits or quota, then run it again."
     );
   }
   if (reason === "canceled") {

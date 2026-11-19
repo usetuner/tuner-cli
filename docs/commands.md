@@ -65,8 +65,8 @@ How it behaves:
   them and maps them to an exit code. It never computes its own.
 - A run Tuner couldn't finish (`tuner_error` or `--timeout` reached) exits 3 and prints
   `Tuner couldn't finish this run (<reason>).` A run canceled elsewhere also exits 3 and says it
-  was canceled outside this command. A run that ends `setup_error` (your provider account is out
-  of credits or quota, or your agent's line was busy) exits 2 and says what to check. A signal
+  was canceled outside this command. A run that ends `setup_error` (your own voice provider account
+  is out of credits or quota) exits 2 and says what to check. A signal
   still exits 130 or 143. See
   [Errors and retries](errors.md#how-a-run-ends).
 - `--meta` splits each pair on the first `=`, so values may contain `=`. A pair without `=`, an
