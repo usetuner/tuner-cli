@@ -142,13 +142,23 @@ function runInFlight(err: ApiError, ctx: ErrorContext, make: Make): CliError {
   );
 }
 
-/** A start retried after a lost connection can find the run its first attempt created. */
-export function withLostStartNote(cli: CliError, retried: boolean): CliError {
-  if (!retried || cli.reason !== "run_in_flight") return cli;
+/**
+ * The start request was sent but no answer came back, so a run may exist. `inFlight` is the
+ * agent's run in progress, null when there is none, undefined when the lookup failed.
+ */
+export function startOutcomeUnknown(cause: string, inFlight: number | null | undefined): CliError {
+  const head = `The connection to Tuner was lost after the start request was sent (${cause}), so a run may have started.`;
+  const tail =
+    inFlight === undefined
+      ? "Check the agent's runs in the dashboard before you try again."
+      : inFlight === null
+        ? "No run is in progress for this agent, so it most likely did not start. Try again."
+        : `Run ${inFlight} is in progress for this agent and may be the one this command started. ` +
+          `Check it with \`tuner runs get ${inFlight}\`, or cancel it with \`tuner runs cancel ${inFlight}\`.`;
   return new CliError(
-    `${cli.message}\nAn earlier attempt lost its connection, so that run may be the one this command started.`,
-    cli.reason,
-    cli.exitCode,
-    cli.extra,
+    `${head} ${tail}`,
+    "start_outcome_unknown",
+    undefined,
+    inFlight ? { run_id: inFlight } : {},
   );
 }

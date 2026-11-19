@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveBaseUrl } from "../../src/domain/config.js";
-import { toCliError, withLostStartNote } from "../../src/domain/error-message.js";
+import { startOutcomeUnknown, toCliError } from "../../src/domain/error-message.js";
 import {
   ApiError,
   CliError,
@@ -270,6 +270,31 @@ const ERROR_PATHS: [string, unknown, Parameters<typeof toCliError>[1], number, s
     "validation_error",
     "Tuner rejected the request (502)",
   ],
+  // The start was sent but no answer came back: never retried, never adopted
+  [
+    "start outcome unknown, a run in flight",
+    startOutcomeUnknown("Request to https://x timed out after 30s", 4830),
+    {},
+    3,
+    "start_outcome_unknown",
+    "Run 4830 is in progress for this agent and may be the one this command started. Check it with `tuner runs get 4830`, or cancel it with `tuner runs cancel 4830`.",
+  ],
+  [
+    "start outcome unknown, nothing in flight",
+    startOutcomeUnknown("Could not reach https://x (ECONNRESET)", null),
+    {},
+    3,
+    "start_outcome_unknown",
+    "No run is in progress for this agent, so it most likely did not start. Try again.",
+  ],
+  [
+    "start outcome unknown, lookup failed",
+    startOutcomeUnknown("Could not reach https://x (ECONNRESET)", undefined),
+    {},
+    3,
+    "start_outcome_unknown",
+    "Check the agent's runs in the dashboard before you try again.",
+  ],
   // No usable response
   [
     "network error, not retried",
@@ -350,14 +375,6 @@ describe("error paths", () => {
       field: undefined,
       value: undefined,
     });
-  });
-
-  it("notes a run in flight found after a lost connection", () => {
-    const busy = toCliError(api(409, "run_in_flight", "busy", { run_id: 7 }));
-    expect(withLostStartNote(busy, false)).toBe(busy);
-    expect(withLostStartNote(busy, true).message).toContain("may be the one this command started");
-    const other = toCliError(api(404, "agent_not_found", "nf"));
-    expect(withLostStartNote(other, true)).toBe(other);
   });
 });
 

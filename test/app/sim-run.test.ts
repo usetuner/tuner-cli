@@ -99,7 +99,7 @@ describe("runSimulation", () => {
     const f = fakeDeps(
       api({
         startRun: async () => {
-          throw new NetworkError("down");
+          throw new NetworkError("down", false);
         },
       }),
     );

@@ -20,9 +20,9 @@ export interface RetryOptions {
   retryOn?: (err: ApiError | NetworkError) => boolean;
 }
 
-/** For a request that is not idempotent: retry only when the server did not handle it. */
-export const notHandled = (err: ApiError | NetworkError): boolean =>
-  err instanceof NetworkError || err.status === 429;
+/** For a request that is not idempotent: retry only when it never reached Tuner, or a 429. */
+export const notSent = (err: ApiError | NetworkError): boolean =>
+  err instanceof NetworkError ? !err.sent : err.status === 429;
 
 /**
  * Retries 429, 5xx and network errors with backoff 3, 6, 12 s capped at 30 s, honoring

@@ -40,6 +40,7 @@ export const EXIT_FOR_CODE: Readonly<Record<string, number>> = {
   internal_error: EXIT.TUNER_FAULT,
   tuner_error: EXIT.TUNER_FAULT,
   unexpected_response: EXIT.TUNER_FAULT,
+  start_outcome_unknown: EXIT.TUNER_FAULT,
 };
 
 export function exitForSignal(signal: Signal): number {

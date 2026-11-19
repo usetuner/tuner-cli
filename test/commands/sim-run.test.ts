@@ -10,6 +10,7 @@ import {
   call,
   defaultAgent,
   happyApi,
+  hang,
   json,
   makeRun,
   makeRuntime,
@@ -474,21 +475,61 @@ describe("sim run: start errors", () => {
     expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
   });
 
-  it("a start retried after a lost connection that finds a run in flight says it may be ours", async () => {
+  const SEARCH = `${AGENT_PATH}/simulation-runs/search`;
+  const searchReply = (ids: number[]) =>
+    json(200, { simulation_runs: ids.map((id) => ({ id })), total: ids.length });
+
+  it.each([["ECONNREFUSED"], ["ENOTFOUND"], ["EAI_AGAIN"]])(
+    "a start that never connected (%s) is retried",
+    async (code) => {
+      vi.useFakeTimers();
+      const api = happyApi().on("POST", SELECT, networkError(code), started());
+      const rt = makeRuntime(api);
+      const p = run(rt, "sim", "run", "--tag", "smoke");
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(await p).toBe(0);
+      expect(api.calls("POST", SELECT)).toHaveLength(2);
+    },
+  );
+
+  it("a start that timed out is not retried; it names the run in flight and exits 3", async () => {
     vi.useFakeTimers();
-    const api = happyApi().on(
-      "POST",
-      SELECT,
-      networkError("ECONNRESET"),
-      apiError(409, "run_in_flight", "busy", { run_id: 4821 }),
-    );
+    const api = happyApi()
+      .on("POST", SELECT, hang)
+      .on("GET", SEARCH, (req) =>
+        req.url.searchParams.get("run_status") === "pending"
+          ? searchReply([4830])
+          : searchReply([]),
+      );
     const rt = makeRuntime(api);
-    const p = run(rt, "sim", "run", "--tag", "smoke");
-    await vi.advanceTimersByTimeAsync(5_000);
-    expect(await p).toBe(2);
-    expect(api.calls("POST", SELECT)).toHaveLength(2);
-    expect(rt.err()).toContain("Agent 'Booking (staging)' already has a run in progress (4821).");
-    expect(rt.err()).toContain("may be the one this command started");
+    const p = run(rt, "sim", "run", "--tag", "smoke", "--output", "json");
+    await vi.advanceTimersByTimeAsync(31_000);
+    expect(await p).toBe(3);
+    expect(api.calls("POST", SELECT)).toHaveLength(1);
+    expect(rt.err()).toContain("timed out after 30s), so a run may have started.");
+    expect(rt.err()).toContain(
+      "Run 4830 is in progress for this agent and may be the one this command started. " +
+        "Check it with `tuner runs get 4830`, or cancel it with `tuner runs cancel 4830`.",
+    );
+    const doc = JSON.parse(rt.out());
+    expect(doc.reason).toBe("start_outcome_unknown");
+    expect(doc.error.run_id).toBe(4830);
+    expect(doc.run).toBeNull();
+    expect(api.calls("POST", CANCEL)).toHaveLength(0);
+    expect(api.calls("GET", GET)).toHaveLength(0);
+  });
+
+  it.each([
+    [searchReply([]), "No run is in progress for this agent, so it most likely did not start."],
+    [apiError(503, "internal_error", "down"), "Check the agent's runs in the dashboard"],
+  ])("a start reset after it was sent exits 3 without retrying (%#)", async (search, message) => {
+    const api = happyApi().on("POST", SELECT, networkError("ECONNRESET")).on("GET", SEARCH, search);
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(3);
+    expect(api.calls("POST", SELECT)).toHaveLength(1);
+    expect(rt.err()).toContain("(Could not reach http://127.0.0.1:8010 (ECONNRESET))");
+    expect(rt.err()).toContain(message);
+    expect(api.calls("POST", CANCEL)).toHaveLength(0);
   });
 
   it("whoami 5xx retries too and ends as tuner_error", async () => {
