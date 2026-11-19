@@ -137,7 +137,7 @@
       "description": "agent_failed, tuner_error, timeout or canceled for a run that started; the error code when nothing ran; null when the run passed.",
       "type": ["string", "null"]
     },
-    "exit_code": { "enum": [0, 1, 2, 3, 4, 5, 124, 130, 143] },
+    "exit_code": { "enum": [0, 1, 2, 3, 130, 143] },
     "error": {
       "type": "object",
       "required": ["code", "message"],

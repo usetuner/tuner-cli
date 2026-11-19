@@ -28,7 +28,7 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
   const output = terminalOutput(runtime, json);
   if (opts.failOnInconclusive) {
     runtime.stderr.write(
-      "Warning: --fail-on-inconclusive is deprecated and has no effect; inconclusive runs now exit 3 and timeouts 124.\n",
+      "Warning: --fail-on-inconclusive is deprecated and has no effect; runs Tuner couldn't finish, timeouts included, now exit 3.\n",
     );
   }
   const r = await runSimulation(
@@ -44,7 +44,7 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
 
   if (r.kind === "error") {
     output.progress(`Error: ${r.error?.message}`);
-    if (r.reason === "tuner_error") warnInconclusive(output, "tuner_error", r.exitCode);
+    if (r.exitCode === EXIT.TUNER_FAULT) warnTunerFault(output, r.reason);
   } else if (r.kind === "started" && !json) {
     runtime.stdout.write(`${r.runId}\n${r.run?.dashboard_url ? r.run.dashboard_url + "\n" : ""}`);
     const noise = noiseLine(r.run);
@@ -60,13 +60,8 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
     } else if (run?.dashboard_url) {
       output.progress(run.dashboard_url);
     }
-    if (
-      reason &&
-      reason !== "agent_failed" &&
-      exitCode !== EXIT.SIGINT &&
-      exitCode !== EXIT.SIGTERM
-    ) {
-      warnInconclusive(output, reason, exitCode);
+    if (exitCode === EXIT.TUNER_FAULT) {
+      warnTunerFault(output, reason);
     } else if (reason === "agent_failed") {
       output.progress("Result: failed (agent_failed)");
     }
@@ -89,6 +84,6 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
   return r.exitCode;
 }
 
-function warnInconclusive(output: Output, reason: string, exitCode: number): void {
-  output.progress(`Warning: run not conclusive (reason: ${reason}); exiting ${exitCode}.`);
+function warnTunerFault(output: Output, reason: string | null): void {
+  output.progress(`Tuner couldn't finish this run (${reason ?? "tuner_error"}).`);
 }

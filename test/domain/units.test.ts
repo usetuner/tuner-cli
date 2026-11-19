@@ -21,9 +21,9 @@ describe("exitForRun", () => {
     ["inconclusive", null, 3],
     [null, null, 3],
     [null, "tuner_error", 3],
-    [null, "timeout", 124],
-    ["canceled", "timeout", 124],
-    ["passed", "timeout", 124],
+    [null, "timeout", 3],
+    ["canceled", "timeout", 3],
+    ["passed", "timeout", 3],
     ["failed", "timeout", 1],
     ["failed", "tuner_error", 1],
     ["pending", "tuner_error", 3],
@@ -31,10 +31,10 @@ describe("exitForRun", () => {
     expect(exitForRun(result, reason)).toBe(code);
   });
 
-  it("picks the worst outcome: 1 over 3 over 124 over 0", () => {
-    expect(worstExit([EXIT.TIMEOUT, EXIT.TUNER_FAULT, EXIT.AGENT_FAILED])).toBe(1);
-    expect(worstExit([EXIT.TIMEOUT, EXIT.TUNER_FAULT])).toBe(3);
-    expect(worstExit([EXIT.OK, EXIT.TIMEOUT])).toBe(124);
+  it("picks the worst outcome: 1 over 2 over 3 over 0", () => {
+    expect(worstExit([EXIT.TUNER_FAULT, EXIT.USAGE, EXIT.AGENT_FAILED])).toBe(1);
+    expect(worstExit([EXIT.TUNER_FAULT, EXIT.USAGE])).toBe(2);
+    expect(worstExit([EXIT.OK, EXIT.TUNER_FAULT])).toBe(3);
     expect(worstExit([EXIT.OK])).toBe(0);
     expect(worstExit([])).toBe(0);
   });
@@ -47,10 +47,10 @@ describe("exitForRun", () => {
 
 describe("exitForTimeout", () => {
   it.each([
-    ["canceled", "canceled", 124],
-    [null, null, 124],
-    ["pending", null, 124],
-    ["passed", null, 124],
+    ["canceled", "canceled", 3],
+    [null, null, 3],
+    ["pending", null, 3],
+    ["passed", null, 3],
     ["inconclusive", "tuner_error", 3],
     ["failed", "agent_failed", 1],
     ["failed", null, 1],
@@ -61,29 +61,27 @@ describe("exitForTimeout", () => {
 
 describe("exitForError", () => {
   it.each([
-    ["invalid_api_key", 401, 4],
-    ["invalid_api_key", 403, 4],
-    ["insufficient_access", 403, 4],
-    ["validation_error", 403, 4],
-    ["validation_error", 401, 4],
-    ["no_scenarios_for_tag", 422, 5],
-    ["agent_not_found", 404, 5],
-    ["scenario_not_found", 404, 5],
+    ["invalid_api_key", 401, 2],
+    ["invalid_api_key", 403, 2],
+    ["insufficient_access", 403, 2],
+    ["no_scenarios_for_tag", 422, 2],
+    ["agent_not_found", 404, 2],
+    ["scenario_not_found", 404, 2],
+    ["workspace_not_found", 404, 2],
+    ["insufficient_credits", 402, 2],
+    ["run_in_flight", 409, 2],
+    ["run_not_found", 404, 2],
+    ["validation_error", 422, 2],
+    ["unresolved_name", 422, 2],
+    ["run_too_large", 422, 2],
+    ["simulation_not_configured", 422, 2],
+    ["rate_limited", 429, 2],
+    ["usage_error", undefined, 2],
+    ["config_error", undefined, 2],
     ["internal_error", 500, 3],
     ["run_start_failed", 503, 3],
     ["validation_error", 502, 3],
     ["tuner_error", undefined, 3],
-    ["validation_error", 422, 2],
-    ["unresolved_name", 422, 2],
-    ["run_too_large", 422, 2],
-    ["insufficient_credits", 402, 2],
-    ["run_in_flight", 409, 2],
-    ["simulation_not_configured", 422, 2],
-    ["workspace_not_found", 404, 5],
-    ["run_not_found", 404, 2],
-    ["rate_limited", 429, 2],
-    ["usage_error", undefined, 2],
-    ["config_error", undefined, 2],
   ] as const)("%s (%s) -> %d", (code, status, exit) => {
     expect(exitForError(code, status)).toBe(exit);
   });

@@ -145,7 +145,7 @@ describe("sim run: results and exit codes", () => {
   it("exits 3 with a warning on an inconclusive run (tuner_error)", async () => {
     const rt = makeRuntime(happyApi(inconclusiveRun()));
     expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(3);
-    expect(rt.err()).toContain("Warning: run not conclusive (reason: tuner_error); exiting 3.");
+    expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
     expect(rt.err()).not.toContain("--fail-on-inconclusive");
     expect(rt.out()).toContain("! not connected");
   });
@@ -153,7 +153,7 @@ describe("sim run: results and exit codes", () => {
   it("exits 3 on a run canceled elsewhere", async () => {
     const rt = makeRuntime(happyApi(canceledRun()));
     expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(3);
-    expect(rt.err()).toContain("reason: canceled");
+    expect(rt.err()).toContain("Tuner couldn't finish this run (canceled).");
   });
 
   it("accepts --fail-on-inconclusive as a deprecated no-op", async () => {
@@ -161,7 +161,7 @@ describe("sim run: results and exit codes", () => {
     const argv = ["sim", "run", "--tag", "smoke", "--output", "json", "--fail-on-inconclusive"];
     expect(await run(rt, ...argv)).toBe(3);
     expect(rt.err()).toContain(
-      "Warning: --fail-on-inconclusive is deprecated and has no effect; inconclusive runs now exit 3 and timeouts 124.",
+      "Warning: --fail-on-inconclusive is deprecated and has no effect; runs Tuner couldn't finish, timeouts included, now exit 3.",
     );
     expect(JSON.parse(rt.out()).exit_code).toBe(3);
     const ok = makeRuntime(happyApi());
@@ -406,35 +406,23 @@ describe("sim run: start errors", () => {
     ],
   ];
 
-  const EXPECTED_EXIT: Record<string, number> = {
-    invalid_api_key: 4,
-    insufficient_access: 4,
-    agent_not_found: 5,
-    scenario_not_found: 5,
-    no_scenarios_for_tag: 5,
-    workspace_not_found: 5,
-  };
-
-  it.each(cases)(
-    "%s (%d at %s) exits its code",
-    async (code, status, where, detail, extra, message) => {
-      const exit = EXPECTED_EXIT[code] ?? 2;
-      const api = happyApi();
-      if (where === "whoami") api.on("GET", "/api/v1/whoami", apiError(status, code, detail));
-      else api.on("POST", SELECT, apiError(status, code, detail, extra));
-      const rt = makeRuntime(api);
-      expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(exit);
-      expect(rt.err()).toContain(message);
-      const doc = JSON.parse(rt.out());
-      expect(doc.reason).toBe(code);
-      expect(doc.exit_code).toBe(exit);
-      expect(doc.run).toBeNull();
-      expect(doc.error.code).toBe(code);
-      if (code === "run_in_flight") expect(doc.error.run_id).toBe(4820);
-      if (code === "unresolved_name") expect(doc.error.field).toBe("noise");
-      expect(api.calls("GET", GET)).toHaveLength(0);
-    },
-  );
+  it.each(cases)("%s (%d at %s) exits 2", async (code, status, where, detail, extra, message) => {
+    const exit = 2;
+    const api = happyApi();
+    if (where === "whoami") api.on("GET", "/api/v1/whoami", apiError(status, code, detail));
+    else api.on("POST", SELECT, apiError(status, code, detail, extra));
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(exit);
+    expect(rt.err()).toContain(message);
+    const doc = JSON.parse(rt.out());
+    expect(doc.reason).toBe(code);
+    expect(doc.exit_code).toBe(exit);
+    expect(doc.run).toBeNull();
+    expect(doc.error.code).toBe(code);
+    if (code === "run_in_flight") expect(doc.error.run_id).toBe(4820);
+    if (code === "unresolved_name") expect(doc.error.field).toBe("noise");
+    expect(api.calls("GET", GET)).toHaveLength(0);
+  });
 
   it("retries rate_limited at start, then runs", async () => {
     vi.useFakeTimers();
@@ -467,7 +455,7 @@ describe("sim run: start errors", () => {
     expect(doc.exit_code).toBe(3);
     expect(api.calls("POST", SELECT).length).toBeGreaterThan(5);
     expect(rt.err()).toContain("retrying in 3s");
-    expect(rt.err()).toContain("exiting 3.");
+    expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
   });
 
   it("whoami 5xx retries too and ends as tuner_error", async () => {
@@ -509,7 +497,7 @@ describe("sim run: --no-wait", () => {
 describe("sim run: stop paths", () => {
   const stoppable = () => happyApi(pendingRun()).on("POST", CANCEL, json(200, canceledRun()));
 
-  it("--timeout cancels the run once and exits 124 with reason timeout", async () => {
+  it("--timeout cancels the run once and exits 3 with reason timeout", async () => {
     vi.useFakeTimers();
     const api = stoppable();
     const rt = makeRuntime(api);
@@ -517,17 +505,17 @@ describe("sim run: stop paths", () => {
     await vi.advanceTimersByTimeAsync(89_000);
     expect(api.calls("POST", CANCEL)).toHaveLength(0);
     await vi.advanceTimersByTimeAsync(2_000);
-    expect(await p).toBe(124);
+    expect(await p).toBe(3);
     expect(api.calls("POST", CANCEL)).toHaveLength(1);
     expect(rt.err()).toContain(`Timeout of 90s reached. Canceling run ${RUN}...`);
-    expect(rt.err()).toContain("exiting 124.");
+    expect(rt.err()).toContain("Tuner couldn't finish this run (timeout).");
     const doc = JSON.parse(rt.out());
     expect(doc.reason).toBe("timeout");
     expect(doc.run.status).toBe("canceled");
-    expect(doc.exit_code).toBe(124);
+    expect(doc.exit_code).toBe(3);
   });
 
-  it("--timeout on a run the server already marked failed exits 1 (1 beats 124)", async () => {
+  it("--timeout on a run the server already marked failed exits 1 (1 beats 3)", async () => {
     vi.useFakeTimers();
     const failedCancel = makeRun({ status: "canceled", result: "failed", reason: "agent_failed" });
     const api = happyApi(pendingRun()).on("POST", CANCEL, json(200, failedCancel));
@@ -538,7 +526,7 @@ describe("sim run: stop paths", () => {
     expect(JSON.parse(rt.out()).exit_code).toBe(1);
   });
 
-  it("--timeout on a run that just ended inconclusive exits 3 (3 beats 124)", async () => {
+  it("--timeout on a run that just ended inconclusive keeps reason tuner_error, exit 3", async () => {
     vi.useFakeTimers();
     const api = happyApi(pendingRun()).on("POST", CANCEL, json(200, inconclusiveRun()));
     const rt = makeRuntime(api);
@@ -549,7 +537,7 @@ describe("sim run: stop paths", () => {
     const doc = JSON.parse(rt.out());
     expect(doc.exit_code).toBe(3);
     expect(doc.reason).toBe("tuner_error");
-    expect(rt.err()).toContain("exiting 3.");
+    expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
   });
 
   it.each([
@@ -669,13 +657,13 @@ describe("sim run: stop paths", () => {
     [
       apiError(403, "invalid_api_key", "Invalid API key."),
       "invalid_api_key",
-      4,
+      2,
       "API key rejected",
     ],
     [
       apiError(401, "invalid_api_key", "Not authenticated"),
       "invalid_api_key",
-      4,
+      2,
       "API key rejected",
     ],
   ])(
