@@ -21,6 +21,7 @@ const LIST_COMMAND: Record<string, string> = {
   language: "tuner languages list",
   profile: "tuner profiles list",
   noise: "tuner noise list",
+  suite: "tuner suites list",
 };
 
 const NETWORK_HINT = "Check your network and --base-url (or TUNER_BASE_URL).";
@@ -90,6 +91,10 @@ function fromApi(err: ApiError, ctx: ErrorContext): CliError {
         `${ctx.tag ? `No scenarios tagged '${ctx.tag}'.` : detail} ` +
           "Run `tuner scenarios list` to see tags.",
       );
+    // The API's sentence already says what to fix, so it is printed as is.
+    case "suite_has_no_scenarios":
+    case "suite_profile_deleted":
+      return make(detail);
     case "run_too_large":
       return make(`${noDot(detail)}. Split it into smaller tags or scenario lists.`);
     case "unresolved_name":
@@ -124,8 +129,10 @@ function unresolvedName(err: ApiError, detail: string, make: Make): CliError {
   const first = Array.isArray(err.detail) ? (err.detail[0] as Record<string, unknown>) : {};
   const loc = Array.isArray(first?.loc) ? first.loc : [];
   const field = typeof loc[1] === "string" ? loc[1] : undefined;
-  const hint = field && LIST_COMMAND[field] ? ` Run \`${LIST_COMMAND[field]}\`.` : "";
-  return make(`${detail}${hint}`, { field, value: first?.input });
+  const list = field ? LIST_COMMAND[field] : undefined;
+  // "Unknown suite: smoke" comes without a full stop, the other names with one.
+  const message = list ? `${noDot(detail)}. Run \`${list}\`.` : detail;
+  return make(message, { field, value: first?.input });
 }
 
 function runInFlight(err: ApiError, ctx: ErrorContext, make: Make): CliError {

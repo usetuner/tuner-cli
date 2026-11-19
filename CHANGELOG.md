@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `tuner sim run --suite <name>` runs a suite with its scenarios and settings.
+- `tuner suites list` lists the agent's suites with scenario count and settings.
+
 ## [0.1.0]
 
 First release, published to npm as `@usetuner.ai/cli`. Installs the `tuner` command.

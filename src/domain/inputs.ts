@@ -7,6 +7,7 @@ export const DEFAULT_TIMEOUT = "60m";
 export interface StartOptions {
   tag?: string;
   scenario?: string[];
+  suite?: string;
   language?: string;
   profile?: string;
   noise?: string;
@@ -49,10 +50,26 @@ export function parseNoiseIntensity(value: string): string | number {
   return /^\d+(\.\d*)?$|^\.\d+$/.test(value.trim()) ? Number(value) : value;
 }
 
+/** A suite brings its own scenarios and settings, so none of these flags may go with --suite. */
+function flagSentWithSuite(opts: StartOptions): string | undefined {
+  if (opts.tag) return "--tag";
+  if ((opts.scenario ?? []).length > 0) return "--scenario";
+  if (opts.language) return "--language";
+  if (opts.profile) return "--profile";
+  if (opts.noise) return "--noise";
+  if (opts.noiseIntensity !== undefined) return "--noise-intensity";
+  return undefined;
+}
+
 export function buildStartBody(opts: StartOptions): StartRunRequest {
   const scenarios = opts.scenario ?? [];
+  if (opts.suite) {
+    const flag = flagSentWithSuite(opts);
+    if (flag) throw new CliError(`--suite can't be combined with ${flag}.`, "usage_error");
+    return { suite: opts.suite };
+  }
   if (Boolean(opts.tag) === scenarios.length > 0) {
-    throw new CliError("Pass exactly one of --tag or --scenario.", "usage_error");
+    throw new CliError("Pass exactly one of --tag, --scenario or --suite.", "usage_error");
   }
   const body: StartRunRequest = {};
   if (opts.tag) body.tag = opts.tag;

@@ -474,6 +474,42 @@
               "title": "Simulated"
             },
             "description": "Filter simulation calls (true/false)"
+          },
+          {
+            "name": "alert_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only calls that matched any of these alerts. Comma-separated alert ids belonging to this agent.",
+              "title": "Alert Ids"
+            },
+            "description": "Only calls that matched any of these alerts. Comma-separated alert ids belonging to this agent."
+          },
+          {
+            "name": "alert_trigger_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only the calls behind one alert trigger: the calls that were counted when that trigger fired. Use the trigger id sent in the `alert.fired` webhook. A trigger that does not belong to one of this agent's alerts, or has no saved calls, returns an empty list. Combines with the other filters.",
+              "title": "Alert Trigger Id"
+            },
+            "description": "Only the calls behind one alert trigger: the calls that were counted when that trigger fired. Use the trigger id sent in the `alert.fired` webhook. A trigger that does not belong to one of this agent's alerts, or has no saved calls, returns an empty list. Combines with the other filters."
           }
         ],
         "responses": {
@@ -530,7 +566,7 @@
             }
           },
           "400": {
-            "description": "`end_date` is before `start_date`, or `sentiment` is not one of `positive`, `neutral`, `negative`, `unknown`.",
+            "description": "`end_date` is before `start_date`, `sentiment` is not one of `positive`, `neutral`, `negative`, `unknown`, or `alert_ids` has a value that is not an integer or an alert that does not exist for this agent.",
             "content": {
               "application/json": {
                 "example": {
@@ -2403,6 +2439,25 @@
             "description": "Only return runs with this status."
           },
           {
+            "name": "suite_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only return runs started from this suite.",
+              "title": "Suite Id"
+            },
+            "description": "Only return runs started from this suite."
+          },
+          {
             "name": "page",
             "in": "query",
             "required": false,
@@ -2502,7 +2557,7 @@
           "simulation"
         ],
         "summary": "Run Saved Scenarios",
-        "description": "Start a run from saved scenarios.\n\nPlaces a call for each scenario you pick from your scenario library, by id or by tag. No\nnew scenarios are generated, so you can re-test the same cases. The caller persona,\nprofile and noise can be given by name (`language`, `profile`, `noise`) instead of id.\nEach call is scored against every `PASS_FAIL` eval on the agent. Atomic: if any id or\nname is invalid, the whole request is rejected and nothing is created. To have Tuner\ngenerate new scenarios instead, use Run AI-Generated Scenarios.",
+        "description": "Start a run from saved scenarios.\n\nPlaces a call for each scenario you pick from your scenario library, by id or by tag, or\nfor every scenario in one of your suites (`suite_id` or `suite`). A suite run uses the\nsuite's scenarios and settings, so send no scenario or setting field with it. No new\nscenarios are generated, so you can re-test the same cases. The caller persona, profile\nand noise can be given by name (`language`, `profile`, `noise`) instead of id. Each call\nis scored against every `PASS_FAIL` eval on the agent. Atomic: if any id or name is\ninvalid, the whole request is rejected and nothing is created. To have Tuner generate\nnew scenarios instead, use Run AI-Generated Scenarios.",
         "operationId": "create_select_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_select_post",
         "security": [
           {
@@ -2601,12 +2656,24 @@
             }
           },
           "404": {
-            "description": "A selected scenario id does not exist, is soft-deleted, or does not belong to this agent.",
+            "description": "A selected scenario id does not exist, is soft-deleted, or does not belong to this agent, or `suite_id` is not an active suite of this agent.",
             "content": {
               "application/json": {
-                "example": {
-                  "code": "scenario_not_found",
-                  "detail": "Scenario 501 not found for this agent."
+                "examples": {
+                  "Scenario not found": {
+                    "summary": "Scenario not found",
+                    "value": {
+                      "code": "scenario_not_found",
+                      "detail": "Scenario 501 not found for this agent."
+                    }
+                  },
+                  "Suite not found": {
+                    "summary": "Suite not found",
+                    "value": {
+                      "code": "suite_not_found",
+                      "detail": "Suite 9 not found for this agent."
+                    }
+                  }
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -2657,12 +2724,31 @@
             }
           },
           "422": {
-            "description": "The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 20 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field.",
+            "description": "The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A suite with no scenarios, or whose test profile was deleted, also returns 422. A `tag` with no scenarios, an unknown `language`, `profile`, `noise` or `suite`, more than 100 scenarios, or conflicting fields (including any scenario or setting field sent with a suite) return 422 with `detail` as a validation list naming the field.",
             "content": {
               "application/json": {
-                "example": {
-                  "code": "simulation_not_configured",
-                  "detail": "Agent has no boolean (PASS_FAIL) evals. Add at least one before running a simulation."
+                "examples": {
+                  "Not configured": {
+                    "summary": "Not configured",
+                    "value": {
+                      "code": "simulation_not_configured",
+                      "detail": "Agent has no boolean (PASS_FAIL) evals. Add at least one before running a simulation."
+                    }
+                  },
+                  "Suite has no scenarios": {
+                    "summary": "Suite has no scenarios",
+                    "value": {
+                      "code": "suite_has_no_scenarios",
+                      "detail": "Suite 'Smoke' has no scenarios. Add at least one before running it."
+                    }
+                  },
+                  "Suite test profile deleted": {
+                    "summary": "Suite test profile deleted",
+                    "value": {
+                      "code": "suite_profile_deleted",
+                      "detail": "The test profile of suite 'Smoke' was deleted. Choose another test profile in the suite's settings in the Tuner dashboard before running it."
+                    }
+                  }
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -3345,6 +3431,20 @@
               }
             }
           },
+          "503": {
+            "description": "Another request was updating the run (for example, a call was ending) and the cancel could not wait for it. Nothing was changed; retry the request.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "internal_error",
+                  "detail": "The run is being updated by another request and could not be canceled right now. Nothing was changed; retry the request."
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -3809,6 +3909,235 @@
                 "example": {
                   "code": "validation_error",
                   "detail": "Simulation profile with ID 9 not found"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/suites": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "List Suites",
+        "description": "List an agent's suites, newest first.\n\nA suite is a saved list of scenarios with the run settings they always use. Each suite\ncomes with its scenario count, its settings and its most recent run.",
+        "operationId": "list_suites_api_v1_workspaces__workspace_id__agents__agent_id__suites_get",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID.",
+              "title": "Agent Id"
+            },
+            "description": "Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID."
+          },
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "Workspace ID. Find this in Workspace > General Settings.",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace ID. Find this in Workspace > General Settings."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "invalid_api_key",
+                  "detail": "Not authenticated"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "You do not have access to this workspace.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "insufficient_access",
+                  "detail": "User does not have access to workspace 42"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "agent_not_found",
+                  "detail": "Agent with ID 17 not found"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/suites/{suite_id}": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Get Suite",
+        "description": "Get one suite with its settings and its scenarios in run order.",
+        "operationId": "get_suite_api_v1_workspaces__workspace_id__agents__agent_id__suites__suite_id__get",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "suite_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "ID of the suite.",
+              "title": "Suite Id"
+            },
+            "description": "ID of the suite."
+          },
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID.",
+              "title": "Agent Id"
+            },
+            "description": "Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID."
+          },
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "Workspace ID. Find this in Workspace > General Settings.",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace ID. Find this in Workspace > General Settings."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuiteDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "invalid_api_key",
+                  "detail": "Not authenticated"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "You do not have access to this workspace.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "insufficient_access",
+                  "detail": "User does not have access to workspace 42"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The agent was not found, or the suite does not exist, was deleted, or belongs to another agent.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Agent not found": {
+                    "summary": "Agent not found",
+                    "value": {
+                      "code": "agent_not_found",
+                      "detail": "Agent with ID 17 not found"
+                    }
+                  },
+                  "Suite not found": {
+                    "summary": "Suite not found",
+                    "value": {
+                      "code": "suite_not_found",
+                      "detail": "Suite 9 not found for this agent."
+                    }
+                  }
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -12054,7 +12383,7 @@
           "agent-settings"
         ],
         "summary": "Delete Alert Definition",
-        "description": "Delete an existing alert definition.",
+        "description": "Delete an alert definition.\n\nAlso permanently deletes the alert's saved matching calls and its trigger history. The calls\nthemselves are kept.",
         "operationId": "delete_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__delete",
         "security": [
           {
@@ -14066,6 +14395,133 @@
         ],
         "title": "AlertState",
         "description": "Alert state values."
+      },
+      "AlertTriggerListResponse": {
+        "properties": {
+          "triggers": {
+            "items": {
+              "$ref": "#/components/schemas/AlertTriggerResponse"
+            },
+            "type": "array",
+            "title": "Triggers",
+            "description": "Triggers, newest first"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of triggers of the alert"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "description": "Current page number"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size",
+            "description": "Items per page"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "Total Pages",
+            "description": "Total number of pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "triggers",
+          "total",
+          "page",
+          "page_size",
+          "total_pages"
+        ],
+        "title": "AlertTriggerListResponse",
+        "description": "Paginated trigger history of an alert."
+      },
+      "AlertTriggerResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Trigger ID"
+          },
+          "triggered_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Triggered At",
+            "description": "When the alert fired"
+          },
+          "window_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Start",
+            "description": "Start of the window that was checked"
+          },
+          "window_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window End",
+            "description": "End of the window that was checked"
+          },
+          "qualifying_count": {
+            "type": "integer",
+            "title": "Qualifying Count",
+            "description": "Number of calls that matched the condition"
+          },
+          "total_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Count",
+            "description": "Number of calls checked; null for count alerts"
+          },
+          "condition": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition",
+            "description": "The alert's threshold settings and condition as they were when it fired; null when they were not recorded"
+          },
+          "calls_linked": {
+            "type": "boolean",
+            "title": "Calls Linked",
+            "description": "Whether this trigger's calls were saved, so they can be listed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "triggered_at",
+          "qualifying_count",
+          "calls_linked"
+        ],
+        "title": "AlertTriggerResponse",
+        "description": "One time an alert fired."
       },
       "AllowedCapabilityInput": {
         "properties": {
@@ -17045,7 +17501,7 @@
               }
             ],
             "title": "Selected Scenario Ids",
-            "description": "IDs of the library scenarios to run, 1 to 20, in the order they are queued. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.",
+            "description": "IDs of the library scenarios to run, 1 to 100, in the order they are queued. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`, or run a suite with `suite_id` or `suite` instead.",
             "examples": [
               [
                 31,
@@ -17065,9 +17521,41 @@
               }
             ],
             "title": "Tag",
-            "description": "Run every active library scenario of this agent whose tags include this exact, case-sensitive value, in ascending scenario ID order. Send exactly one of `selected_scenario_ids` and `tag`.",
+            "description": "Run every active library scenario of this agent whose tags include this exact, case-sensitive value, in ascending scenario ID order. Send exactly one of `selected_scenario_ids` and `tag`, or run a suite with `suite_id` or `suite` instead.",
             "examples": [
               "smoke"
+            ]
+          },
+          "suite_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Id",
+            "description": "ID of one of this agent's suites. The run uses the suite's scenarios, in the suite's order, and the suite's settings (maximum call duration, language, background noise and test profile). Send either `suite_id` or `suite`, and no scenario or setting field with it.",
+            "examples": [
+              5
+            ]
+          },
+          "suite": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite",
+            "description": "Name of one of this agent's suites, compared ignoring case. Works like `suite_id`. Send either `suite_id` or `suite`, and no scenario or setting field with it.",
+            "examples": [
+              "Smoke"
             ]
           },
           "language": {
@@ -18128,6 +18616,11 @@
           "workspace_not_found",
           "agent_not_found",
           "scenario_not_found",
+          "suite_not_found",
+          "suite_name_taken",
+          "suite_full",
+          "suite_has_no_scenarios",
+          "suite_profile_deleted",
           "run_not_found",
           "no_scenarios_for_tag",
           "run_too_large",
@@ -22784,6 +23277,14 @@
               }
             ],
             "description": "The scenario's most recent execution. Only populated by List Scenarios; null if the scenario has never been run."
+          },
+          "suites": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioSuiteRef"
+            },
+            "type": "array",
+            "title": "Suites",
+            "description": "The suites the scenario belongs to, ordered by name. Empty if none."
           }
         },
         "type": "object",
@@ -22836,6 +23337,33 @@
         ],
         "title": "ScenarioSaveSelection",
         "description": "One generated scenario from a simulation run to save to the library."
+      },
+      "ScenarioSuiteRef": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Suite ID.",
+            "examples": [
+              3
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Suite name.",
+            "examples": [
+              "Smoke"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ScenarioSuiteRef",
+        "description": "A suite a scenario belongs to."
       },
       "SimulationCallDetailResponse": {
         "properties": {
@@ -23609,6 +24137,56 @@
             ],
             "description": "The background-noise environment used, if one was given."
           },
+          "suite_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Id",
+            "description": "ID of the suite the run was started from. Null for runs not started from a suite.",
+            "examples": [
+              5
+            ]
+          },
+          "suite_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Name",
+            "description": "Name the suite had when the run started, even if the suite was renamed or deleted since. Null for runs not started from a suite.",
+            "examples": [
+              "Smoke"
+            ]
+          },
+          "suite_exists": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Exists",
+            "description": "`true` while the suite still exists, `false` once it has been deleted. Null for runs not started from a suite."
+          },
+          "max_call_duration_minutes": {
+            "type": "integer",
+            "title": "Max Call Duration Minutes",
+            "description": "Maximum length of each simulated call in this run, in minutes.",
+            "examples": [
+              3
+            ]
+          },
           "scenario_source": {
             "type": "string",
             "enum": [
@@ -23748,6 +24326,7 @@
           "generated_count",
           "caller_persona_id",
           "caller_persona",
+          "max_call_duration_minutes",
           "selected_evals",
           "selected_intents",
           "passed_count",
@@ -23927,6 +24506,56 @@
             ],
             "description": "The background-noise environment used, if one was given."
           },
+          "suite_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Id",
+            "description": "ID of the suite the run was started from. Null for runs not started from a suite.",
+            "examples": [
+              5
+            ]
+          },
+          "suite_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Name",
+            "description": "Name the suite had when the run started, even if the suite was renamed or deleted since. Null for runs not started from a suite.",
+            "examples": [
+              "Smoke"
+            ]
+          },
+          "suite_exists": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Exists",
+            "description": "`true` while the suite still exists, `false` once it has been deleted. Null for runs not started from a suite."
+          },
+          "max_call_duration_minutes": {
+            "type": "integer",
+            "title": "Max Call Duration Minutes",
+            "description": "Maximum length of each simulated call in this run, in minutes.",
+            "examples": [
+              3
+            ]
+          },
           "scenario_source": {
             "type": "string",
             "enum": [
@@ -24076,6 +24705,7 @@
           "generated_count",
           "caller_persona_id",
           "caller_persona",
+          "max_call_duration_minutes",
           "selected_evals",
           "selected_intents",
           "passed_count",
@@ -24201,13 +24831,64 @@
               }
             ],
             "description": "The background-noise environment used, if one was given."
+          },
+          "suite_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Id",
+            "description": "ID of the suite the run was started from. Null for runs not started from a suite.",
+            "examples": [
+              5
+            ]
+          },
+          "suite_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Name",
+            "description": "Name the suite had when the run started, even if the suite was renamed or deleted since. Null for runs not started from a suite.",
+            "examples": [
+              "Smoke"
+            ]
+          },
+          "suite_exists": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suite Exists",
+            "description": "`true` while the suite still exists, `false` once it has been deleted. Null for runs not started from a suite."
+          },
+          "max_call_duration_minutes": {
+            "type": "integer",
+            "title": "Max Call Duration Minutes",
+            "description": "Maximum length of each simulated call in this run, in minutes.",
+            "examples": [
+              3
+            ]
           }
         },
         "type": "object",
         "required": [
           "simulation_run_id",
           "generated_count",
-          "success"
+          "success",
+          "max_call_duration_minutes"
         ],
         "title": "SimulationRunResponse",
         "description": "The simulation run that was just started."
@@ -25154,6 +25835,614 @@
         ],
         "title": "SubscriptionResponse",
         "description": "An active or scheduled recurring plan attached to the customer."
+      },
+      "SuiteCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Suite name, 1 to 60 characters after trimming. Unique among the agent's suites, ignoring case.",
+            "examples": [
+              "Smoke"
+            ]
+          },
+          "settings": {
+            "$ref": "#/components/schemas/SuiteSettings",
+            "description": "Run settings the suite always runs with."
+          },
+          "scenario_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Scenario Ids",
+            "description": "IDs of library scenarios to start the suite with, in order. Duplicates are ignored. At most 20 in total.",
+            "examples": [
+              [
+                31,
+                32,
+                33
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "settings"
+        ],
+        "title": "SuiteCreateRequest",
+        "description": "Create a suite from a name, its settings and, optionally, its first scenarios."
+      },
+      "SuiteDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Suite ID.",
+            "examples": [
+              5
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Suite name.",
+            "examples": [
+              "Smoke"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the suite was created."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "When the suite was last changed."
+          },
+          "scenario_count": {
+            "type": "integer",
+            "title": "Scenario Count",
+            "description": "Number of scenarios in the suite.",
+            "examples": [
+              12
+            ]
+          },
+          "settings": {
+            "$ref": "#/components/schemas/SuiteSettingsResponse",
+            "description": "Run settings the suite uses."
+          },
+          "profile_deleted": {
+            "type": "boolean",
+            "title": "Profile Deleted",
+            "description": "`true` when the suite's simulation profile has been deleted. Running the suite then fails until a different profile is set in the suite's settings in the Tuner dashboard."
+          },
+          "is_running": {
+            "type": "boolean",
+            "title": "Is Running",
+            "description": "`true` while the suite's latest run has not settled."
+          },
+          "last_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SuiteLastRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most recent run of this suite, or `null` if it has never run."
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/SuiteScenarioItem"
+            },
+            "type": "array",
+            "title": "Scenarios",
+            "description": "The suite's scenarios, in the order they run."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "updated_at",
+          "scenario_count",
+          "settings",
+          "profile_deleted",
+          "is_running",
+          "last_run",
+          "scenarios"
+        ],
+        "title": "SuiteDetailResponse",
+        "description": "A suite with its scenarios in run order."
+      },
+      "SuiteLastRun": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "ID of the run.",
+            "examples": [
+              88
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the run was started."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`.",
+            "examples": [
+              "complete"
+            ]
+          },
+          "in_progress": {
+            "type": "boolean",
+            "title": "In Progress",
+            "description": "`true` while the run has not settled (`pending`, `running` or `analyzing`)."
+          },
+          "passed_count": {
+            "type": "integer",
+            "title": "Passed Count",
+            "description": "Number of scenarios that passed.",
+            "examples": [
+              10
+            ]
+          },
+          "failed_count": {
+            "type": "integer",
+            "title": "Failed Count",
+            "description": "Number of scenarios that failed.",
+            "examples": [
+              2
+            ]
+          },
+          "in_progress_count": {
+            "type": "integer",
+            "title": "In Progress Count",
+            "description": "Number of scenarios still waiting for results.",
+            "examples": [
+              0
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "status",
+          "in_progress",
+          "passed_count",
+          "failed_count",
+          "in_progress_count"
+        ],
+        "title": "SuiteLastRun",
+        "description": "The most recent run started from a suite."
+      },
+      "SuiteListItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Suite ID.",
+            "examples": [
+              5
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Suite name.",
+            "examples": [
+              "Smoke"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the suite was created."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "When the suite was last changed."
+          },
+          "scenario_count": {
+            "type": "integer",
+            "title": "Scenario Count",
+            "description": "Number of scenarios in the suite.",
+            "examples": [
+              12
+            ]
+          },
+          "settings": {
+            "$ref": "#/components/schemas/SuiteSettingsResponse",
+            "description": "Run settings the suite uses."
+          },
+          "profile_deleted": {
+            "type": "boolean",
+            "title": "Profile Deleted",
+            "description": "`true` when the suite's simulation profile has been deleted. Running the suite then fails until a different profile is set in the suite's settings in the Tuner dashboard."
+          },
+          "is_running": {
+            "type": "boolean",
+            "title": "Is Running",
+            "description": "`true` while the suite's latest run has not settled."
+          },
+          "last_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SuiteLastRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most recent run of this suite, or `null` if it has never run."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "updated_at",
+          "scenario_count",
+          "settings",
+          "profile_deleted",
+          "is_running",
+          "last_run"
+        ],
+        "title": "SuiteListItem",
+        "description": "A suite with its settings and latest run."
+      },
+      "SuiteListResponse": {
+        "properties": {
+          "suites": {
+            "items": {
+              "$ref": "#/components/schemas/SuiteListItem"
+            },
+            "type": "array",
+            "title": "Suites",
+            "description": "The agent's suites, newest first."
+          }
+        },
+        "type": "object",
+        "required": [
+          "suites"
+        ],
+        "title": "SuiteListResponse",
+        "description": "An agent's suites, newest first."
+      },
+      "SuiteScenarioItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Scenario ID.",
+            "examples": [
+              31
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Scenario name.",
+            "examples": [
+              "Caller asks to reschedule"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "routine",
+              "pressure"
+            ],
+            "title": "Type",
+            "description": "`routine` or `pressure`."
+          },
+          "last_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Verdict"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Outcome of this scenario in the suite's latest run: `passed`, `failed`, `not_connected`, `platform_error`, `unreported`, `analysis_failed`, `ran`, `pending` or `canceled`. Null if the suite has never run or the latest run did not include this scenario."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "last_result"
+        ],
+        "title": "SuiteScenarioItem",
+        "description": "A scenario in a suite."
+      },
+      "SuiteScenariosRequest": {
+        "properties": {
+          "scenario_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Scenario Ids",
+            "description": "IDs of the library scenarios, in the order they should be added.",
+            "examples": [
+              [
+                31,
+                32
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_ids"
+        ],
+        "title": "SuiteScenariosRequest",
+        "description": "Scenarios to add to a suite or remove from it."
+      },
+      "SuiteSettings": {
+        "properties": {
+          "max_call_duration_minutes": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Max Call Duration Minutes",
+            "description": "Maximum length of each simulated call, in minutes (1-12). Defaults to 3.",
+            "default": 3,
+            "examples": [
+              3
+            ]
+          },
+          "caller_persona_id": {
+            "type": "integer",
+            "title": "Caller Persona Id",
+            "description": "ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas.",
+            "examples": [
+              1
+            ]
+          },
+          "simulation_profile_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulation Profile Id",
+            "description": "ID of a simulation profile belonging to this agent. Its fields are given to the simulated caller as facts about themselves. Optional.",
+            "examples": [
+              12
+            ]
+          },
+          "noise_environment_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Noise Environment Id",
+            "description": "ID of a background-noise environment to mix into the call. Get valid IDs from List Noise Environments. Must be sent together with `noise_intensity`.",
+            "examples": [
+              2
+            ]
+          },
+          "noise_intensity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  0.5,
+                  1.0,
+                  1.5
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Noise Intensity",
+            "description": "Loudness of the background noise, as an intensity name (`low`, `medium`, `high`) or its gain (`0.5`, `1.0`, `1.5`). Names are listed per environment by List Noise Environments. A name is stored and returned as its gain. Must be sent together with `noise_environment_id`.",
+            "examples": [
+              "medium",
+              1.0
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "caller_persona_id"
+        ],
+        "title": "SuiteSettings",
+        "description": "The run settings a suite stores: the same four a run takes, in the same units.\n\nNothing here is optional except the profile and the noise pair, so a request always\ndescribes every setting of the suite."
+      },
+      "SuiteSettingsResponse": {
+        "properties": {
+          "max_call_duration_minutes": {
+            "type": "integer",
+            "title": "Max Call Duration Minutes",
+            "description": "Maximum length of each simulated call, in minutes.",
+            "examples": [
+              3
+            ]
+          },
+          "caller_persona_id": {
+            "type": "integer",
+            "title": "Caller Persona Id",
+            "description": "ID of the caller persona.",
+            "examples": [
+              1
+            ]
+          },
+          "caller_persona": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CallerPersonaResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The caller persona: the language and accent the simulated caller uses."
+          },
+          "simulation_profile_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulation Profile Id",
+            "description": "ID of the simulation profile, or `null` when the suite uses none.",
+            "examples": [
+              12
+            ]
+          },
+          "simulation_profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulation Profile Name",
+            "description": "Name of the simulation profile, or `null` when the suite uses none.",
+            "examples": [
+              "Returning customer"
+            ]
+          },
+          "noise_environment_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Noise Environment Id",
+            "description": "ID of the background-noise environment, or `null` for no noise.",
+            "examples": [
+              2
+            ]
+          },
+          "noise_environment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NoiseEnvironmentResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The background-noise environment, or `null` for no noise."
+          },
+          "noise_intensity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Noise Intensity",
+            "description": "Gain applied to the background noise (0.5, 1.0 or 1.5), or `null`.",
+            "examples": [
+              1.0
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_call_duration_minutes",
+          "caller_persona_id",
+          "caller_persona",
+          "simulation_profile_id",
+          "simulation_profile_name",
+          "noise_environment_id",
+          "noise_environment",
+          "noise_intensity"
+        ],
+        "title": "SuiteSettingsResponse",
+        "description": "The run settings a suite uses every time it runs."
+      },
+      "SuiteUpdateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 60,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Suite name, 1 to 60 characters after trimming. Unique among the agent's suites, ignoring case. Omit to keep the current name.",
+            "examples": [
+              "Smoke"
+            ]
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SuiteSettings"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New run settings. They replace all of the suite's settings: an omitted profile or noise pair is cleared. Omit to keep the current settings."
+          }
+        },
+        "type": "object",
+        "title": "SuiteUpdateRequest",
+        "description": "Rename a suite, replace its settings, or both. Send at least one."
       },
       "SyncCallsQueuedResponse": {
         "properties": {

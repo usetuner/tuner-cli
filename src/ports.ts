@@ -5,6 +5,7 @@ import type {
   CallerOptions,
   NoiseEnvironments,
   ProfileList,
+  SuiteList,
   Run,
   RunSearch,
   RunStatus,
@@ -33,6 +34,7 @@ export interface TunerApi {
   listCallerPersonas(workspaceId: number): Promise<CallerOptions>;
   listNoiseEnvironments(workspaceId: number): Promise<NoiseEnvironments>;
   listProfiles(workspaceId: number, agentId: number): Promise<ProfileList>;
+  listSuites(workspaceId: number, agentId: number): Promise<SuiteList>;
 }
 
 /** The stored API key. Adapter: `adapters/credential-store.ts`. */

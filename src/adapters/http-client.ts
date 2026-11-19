@@ -5,6 +5,7 @@ import type {
   CallerOptions,
   NoiseEnvironments,
   ProfileList,
+  SuiteList,
   Run,
   RunSearch,
   RunStatus,
@@ -184,6 +185,10 @@ export class TunerClient implements TunerApi {
 
   listProfiles(workspaceId: number, agentId: number): Promise<ProfileList> {
     return this.request("GET", `${agent(workspaceId, agentId)}/simulation-profiles`);
+  }
+
+  listSuites(workspaceId: number, agentId: number): Promise<SuiteList> {
+    return this.request("GET", `${agent(workspaceId, agentId)}/suites`);
   }
 }
 

@@ -7,6 +7,7 @@ import {
   noiseList,
   profilesList,
   scenariosList,
+  suitesList,
 } from "../commands/lists.js";
 import { runsCancel, runsGet } from "../commands/runs.js";
 import type { CommandContext } from "../commands/shared.js";
@@ -61,7 +62,7 @@ export async function runCli(argv: string[], runtime: Runtime): Promise<number> 
 Environment: TUNER_API_KEY, TUNER_AGENT_ID, TUNER_WORKSPACE_ID, TUNER_BASE_URL (default https://api.usetuner.ai)
 
 Exit codes: 0 every scenario passed, 1 a scenario failed its evals, 2 a problem you must fix
-(bad flag, rejected key, unknown agent, tag or scenario, no credits, agent busy), 3 Tuner
+(bad flag, rejected key, unknown agent, tag, scenario or suite, no credits, agent busy), 3 Tuner
 couldn't finish the run (outage, 5xx, tuner_error, --timeout reached), 130 SIGINT,
 143 SIGTERM. When several apply, the worst wins: 1, then 2, then 3.`,
     );
@@ -76,6 +77,7 @@ couldn't finish the run (outage, 5xx, tuner_error, --timeout reached), 130 SIGIN
       "run this scenario ID; repeat or comma-separate for several",
       collect,
     )
+    .option("--suite <name>", "run this suite, with its scenarios and settings")
     .addOption(agentOption())
     .option("--language <language>", "caller language: a code (en-US) or full name")
     .option("--profile <name>", "test profile name")
@@ -120,6 +122,15 @@ couldn't finish the run (outage, 5xx, tuner_error, --timeout reached), 130 SIGIN
     .addOption(agentOption())
     .addOption(outputOption())
     .action(action((cmd) => scenariosList(ctx(cmd), cmd.opts())));
+
+  program
+    .command("suites")
+    .description("suites: saved scenario lists with their run settings")
+    .command("list")
+    .description("list the agent's suites (values --suite accepts)")
+    .addOption(agentOption())
+    .addOption(outputOption())
+    .action(action((cmd) => suitesList(ctx(cmd), cmd.opts())));
 
   program
     .command("languages")

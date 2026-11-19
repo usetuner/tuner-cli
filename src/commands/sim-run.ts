@@ -10,6 +10,7 @@ import type { CommandContext } from "./shared.js";
 export interface SimRunOptions {
   tag?: string;
   scenario?: string[];
+  suite?: string;
   agent?: string;
   language?: string;
   profile?: string;

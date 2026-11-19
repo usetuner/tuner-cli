@@ -33,6 +33,7 @@ Start a simulation run and wait for its result.
 | --------------------------- | ---------------------------------------------------------------------------- |
 | `--tag <tag>`               | Run the agent's scenarios with this exact tag                                |
 | `--scenario <id>`           | Run this scenario ID; repeat it or comma-separate for several                |
+| `--suite <name>`            | Run this suite, with its scenarios and settings; see `tuner suites list`     |
 | `--agent <agent-id>`        | Agent ID or numeric ID; overrides `TUNER_AGENT_ID`                           |
 | `--language <language>`     | Caller language: a code (`en-US`) or full name; see `tuner languages list`   |
 | `--profile <name>`          | Test profile name; see `tuner profiles list`                                 |
@@ -43,11 +44,12 @@ Start a simulation run and wait for its result.
 | `--timeout <duration>`      | Cancel the run after this long, e.g. `90s`, `30m`, `1h` (default `60m`)      |
 | `--fail-on-inconclusive`    | Deprecated, no effect: inconclusive and timed-out runs exit 3                |
 
-Pass exactly one of `--tag` or `--scenario`.
+Pass exactly one of `--tag`, `--scenario` or `--suite`. A suite brings its own scenarios and settings, so `--suite` can't be combined with `--tag`, `--scenario`, `--language`, `--profile`, `--noise` or `--noise-intensity`.
 
 ```bash
 tuner sim run --tag smoke
 tuner sim run --scenario 311 --scenario 312
+tuner sim run --suite smoke
 tuner sim run --scenario 311,312 --agent booking-staging
 tuner sim run --tag smoke --language en-GB --profile "Returning customer"
 tuner sim run --tag smoke --noise cafe --noise-intensity high
@@ -145,6 +147,21 @@ List the agent's test profiles, the values `--profile` accepts.
 
 ```bash
 tuner profiles list --agent booking-staging
+```
+
+## `tuner suites list`
+
+List the agent's suites, the values `--suite` accepts, with each suite's scenario count and run
+settings (max call length, caller language, test profile, background noise). A suite whose test
+profile was deleted shows `(deleted)` and can't run until another profile is picked in Tuner.
+
+| Flag                 | What it does           |
+| -------------------- | ---------------------- |
+| `--agent <agent-id>` | Agent ID or numeric ID |
+| `--output <format>`  | `text` or `json`       |
+
+```bash
+tuner suites list --agent booking-staging
 ```
 
 ## `tuner agents list`

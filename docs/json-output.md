@@ -61,7 +61,7 @@ means a new version.
 ## List documents
 
 The list commands print `{ "schema_version": 1, "<items>": [...] }`, where `<items>` is
-`scenarios`, `languages`, `noise_environments`, `profiles` or `agents`.
+`scenarios`, `suites`, `languages`, `noise_environments`, `profiles` or `agents`.
 
 ## On failure
 

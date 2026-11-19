@@ -28,6 +28,8 @@ export const EXIT_FOR_CODE: Readonly<Record<string, number>> = {
   scenario_not_found: EXIT.USAGE,
   run_not_found: EXIT.USAGE,
   no_scenarios_for_tag: EXIT.USAGE,
+  suite_has_no_scenarios: EXIT.USAGE,
+  suite_profile_deleted: EXIT.USAGE,
   run_too_large: EXIT.USAGE,
   unresolved_name: EXIT.USAGE,
   insufficient_credits: EXIT.USAGE,

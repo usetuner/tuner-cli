@@ -74,6 +74,14 @@ tuner sim run --scenario 311
 
 Repeat `--scenario` or comma-separate IDs to run several.
 
+### Run a suite
+
+```bash
+tuner sim run --suite smoke
+```
+
+A suite is a saved list of scenarios with its own run settings, so `--suite` can't be combined with `--tag`, `--scenario` or a setting flag. `tuner suites list` shows the agent's suites.
+
 ### Start without waiting and check later
 
 ```bash

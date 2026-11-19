@@ -4,6 +4,7 @@ import {
   listLanguages,
   listNoise,
   listProfiles,
+  listSuites,
   listScenarios,
 } from "../../src/app/lists.js";
 import { cancelRun, getRun } from "../../src/app/runs.js";
@@ -20,6 +21,7 @@ describe("list use cases", () => {
       listCallerPersonas: async () => ({ personas: [{ code: "en-US", name: "English" }] }) as never,
       listNoiseEnvironments: async () => ({ environments: [] }) as never,
       listProfiles: async () => ({}) as never,
+      listSuites: async () => ({}) as never,
     });
     expect(await listAgents(f.deps, {})).toEqual([]);
     expect(await listScenarios(f.deps, {}, "booking-staging", "smoke")).toEqual([]);
@@ -27,7 +29,9 @@ describe("list use cases", () => {
     expect(await listNoise(f.deps, {})).toEqual([]);
     expect(await listProfiles(f.deps, {}, "booking-staging")).toEqual([]);
     expect(f.api.called("listScenarios")).toEqual([[12, 77, "smoke"]]);
+    expect(await listSuites(f.deps, {}, "booking-staging")).toEqual([]);
     expect(f.api.called("listProfiles")).toEqual([[12, 77]]);
+    expect(f.api.called("listSuites")).toEqual([[12, 77]]);
   });
 });
 
