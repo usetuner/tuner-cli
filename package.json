@@ -2,7 +2,7 @@
   "name": "@usetuner.ai/cli",
   "version": "0.1.0",
   "description": "Run Tuner voice-agent simulations from the command line",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "tuner": "dist/cli/main.js"

@@ -191,5 +191,4 @@ Report security issues as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-`UNLICENSED` for now: no license is granted yet. A license will be added before the first public
-release.
+MIT. See [LICENSE](LICENSE).
