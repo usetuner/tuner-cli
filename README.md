@@ -2,10 +2,7 @@
 
 Run Tuner voice-agent simulations from your terminal and your CI.
 
-[![ci](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml)
-
-> [!NOTE]
-> It supports Linux and macOS. Windows is not supported yet.
+> **Note:** It supports Linux and macOS. Windows is not supported yet.
 
 ## Install
 
