@@ -8,7 +8,10 @@ runCli(process.argv.slice(2), nodeRuntime(process)).then(
     process.stdout.write("", () => process.exit(code));
   },
   (err: unknown) => {
-    process.stderr.write(`Error: ${err instanceof Error ? err.message : String(err)}\n`);
-    process.exit(2);
+    // A crash is never the customer's to fix: report it as Tuner's side.
+    process.stderr.write(
+      `Error: Unexpected error: ${err instanceof Error ? err.message : String(err)}. Re-run with --verbose and report it.\n`,
+    );
+    process.exit(3);
   },
 );
