@@ -120,14 +120,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: actions/checkout@v4
-        with:
-          repository: usetuner/tuner-cli
-          path: tuner-cli
-          token: ${{ secrets.TUNER_CLI_READ_TOKEN }} # needed while the repo is private
-      - name: Build the Tuner CLI
-        working-directory: tuner-cli
-        run: npm ci && npm run build && npm link
+      - run: npm install -g @usetuner.ai/cli
       - name: Run Tuner simulations
         env:
           TUNER_API_KEY: ${{ secrets.TUNER_API_KEY }}
