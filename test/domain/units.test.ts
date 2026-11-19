@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDuration } from "../../src/domain/duration.js";
+import { formatDuration, parseDuration } from "../../src/domain/duration.js";
 import { detailText } from "../../src/domain/errors.js";
 import {
   EXIT,
@@ -85,6 +85,16 @@ describe("exitForError", () => {
   ] as const)("%s (%s) -> %d", (code, status, exit) => {
     expect(exitForError(code, status)).toBe(exit);
   });
+});
+
+describe("formatDuration", () => {
+  it.each([
+    [0, "0s"],
+    [45_000, "45s"],
+    [90_000, "1m30s"],
+    [3_600_000, "1h"],
+    [5_430_000, "1h30m30s"],
+  ])("%d -> %s", (ms, text) => expect(formatDuration(ms)).toBe(text));
 });
 
 describe("parseDuration", () => {

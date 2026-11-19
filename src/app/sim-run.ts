@@ -1,4 +1,5 @@
 import { type GlobalFlags, resolveAgentRef } from "../domain/config.js";
+import { formatDuration } from "../domain/duration.js";
 import { toCliError } from "../domain/error-message.js";
 import { EXIT, type RunReason, exitForRun, exitForSignal, exitForTimeout } from "../domain/exit.js";
 import {
@@ -143,9 +144,11 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     }
 
     let outcome: PollOutcome;
+    let waitStart = deps.clock.now();
     if (stop.stopped) {
       outcome = { kind: "stopped", run: undefined };
     } else {
+      waitStart = deps.clock.now();
       const timer = setTimeout(() => stop.stopByTimeout(), timeoutMs);
       try {
         outcome = await pollRun({
@@ -172,7 +175,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       output.progress(
         bySignal
           ? `Canceling run ${runId}...`
-          : `Timeout of ${timeout} reached. Canceling run ${runId}...`,
+          : `Timed out after ${formatDuration(deps.clock.now() - waitStart)} (--timeout ${timeout}). Canceling run ${runId}...`,
       );
       const canceled = await cancelAndWait(ref);
       run = canceled.run ?? run;

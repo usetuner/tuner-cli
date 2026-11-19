@@ -507,7 +507,7 @@ describe("sim run: stop paths", () => {
     await vi.advanceTimersByTimeAsync(2_000);
     expect(await p).toBe(3);
     expect(api.calls("POST", CANCEL)).toHaveLength(1);
-    expect(rt.err()).toContain(`Timeout of 90s reached. Canceling run ${RUN}...`);
+    expect(rt.err()).toContain(`Timed out after 1m30s (--timeout 90s). Canceling run ${RUN}...`);
     expect(rt.err()).toContain("Tuner couldn't finish this run (timeout).");
     const doc = JSON.parse(rt.out());
     expect(doc.reason).toBe("timeout");
