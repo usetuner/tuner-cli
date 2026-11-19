@@ -2,14 +2,30 @@
   "name": "@usetuner.ai/cli",
   "version": "0.1.0",
   "description": "Run Tuner voice-agent simulations from the command line",
+  "keywords": [
+    "cli",
+    "voice-ai",
+    "simulations",
+    "testing",
+    "ci",
+    "tuner"
+  ],
   "license": "MIT",
+  "author": "usetuner <support@usetuner.ai>",
+  "homepage": "https://usetuner.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usetuner/tuner-cli.git"
+  },
   "type": "module",
   "bin": {
     "tuner": "dist/cli/main.js"
   },
   "files": [
     "dist",
-    "schema"
+    "schema",
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=22"
@@ -25,7 +41,14 @@
     "gen:openapi": "sh scripts/gen-openapi.sh",
     "gen:types": "openapi-typescript openapi/openapi.json --default-non-nullable false -o src/generated/api.ts",
     "gen": "npm run gen:openapi && npm run gen:types",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm test",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "commander": "^14.0.3"
