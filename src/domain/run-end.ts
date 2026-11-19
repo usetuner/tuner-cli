@@ -3,6 +3,7 @@ import type { RunReason } from "./exit.js";
 const KNOWN_RESULTS = new Set(["passed", "failed", "inconclusive", "canceled", "pending", null]);
 const KNOWN_REASONS = new Set<string | null>([
   "agent_failed",
+  "setup_error",
   "tuner_error",
   "timeout",
   "canceled",
@@ -22,6 +23,12 @@ export function runEndMessage(
     );
   }
   if (result === "failed" || reason === "agent_failed") return "Result: failed (agent_failed)";
+  if (reason === "setup_error") {
+    return (
+      "The run couldn't test your agent (setup_error). Check your voice provider account's " +
+      "credits or quota, and that your agent's line is free, then run it again."
+    );
+  }
   if (reason === "canceled") {
     return `Run ${runId} was canceled outside this command (the dashboard or \`tuner runs cancel\`).`;
   }
