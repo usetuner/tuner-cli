@@ -1,6 +1,7 @@
 import { type GlobalFlags, resolveAgentRef } from "../domain/config.js";
 import { formatDuration } from "../domain/duration.js";
-import { toCliError } from "../domain/error-message.js";
+import { toCliError, withLostStartNote } from "../domain/error-message.js";
+import { NetworkError } from "../domain/errors.js";
 import { EXIT, type RunReason, exitForRun, exitForSignal, exitForTimeout } from "../domain/exit.js";
 import {
   DEFAULT_TIMEOUT,
@@ -11,7 +12,7 @@ import {
 import type { Run, StartRunRequest } from "../domain/types.js";
 import type { AppDeps, Output, Signals } from "../ports.js";
 import { type PollOutcome, StopController, cancelAndWait, pollRun } from "./poll.js";
-import { POLL_GIVE_UP_MS, withRetry } from "./retry.js";
+import { POLL_GIVE_UP_MS, notHandled, withRetry } from "./retry.js";
 import { type Target, resolveTarget } from "./target.js";
 
 export interface SimRunInput {
@@ -66,12 +67,12 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     runId,
     target,
   });
-  const fail = (err: unknown, tag?: string, agentName?: string): SimRunResult => {
+  const fail = (err: unknown, tag?: string, agentName?: string, retried = false): SimRunResult => {
     if (stop.signal) {
       return result({ kind: "canceled", reason: "canceled", exitCode: exitForSignal(stop.signal) });
     }
     const agentRef = resolveAgentRef(input.agent, deps);
-    const cli = toCliError(err, { tag, agentRef, agentName });
+    const cli = withLostStartNote(toCliError(err, { tag, agentRef, agentName }), retried);
     if (cli.reason === "tuner_error") {
       return result({
         kind: "error",
@@ -113,16 +114,22 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     output.progress(`Workspace: ${workspace.name} · Agent: ${agent.name} (${agent.id})`);
 
     let started;
+    let startRetriedBlind = false;
     try {
       // The POST itself is not aborted by a signal, so a run it creates can still be canceled.
+      // Not idempotent: a 5xx may have created a run, so only a request never handled retries.
       started = await withRetry(() => api.startRun(workspace.id, agent.id, body), {
         clock: deps.clock,
         giveUpMs: POLL_GIVE_UP_MS,
         signal: stop.abortSignal,
-        onRetry: retrying,
+        onRetry: (err, delay) => {
+          if (err instanceof NetworkError) startRetriedBlind = true;
+          retrying(err, delay);
+        },
+        retryOn: notHandled,
       });
     } catch (err) {
-      return fail(err, input.start.tag, agent.name);
+      return fail(err, input.start.tag, agent.name, startRetriedBlind);
     }
     if (!started) {
       return result({
