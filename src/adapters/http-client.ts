@@ -161,6 +161,7 @@ const enc = encodeURIComponent;
 function fallbackCode(status: number): string {
   if (status === 401) return "invalid_api_key";
   if (status === 402) return "insufficient_credits";
+  if (status === 403) return "insufficient_access";
   if (status === 429) return "rate_limited";
   if (status >= 500) return "internal_error";
   return "validation_error";

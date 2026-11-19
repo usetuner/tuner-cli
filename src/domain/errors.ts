@@ -1,11 +1,11 @@
-import { EXIT } from "./exit.js";
+import { exitForError } from "./exit.js";
 
 /** A failure the CLI reports and exits on. `reason` goes in the JSON document. */
 export class CliError extends Error {
   constructor(
     message: string,
     readonly reason: string,
-    readonly exitCode: number = EXIT.NOTHING_RAN,
+    readonly exitCode: number = exitForError(reason),
     readonly extra: Record<string, unknown> = {},
   ) {
     super(message);

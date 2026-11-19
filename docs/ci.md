@@ -9,14 +9,15 @@ the checkout needs a token that can read `usetuner/tuner-cli`. The full workflow
 Points to keep:
 
 - Run the CLI with `exec`. See [Why `exec` matters](#why-exec-matters).
-- The step fails (exit 1) only when the agent fails. Add `--fail-on-inconclusive` to also fail on
-  Tuner errors and timeouts.
+- The step fails on any non-zero exit: 1 the agent failed, 2 a problem in your setup, 3 Tuner
+  couldn't finish the run (timeouts included).
 - Runners must be Linux or macOS.
 
 ## Timeout
 
 `--timeout` (default `60m`) bounds the wait. When it runs out, the CLI cancels the run, waits up
-to 10 seconds for it to stop, and exits with `reason: timeout`.
+to 10 seconds for it to stop, and exits 3 with `reason: timeout`. The warning names the elapsed
+time and the `--timeout` value, so a timeout set too short is easy to spot.
 
 ## Signals
 

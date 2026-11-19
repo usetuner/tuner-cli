@@ -41,7 +41,7 @@ Start a simulation run and wait for its result.
 | `--output <format>`         | `text` or `json`                                                             |
 | `--no-wait`                 | Print the run ID and exit without waiting                                    |
 | `--timeout <duration>`      | Cancel the run after this long, e.g. `90s`, `30m`, `1h` (default `60m`)      |
-| `--fail-on-inconclusive`    | Exit 1 on inconclusive, timed-out or canceled runs                           |
+| `--fail-on-inconclusive`    | Deprecated, no effect: inconclusive and timed-out runs exit 3                |
 
 Pass exactly one of `--tag` or `--scenario`.
 
@@ -51,7 +51,7 @@ tuner sim run --scenario 311 --scenario 312
 tuner sim run --scenario 311,312 --agent booking-staging
 tuner sim run --tag smoke --language en-GB --profile "Returning customer"
 tuner sim run --tag smoke --noise cafe --noise-intensity high
-tuner sim run --tag smoke --timeout 30m --fail-on-inconclusive --output json
+tuner sim run --tag smoke --timeout 30m --output json
 ```
 
 How it behaves:
@@ -61,9 +61,11 @@ How it behaves:
 - With `--no-wait`, it prints the run ID and the dashboard link on stdout and exits.
 - The Tuner API decides every scenario `verdict`, the run `result` and the `reason`. The CLI shows
   them and maps them to an exit code. It never computes its own.
-- An inconclusive (`tuner_error`), timed-out or canceled run exits 0 by default, so a Tuner
-  problem does not fail your build. `--fail-on-inconclusive` makes those exit 1. A signal still
-  exits 130 or 143.
+- A run Tuner couldn't finish (`tuner_error`, canceled elsewhere, or `--timeout` reached) exits
+  3 and prints `Tuner couldn't finish this run (<reason>).` A signal still exits 130 or 143. See
+  [Errors and retries](errors.md#run-reasons).
+- `--fail-on-inconclusive` is deprecated: it is still accepted, has no effect, and prints a
+  warning to stderr. It will be removed in a later minor version.
 - For `--timeout`, Ctrl-C and SIGTERM, see [CI and signals](ci.md).
 
 ## `tuner runs get <run-id>`

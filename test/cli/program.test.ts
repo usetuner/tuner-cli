@@ -27,6 +27,24 @@ describe("program", () => {
     }
   });
 
+  it("--help lists every exit code", async () => {
+    const rt = makeRuntime(new FakeApi());
+    expect(await run(rt, "--help")).toBe(0);
+    for (const code of [
+      "0 every scenario passed",
+      "1 a scenario failed its evals",
+      "2 a problem you must fix",
+      "3 Tuner couldn't finish the run",
+      "--timeout reached",
+      "130 SIGINT",
+      "143 SIGTERM",
+    ]) {
+      expect(rt.out().replace(/\s+/g, " ")).toContain(code);
+    }
+    expect(rt.out()).not.toContain("without --fail-on-inconclusive");
+    expect(rt.out()).not.toMatch(/\b(4|5|124) /);
+  });
+
   it("runs --help shows get and cancel", async () => {
     const rt = makeRuntime(new FakeApi());
     expect(await run(rt, "runs", "--help")).toBe(0);

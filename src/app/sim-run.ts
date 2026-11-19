@@ -1,6 +1,7 @@
 import { type GlobalFlags, resolveAgentRef } from "../domain/config.js";
+import { formatDuration } from "../domain/duration.js";
 import { toCliError } from "../domain/error-message.js";
-import { EXIT, type RunReason, exitForRun, exitForSignal } from "../domain/exit.js";
+import { EXIT, type RunReason, exitForRun, exitForSignal, exitForTimeout } from "../domain/exit.js";
 import {
   DEFAULT_TIMEOUT,
   type StartOptions,
@@ -19,7 +20,6 @@ export interface SimRunInput {
   start: StartOptions;
   wait: boolean;
   timeout?: string;
-  failOnInconclusive: boolean;
 }
 
 export interface SimRunDeps extends AppDeps {
@@ -44,7 +44,6 @@ export interface SimRunResult {
 /** Starts a run, waits for its result, and cancels it on a signal or the timeout. */
 export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promise<SimRunResult> {
   const { output, signals } = deps;
-  const { failOnInconclusive } = input;
   const timeout = input.timeout ?? DEFAULT_TIMEOUT;
   const stop = new StopController();
   let runId: number | undefined;
@@ -74,7 +73,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       return result({
         kind: "error",
         reason: "tuner_error",
-        exitCode: exitForRun(null, "tuner_error", failOnInconclusive),
+        exitCode: exitForRun(null, "tuner_error"),
         error: { code: "tuner_error", message: cli.message },
       });
     }
@@ -145,9 +144,11 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     }
 
     let outcome: PollOutcome;
+    let waitStart = deps.clock.now();
     if (stop.stopped) {
       outcome = { kind: "stopped", run: undefined };
     } else {
+      waitStart = deps.clock.now();
       const timer = setTimeout(() => stop.stopByTimeout(), timeoutMs);
       try {
         outcome = await pollRun({
@@ -162,18 +163,19 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     }
 
     let run = outcome.run;
-    let reason: RunReason | null;
+    let reason: string | null;
     let exitCode: number;
     if (outcome.kind === "terminal") {
       run = outcome.run;
-      reason = (run.reason as RunReason | null) ?? null;
-      exitCode = exitForRun(run.result, reason, failOnInconclusive);
+      const runReason = (run.reason as RunReason | null) ?? null;
+      reason = runReason;
+      exitCode = exitForRun(run.result, runReason);
     } else if (outcome.kind === "stopped") {
       const bySignal = stop.signal;
       output.progress(
         bySignal
           ? `Canceling run ${runId}...`
-          : `Timeout of ${timeout} reached. Canceling run ${runId}...`,
+          : `Timed out after ${formatDuration(deps.clock.now() - waitStart)} (--timeout ${timeout}). Canceling run ${runId}...`,
       );
       const canceled = await cancelAndWait(ref);
       run = canceled.run ?? run;
@@ -186,23 +188,34 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       } else if (!canceled.terminal) {
         output.progress(`Run ${runId} did not reach a final state within 10s.`);
       }
-      reason = bySignal ? "canceled" : "timeout";
-      exitCode = bySignal
-        ? exitForSignal(bySignal)
-        : exitForRun(null, "timeout", failOnInconclusive);
-    } else {
-      const message =
-        outcome.kind === "gave_up"
-          ? `Tuner unreachable for 5 minutes (${outcome.error.message}).`
-          : `Could not read run ${runId}: ${toCliError(outcome.error).message}`;
+      if (bySignal) {
+        reason = "canceled";
+        exitCode = exitForSignal(bySignal);
+      } else {
+        const serverReason = (run?.reason as RunReason | null | undefined) ?? null;
+        exitCode = exitForTimeout(run?.result ?? null, serverReason);
+        reason =
+          serverReason === "agent_failed" || serverReason === "tuner_error"
+            ? serverReason
+            : "timeout";
+      }
+    } else if (outcome.kind === "gave_up") {
       output.progress(
-        `${message} Run ${runId} may still be going; check it with \`tuner runs get ${runId}\`.`,
+        `Tuner unreachable for 5 minutes (${outcome.error.message}). ${stillGoing(runId)}`,
       );
       reason = "tuner_error";
-      exitCode = exitForRun(null, "tuner_error", failOnInconclusive);
+      exitCode = exitForRun(run?.result ?? null, "tuner_error");
+    } else {
+      const cli = toCliError(outcome.error);
+      output.progress(`Could not read run ${runId}: ${cli.message} ${stillGoing(runId)}`);
+      reason = cli.reason;
+      exitCode = cli.exitCode;
     }
     return result({ kind: "finished", run, reason, exitCode });
   } finally {
     unsubscribe();
   }
 }
+
+const stillGoing = (runId: number) =>
+  `Run ${runId} may still be going; check it with \`tuner runs get ${runId}\`.`;

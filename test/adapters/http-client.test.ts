@@ -63,6 +63,18 @@ describe("TunerClient", () => {
     expect(err.retryable).toBe(true);
   });
 
+  it("falls back to insufficient_access for a 403 with no code", async () => {
+    const api = new FakeApi().on(
+      "GET",
+      "/api/v1/whoami",
+      new Response("Forbidden", { status: 403 }),
+    );
+    const err = await client(api)
+      .whoami()
+      .catch((e) => e);
+    expect(err.code).toBe("insufficient_access");
+  });
+
   it("reads Retry-After", async () => {
     const api = new FakeApi().on(
       "GET",

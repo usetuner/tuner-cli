@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- Exit codes follow the CI/CD spec: 0 every scenario passed, 1 a scenario failed its evals, 2 a problem you must fix, 3 Tuner couldn't finish the run. Runs that end `tuner_error`, are canceled elsewhere, or reach `--timeout` now exit 3 (were 0). When several apply, the worst wins: 1, then 2, then 3. `schema/run-result.v1.json` allows `exit_code` 3; `schema_version` stays 1.
+
+### Deprecated
+
+- `tuner sim run --fail-on-inconclusive` has no effect and prints a warning to stderr; it will be removed in a later minor version.
+
 ### Changed
 
+- On `--timeout`, `sim run` prints the elapsed time and the `--timeout` value.
 - `tuner sim run` names the agent and its numeric ID in the start banner, e.g. `Agent: booking-staging (616)`.
 
 ### Added
@@ -25,4 +34,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Config from flags, then environment variables, then the stored credentials file.
 - HTTP client with request timeouts, retries with backoff for safe requests, and typed error codes.
 - SIGINT, SIGTERM and `--timeout` cancel the run once and wait for it before exiting.
-- Exit codes: 0 passed or inconclusive, 1 agent failed, 2 input or account error, 130 SIGINT, 143 SIGTERM.
+- Exit codes: 0 passed, 1 agent failed, 2 a problem you must fix, 3 Tuner couldn't finish the run, 130 SIGINT, 143 SIGTERM.

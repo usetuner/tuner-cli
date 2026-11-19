@@ -1,30 +1,100 @@
 import { describe, expect, it } from "vitest";
-import { parseDuration } from "../../src/domain/duration.js";
+import { formatDuration, parseDuration } from "../../src/domain/duration.js";
 import { detailText } from "../../src/domain/errors.js";
-import { EXIT, exitForRun, exitForSignal } from "../../src/domain/exit.js";
+import {
+  EXIT,
+  exitForError,
+  exitForRun,
+  exitForSignal,
+  exitForTimeout,
+  worstExit,
+} from "../../src/domain/exit.js";
 
 describe("exitForRun", () => {
   it.each([
-    ["passed", null, false, 0],
-    ["passed", null, true, 0],
-    ["failed", "agent_failed", false, 1],
-    ["failed", "agent_failed", true, 1],
-    ["inconclusive", "tuner_error", false, 0],
-    ["inconclusive", "tuner_error", true, 1],
-    ["canceled", "canceled", false, 0],
-    ["canceled", "canceled", true, 1],
-    [null, "timeout", false, 0],
-    [null, "timeout", true, 1],
-    [null, "tuner_error", false, 0],
-    [null, "tuner_error", true, 1],
-  ] as const)("%s/%s fail-on-inconclusive=%s -> %d", (result, reason, flag, code) => {
-    expect(exitForRun(result, reason, flag)).toBe(code);
+    ["passed", null, 0],
+    ["failed", "agent_failed", 1],
+    ["failed", null, 1],
+    ["pending", "agent_failed", 1],
+    ["inconclusive", "tuner_error", 3],
+    ["canceled", "canceled", 3],
+    ["inconclusive", null, 3],
+    [null, null, 3],
+    [null, "tuner_error", 3],
+    [null, "timeout", 3],
+    ["canceled", "timeout", 3],
+    ["passed", "timeout", 3],
+    ["failed", "timeout", 1],
+    ["failed", "tuner_error", 1],
+    ["pending", "tuner_error", 3],
+  ] as const)("%s/%s -> %d", (result, reason, code) => {
+    expect(exitForRun(result, reason)).toBe(code);
+  });
+
+  it("picks the worst outcome: 1 over 2 over 3 over 0", () => {
+    expect(worstExit([EXIT.TUNER_FAULT, EXIT.USAGE, EXIT.AGENT_FAILED])).toBe(1);
+    expect(worstExit([EXIT.TUNER_FAULT, EXIT.USAGE])).toBe(2);
+    expect(worstExit([EXIT.OK, EXIT.TUNER_FAULT])).toBe(3);
+    expect(worstExit([EXIT.OK])).toBe(0);
+    expect(worstExit([])).toBe(0);
   });
 
   it("maps signals", () => {
     expect(exitForSignal("SIGINT")).toBe(EXIT.SIGINT);
     expect(exitForSignal("SIGTERM")).toBe(EXIT.SIGTERM);
   });
+});
+
+describe("exitForTimeout", () => {
+  it.each([
+    ["canceled", "canceled", 3],
+    [null, null, 3],
+    ["pending", null, 3],
+    ["passed", null, 3],
+    ["inconclusive", "tuner_error", 3],
+    ["failed", "agent_failed", 1],
+    ["failed", null, 1],
+  ] as const)("%s/%s -> %d", (result, reason, code) => {
+    expect(exitForTimeout(result, reason)).toBe(code);
+  });
+});
+
+describe("exitForError", () => {
+  it.each([
+    ["invalid_api_key", 401, 2],
+    ["invalid_api_key", 403, 2],
+    ["insufficient_access", 403, 2],
+    ["no_scenarios_for_tag", 422, 2],
+    ["agent_not_found", 404, 2],
+    ["scenario_not_found", 404, 2],
+    ["workspace_not_found", 404, 2],
+    ["insufficient_credits", 402, 2],
+    ["run_in_flight", 409, 2],
+    ["run_not_found", 404, 2],
+    ["validation_error", 422, 2],
+    ["unresolved_name", 422, 2],
+    ["run_too_large", 422, 2],
+    ["simulation_not_configured", 422, 2],
+    ["rate_limited", 429, 2],
+    ["usage_error", undefined, 2],
+    ["config_error", undefined, 2],
+    ["internal_error", 500, 3],
+    ["run_start_failed", 503, 3],
+    ["validation_error", 502, 3],
+    ["tuner_error", undefined, 3],
+  ] as const)("%s (%s) -> %d", (code, status, exit) => {
+    expect(exitForError(code, status)).toBe(exit);
+  });
+});
+
+describe("formatDuration", () => {
+  it.each([
+    [0, "0s"],
+    [45_000, "45s"],
+    [90_000, "1m30s"],
+    [3_600_000, "1h"],
+    [5_430_000, "1h30m30s"],
+  ])("%d -> %s", (ms, text) => expect(formatDuration(ms)).toBe(text));
 });
 
 describe("parseDuration", () => {
