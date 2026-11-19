@@ -474,6 +474,42 @@
               "title": "Simulated"
             },
             "description": "Filter simulation calls (true/false)"
+          },
+          {
+            "name": "alert_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only calls that matched any of these alerts. Comma-separated alert ids belonging to this agent.",
+              "title": "Alert Ids"
+            },
+            "description": "Only calls that matched any of these alerts. Comma-separated alert ids belonging to this agent."
+          },
+          {
+            "name": "alert_trigger_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only the calls behind one alert trigger: the calls that were counted when that trigger fired. Use the trigger id sent in the `alert.fired` webhook. A trigger that does not belong to one of this agent's alerts, or has no saved calls, returns an empty list. Combines with the other filters.",
+              "title": "Alert Trigger Id"
+            },
+            "description": "Only the calls behind one alert trigger: the calls that were counted when that trigger fired. Use the trigger id sent in the `alert.fired` webhook. A trigger that does not belong to one of this agent's alerts, or has no saved calls, returns an empty list. Combines with the other filters."
           }
         ],
         "responses": {
@@ -530,7 +566,7 @@
             }
           },
           "400": {
-            "description": "`end_date` is before `start_date`, or `sentiment` is not one of `positive`, `neutral`, `negative`, `unknown`.",
+            "description": "`end_date` is before `start_date`, `sentiment` is not one of `positive`, `neutral`, `negative`, `unknown`, or `alert_ids` has a value that is not an integer or an alert that does not exist for this agent.",
             "content": {
               "application/json": {
                 "example": {
@@ -2657,7 +2693,7 @@
             }
           },
           "422": {
-            "description": "The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 20 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field.",
+            "description": "The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 100 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field.",
             "content": {
               "application/json": {
                 "example": {
@@ -3338,6 +3374,20 @@
                       "detail": "Simulation run with ID 4821 not found"
                     }
                   }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Another request was updating the run (for example, a call was ending) and the cancel could not wait for it. Nothing was changed; retry the request.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "internal_error",
+                  "detail": "The run is being updated by another request and could not be canceled right now. Nothing was changed; retry the request."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -12054,7 +12104,7 @@
           "agent-settings"
         ],
         "summary": "Delete Alert Definition",
-        "description": "Delete an existing alert definition.",
+        "description": "Delete an alert definition.\n\nAlso permanently deletes the alert's saved matching calls and its trigger history. The calls\nthemselves are kept.",
         "operationId": "delete_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__delete",
         "security": [
           {
@@ -14066,6 +14116,133 @@
         ],
         "title": "AlertState",
         "description": "Alert state values."
+      },
+      "AlertTriggerListResponse": {
+        "properties": {
+          "triggers": {
+            "items": {
+              "$ref": "#/components/schemas/AlertTriggerResponse"
+            },
+            "type": "array",
+            "title": "Triggers",
+            "description": "Triggers, newest first"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of triggers of the alert"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "description": "Current page number"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size",
+            "description": "Items per page"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "Total Pages",
+            "description": "Total number of pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "triggers",
+          "total",
+          "page",
+          "page_size",
+          "total_pages"
+        ],
+        "title": "AlertTriggerListResponse",
+        "description": "Paginated trigger history of an alert."
+      },
+      "AlertTriggerResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Trigger ID"
+          },
+          "triggered_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Triggered At",
+            "description": "When the alert fired"
+          },
+          "window_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Start",
+            "description": "Start of the window that was checked"
+          },
+          "window_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window End",
+            "description": "End of the window that was checked"
+          },
+          "qualifying_count": {
+            "type": "integer",
+            "title": "Qualifying Count",
+            "description": "Number of calls that matched the condition"
+          },
+          "total_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Count",
+            "description": "Number of calls checked; null for count alerts"
+          },
+          "condition": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition",
+            "description": "The alert's threshold settings and condition as they were when it fired; null when they were not recorded"
+          },
+          "calls_linked": {
+            "type": "boolean",
+            "title": "Calls Linked",
+            "description": "Whether this trigger's calls were saved, so they can be listed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "triggered_at",
+          "qualifying_count",
+          "calls_linked"
+        ],
+        "title": "AlertTriggerResponse",
+        "description": "One time an alert fired."
       },
       "AllowedCapabilityInput": {
         "properties": {
@@ -17045,7 +17222,7 @@
               }
             ],
             "title": "Selected Scenario Ids",
-            "description": "IDs of the library scenarios to run, 1 to 20, in the order they are queued. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.",
+            "description": "IDs of the library scenarios to run, in the order they are queued, 1 to 100. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.",
             "examples": [
               [
                 31,
@@ -18418,6 +18595,7 @@
         "type": "string",
         "enum": [
           "agent_failed",
+          "setup_error",
           "tuner_error",
           "canceled"
         ],
@@ -22440,7 +22618,7 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/Verdict",
-            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
+            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
           },
           "failure_category": {
             "anyOf": [
@@ -22451,7 +22629,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
+            "description": "`agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
           },
           "failed_evals": {
             "items": {
@@ -23025,7 +23203,7 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/Verdict",
-            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
+            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
           },
           "failure_category": {
             "anyOf": [
@@ -23036,7 +23214,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
+            "description": "`agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
           },
           "failed_evals": {
             "items": {
@@ -23728,7 +23906,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           },
           "run_mode": {
             "type": "string",
@@ -24046,7 +24224,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           },
           "run_mode": {
             "type": "string",
@@ -24417,7 +24595,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           }
         },
         "type": "object",
@@ -26087,6 +26265,7 @@
           "passed",
           "failed",
           "not_connected",
+          "setup_error",
           "platform_error",
           "unreported",
           "analysis_failed",

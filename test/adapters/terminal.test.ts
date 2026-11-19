@@ -39,6 +39,16 @@ describe("terminal renderer", () => {
         plain,
       ),
     ).toContain("! platform error  Reschedule an existing booking   SIP 503");
+    expect(
+      scenarioLine(
+        call({
+          verdict: "setup_error",
+          failure_category: "setup_error",
+          failure: { message: "Retell credits exhausted" },
+        } as never),
+        plain,
+      ),
+    ).toContain("! setup error     Reschedule an existing booking   Retell credits exhausted");
     expect(scenarioLine(call({ verdict: "brand_new" as never }), plain)).toContain("? brand_new");
   });
 

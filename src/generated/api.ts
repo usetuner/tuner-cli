@@ -1564,7 +1564,10 @@ export interface paths {
         post?: never;
         /**
          * Delete Alert Definition
-         * @description Delete an existing alert definition.
+         * @description Delete an alert definition.
+         *
+         *     Also permanently deletes the alert's saved matching calls and its trigger history. The calls
+         *     themselves are kept.
          */
         delete: operations["delete_alert_definition_api_v1_workspaces__workspace_id__agents__agent_id__settings_alert_definitions__alert_id__delete"];
         options?: never;
@@ -2643,6 +2646,86 @@ export interface components {
          * @enum {string}
          */
         AlertState: "active" | "paused";
+        /**
+         * AlertTriggerListResponse
+         * @description Paginated trigger history of an alert.
+         */
+        AlertTriggerListResponse: {
+            /**
+             * Triggers
+             * @description Triggers, newest first
+             */
+            triggers: components["schemas"]["AlertTriggerResponse"][];
+            /**
+             * Total
+             * @description Total number of triggers of the alert
+             */
+            total: number;
+            /**
+             * Page
+             * @description Current page number
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description Items per page
+             */
+            page_size: number;
+            /**
+             * Total Pages
+             * @description Total number of pages
+             */
+            total_pages: number;
+        };
+        /**
+         * AlertTriggerResponse
+         * @description One time an alert fired.
+         */
+        AlertTriggerResponse: {
+            /**
+             * Id
+             * @description Trigger ID
+             */
+            id: number;
+            /**
+             * Triggered At
+             * Format: date-time
+             * @description When the alert fired
+             */
+            triggered_at: string;
+            /**
+             * Window Start
+             * @description Start of the window that was checked
+             */
+            window_start?: string | null;
+            /**
+             * Window End
+             * @description End of the window that was checked
+             */
+            window_end?: string | null;
+            /**
+             * Qualifying Count
+             * @description Number of calls that matched the condition
+             */
+            qualifying_count: number;
+            /**
+             * Total Count
+             * @description Number of calls checked; null for count alerts
+             */
+            total_count?: number | null;
+            /**
+             * Condition
+             * @description The alert's threshold settings and condition as they were when it fired; null when they were not recorded
+             */
+            condition?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Calls Linked
+             * @description Whether this trigger's calls were saved, so they can be listed
+             */
+            calls_linked: boolean;
+        };
         /**
          * AllowedCapabilityInput
          * @description Input schema for allowed capability.
@@ -4217,7 +4300,7 @@ export interface components {
             noise_intensity?: ("low" | "medium" | "high") | (0.5 | 1 | 1.5) | null;
             /**
              * Selected Scenario Ids
-             * @description IDs of the library scenarios to run, 1 to 20, in the order they are queued. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.
+             * @description IDs of the library scenarios to run, in the order they are queued, 1 to 100. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.
              * @example [
              *       31,
              *       32,
@@ -4902,7 +4985,7 @@ export interface components {
          * FailureCategory
          * @enum {string}
          */
-        FailureCategory: "agent_failed" | "tuner_error" | "canceled";
+        FailureCategory: "agent_failed" | "setup_error" | "tuner_error" | "canceled";
         /**
          * FilterOption
          * @description Base schema for a single filter option.
@@ -6948,9 +7031,9 @@ export interface components {
              * @description Whether calls in the owning run are expected to be graded by evals.
              */
             evals_expected: boolean;
-            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
+            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
-            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
+            /** @description `agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
             failure_category: components["schemas"]["FailureCategory"] | null;
             /**
              * Failed Evals
@@ -7263,9 +7346,9 @@ export interface components {
              * @description Label of the scenario: the generated persona, or the library scenario's name for runs from saved scenarios. Null if not available, and for replay runs.
              */
             persona?: string | null;
-            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
+            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
-            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
+            /** @description `agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
             failure_category: components["schemas"]["FailureCategory"] | null;
             /**
              * Failed Evals
@@ -7669,7 +7752,7 @@ export interface components {
             simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Run Mode
@@ -7840,7 +7923,7 @@ export interface components {
             simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Run Mode
@@ -8033,7 +8116,7 @@ export interface components {
             run_mode?: string;
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
         };
         /**
@@ -8881,7 +8964,7 @@ export interface components {
          * Verdict
          * @enum {string}
          */
-        Verdict: "passed" | "failed" | "not_connected" | "platform_error" | "unreported" | "analysis_failed" | "ran" | "pending" | "canceled";
+        Verdict: "passed" | "failed" | "not_connected" | "setup_error" | "platform_error" | "unreported" | "analysis_failed" | "ran" | "pending" | "canceled";
         /**
          * VoiceClipResponse
          * @description A single caller-turn clip within a voice clip set, in playback order.
@@ -9989,6 +10072,10 @@ export interface operations {
                 sort_order?: string;
                 /** @description Filter simulation calls (true/false) */
                 simulated?: boolean | null;
+                /** @description Only calls that matched any of these alerts. Comma-separated alert ids belonging to this agent. */
+                alert_ids?: string | null;
+                /** @description Only the calls behind one alert trigger: the calls that were counted when that trigger fired. Use the trigger id sent in the `alert.fired` webhook. A trigger that does not belong to one of this agent's alerts, or has no saved calls, returns an empty list. Combines with the other filters. */
+                alert_trigger_id?: number | null;
             };
             header?: never;
             path: {
@@ -10010,7 +10097,7 @@ export interface operations {
                     "application/json": components["schemas"]["CallLogsListResponse"];
                 };
             };
-            /** @description `end_date` is before `start_date`, or `sentiment` is not one of `positive`, `neutral`, `negative`, `unknown`. */
+            /** @description `end_date` is before `start_date`, `sentiment` is not one of `positive`, `neutral`, `negative`, `unknown`, or `alert_ids` has a value that is not an integer or an alert that does not exist for this agent. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -11680,7 +11767,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 20 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field. */
+            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 100 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -12131,6 +12218,21 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Another request was updating the run (for example, a call was ending) and the cancel could not wait for it. Nothing was changed; retry the request. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "internal_error",
+                     *       "detail": "The run is being updated by another request and could not be canceled right now. Nothing was changed; retry the request."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
