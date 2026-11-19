@@ -5,7 +5,6 @@ Run Tuner voice-agent simulations from your terminal and your CI.
 [![ci](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml)
 
 > [!NOTE]
-> Pre-release: the CLI is not on npm yet, so you install it from source.
 > It supports Linux and macOS. Windows is not supported yet.
 
 ## Install
@@ -13,13 +12,16 @@ Run Tuner voice-agent simulations from your terminal and your CI.
 You need Node 22 or later.
 
 ```bash
-git clone https://github.com/usetuner/tuner-cli.git && cd tuner-cli
-npm ci
-npm run build
-npm link
+npm install -g @usetuner.ai/cli
 ```
 
-`npm link` puts `tuner` on your PATH. Without it, run `node dist/cli/main.js` instead.
+This puts `tuner` on your PATH. To run it without installing:
+
+```bash
+npx @usetuner.ai/cli sim run --tag smoke
+```
+
+To build from source instead, see [CONTRIBUTING.md](CONTRIBUTING.md#setup).
 
 ## Quick start
 
@@ -191,5 +193,4 @@ Report security issues as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-`UNLICENSED` for now: no license is granted yet. A license will be added before the first public
-release.
+MIT. See [LICENSE](LICENSE).
