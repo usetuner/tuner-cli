@@ -37,6 +37,9 @@ export class NetworkError extends Error {
   }
 }
 
+/** A response the CLI can't read: a 2xx whose body is empty or not JSON. Not retried. */
+export class UnexpectedResponseError extends Error {}
+
 /** Retries ran out after 5 minutes (or the command's budget) of consecutive failures. */
 export class GaveUpError extends Error {
   constructor(readonly lastError: ApiError | NetworkError) {

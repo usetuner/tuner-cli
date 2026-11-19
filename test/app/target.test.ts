@@ -55,7 +55,7 @@ describe("resolveTarget", () => {
       },
     });
     await expect(resolveTarget(f.deps, { ...opts, agent: "a" })).rejects.toThrow(
-      "API key rejected: Invalid API key. (key from TUNER_API_KEY)",
+      "API key rejected (Invalid API key); key from TUNER_API_KEY.",
     );
     const g = fakeDeps({
       whoami: async () => whoami(null),

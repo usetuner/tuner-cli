@@ -38,6 +38,8 @@ export interface SimRunResult {
   target?: Target;
   reason: string | null;
   exitCode: number;
+  /** The run reached a final state on its own (not stopped, not given up on). */
+  terminal?: boolean;
   error?: { code: string; message: string; [key: string]: unknown };
 }
 
@@ -64,11 +66,12 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     runId,
     target,
   });
-  const fail = (err: unknown, tag?: string): SimRunResult => {
+  const fail = (err: unknown, tag?: string, agentName?: string): SimRunResult => {
     if (stop.signal) {
       return result({ kind: "canceled", reason: "canceled", exitCode: exitForSignal(stop.signal) });
     }
-    const cli = toCliError(err, { tag, agentRef: resolveAgentRef(input.agent, deps) });
+    const agentRef = resolveAgentRef(input.agent, deps);
+    const cli = toCliError(err, { tag, agentRef, agentName });
     if (cli.reason === "tuner_error") {
       return result({
         kind: "error",
@@ -119,7 +122,7 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
         onRetry: retrying,
       });
     } catch (err) {
-      return fail(err, input.start.tag);
+      return fail(err, input.start.tag, agent.name);
     }
     if (!started) {
       return result({
@@ -206,12 +209,18 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       reason = "tuner_error";
       exitCode = exitForRun(run?.result ?? null, "tuner_error");
     } else {
-      const cli = toCliError(outcome.error);
+      const cli = toCliError(outcome.error, { runId });
       output.progress(`Could not read run ${runId}: ${cli.message} ${stillGoing(runId)}`);
       reason = cli.reason;
       exitCode = cli.exitCode;
     }
-    return result({ kind: "finished", run, reason, exitCode });
+    return result({
+      kind: "finished",
+      run,
+      reason,
+      exitCode,
+      terminal: outcome.kind === "terminal",
+    });
   } finally {
     unsubscribe();
   }
