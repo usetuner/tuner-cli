@@ -35,6 +35,8 @@ json`, the `code` below is also in the document's `reason` and `error.code`, and
 | A bad run ID                                         | `usage_error`  | `Invalid run ID 'abc'. Use the numeric run ID.`                                           |
 | A bad `--timeout`                                    | `usage_error`  | `Invalid duration '5x'. Use e.g. 90s, 30m, 1h.`                                           |
 | `--noise-intensity` without `--noise`                | `usage_error`  | `--noise-intensity needs --noise <slug>.`                                                 |
+| A `--meta` pair without `=` or with an empty key     | `usage_error`  | `Invalid --meta 'x'. Use key=value.`                                                      |
+| The same `--meta` key twice                          | `usage_error`  | `Duplicate --meta key 'k'. Pass each key once.`                                           |
 | A bad `--base-url` or `TUNER_BASE_URL`               | `usage_error`  | `Invalid base URL '…'.` or `Base URL must be http or https, got '…'.`                     |
 | `auth login` got an empty key                        | `usage_error`  | `No API key given. Pass --api-key, pipe the key on stdin, or run in a terminal.`          |
 | No key in the flag, the env or the stored file       | `config_error` | `No API key. Set TUNER_API_KEY or run` `tuner auth login`                                 |

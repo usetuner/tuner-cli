@@ -51,12 +51,13 @@ means a new version.
 }
 ```
 
-| Field       | Meaning                                                                                                                                       |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `reason`    | `null` for a passed run; `agent_failed`, `tuner_error`, `timeout` or `canceled` for a run that started; or the error `code` when nothing ran. |
-| `run`       | `null` when nothing ran.                                                                                                                      |
-| `error`     | Present when nothing ran, with `code` and `message`. A `canceled` document has no `error`.                                                    |
-| `exit_code` | The process exit code.                                                                                                                        |
+| Field          | Meaning                                                                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reason`       | `null` for a passed run; `agent_failed`, `tuner_error`, `timeout` or `canceled` for a run that started; or the error `code` when nothing ran. |
+| `run`          | `null` when nothing ran.                                                                                                                      |
+| `run.metadata` | The run's `--meta` pairs as Tuner returns them; `null` when the run has none.                                                                 |
+| `error`        | Present when nothing ran, with `code` and `message`. A `canceled` document has no `error`.                                                    |
+| `exit_code`    | The process exit code.                                                                                                                        |
 
 ## List documents
 

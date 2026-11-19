@@ -87,6 +87,15 @@ tuner noise list
 tuner sim run --tag smoke --noise cafe --noise-intensity high
 ```
 
+### Tag a run with metadata
+
+```bash
+tuner sim run --tag smoke --meta commit="$(git rev-parse HEAD)" --meta branch=main
+```
+
+Repeat `--meta key=value` for each pair. Tuner stores them with the run, and `tuner runs get` shows
+them.
+
 ### Cancel a run
 
 ```bash
