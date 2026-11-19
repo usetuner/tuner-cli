@@ -45,6 +45,7 @@ describe("--output json matches schema_version 1", () => {
         workspace: { id: 12, name: "Acme" },
         agent: { id: 77, remote_id: "booking-staging", name: "Booking (staging)" },
         config: { language: "en-US", profile: null, noise: "cafe", noise_intensity: 1 },
+        metadata: null,
         started_at: "2026-11-04T10:00:00Z",
       },
       summary: { total: 1, passed: 1, failed: 0, inconclusive: 0, canceled: 0, pending: 0 },
@@ -61,6 +62,15 @@ describe("--output json matches schema_version 1", () => {
       call_id: 5001,
     });
     expect(rt.err()).toContain("Workspace: Acme");
+  });
+
+  it("run with metadata", async () => {
+    const meta = { commit: "abc", env: "staging" };
+    const rt = makeRuntime(happyApi(makeRun({ metadata: meta })));
+    const argv = ["--tag", "smoke", "--meta", "commit=abc", "--meta", "env=staging"];
+    expect(await run(rt, "sim", "run", ...argv, "--output", "json")).toBe(0);
+    expect(check(rt.out()).run.metadata).toEqual(meta);
+    expect(rt.err()).not.toContain("Metadata:");
   });
 
   it("failed run", async () => {

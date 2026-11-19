@@ -4,7 +4,10 @@ type Schemas = components["schemas"];
 
 export type Whoami = Schemas["WhoamiResponse"];
 export type Agent = Schemas["Agent"];
-export type Run = Schemas["SimulationRunGetResponse"];
+/** Run metadata, stored as sent with `--meta`. */
+export type RunMetadata = Record<string, string>;
+// The deployed schema doesn't return `metadata` yet; drop this once the types are regenerated.
+export type Run = Schemas["SimulationRunGetResponse"] & { metadata?: RunMetadata | null };
 export type SimCall = Schemas["SimulationCallDetailResponse"];
 export type Verdict = Schemas["Verdict"];
 export type RunResult = Schemas["RunResult"];

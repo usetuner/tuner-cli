@@ -44,6 +44,7 @@ export function buildDocument(input: DocumentInput): Record<string, unknown> {
             noise: run?.noise_environment?.slug ?? null,
             noise_intensity: run?.noise_intensity ?? null,
           },
+          metadata: run?.metadata ?? null,
           started_at: run?.created_at ?? null,
           completed_at: run?.execution_completed_at ?? null,
         }

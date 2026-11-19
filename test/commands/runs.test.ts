@@ -29,6 +29,15 @@ describe("runs get", () => {
     expect(rt.out()).toContain("https://app.usetuner.ai/simulations");
   });
 
+  it("prints a Metadata line when the run has metadata", async () => {
+    const meta = makeRun({ metadata: { commit: "abc", pr_url: "https://github.com/o/r/pull/1" } });
+    const rt = makeRuntime(base().on("GET", GET, json(200, meta)));
+    expect(await run(rt, "runs", "get", String(RUN))).toBe(0);
+    expect(rt.out()).toContain(
+      `Noise: cafe · intensity 1.0\nMetadata: commit=abc · pr_url=https://github.com/o/r/pull/1\n\n`,
+    );
+  });
+
   it("prints the JSON document", async () => {
     const rt = makeRuntime(base().on("GET", GET, json(200, makeRun())));
     expect(await run(rt, "runs", "get", String(RUN), "--output", "json")).toBe(0);
@@ -37,6 +46,13 @@ describe("runs get", () => {
     expect(doc.run.id).toBe(RUN);
     expect(doc.run.agent.remote_id).toBe("booking-staging");
     expect(doc.run.config.noise_intensity).toBe(1);
+    expect(doc.run.metadata).toBeNull();
+  });
+
+  it("returns the run's metadata in the JSON document", async () => {
+    const rt = makeRuntime(base().on("GET", GET, json(200, makeRun({ metadata: { env: "ci" } }))));
+    expect(await run(rt, "runs", "get", String(RUN), "--output", "json")).toBe(0);
+    expect(JSON.parse(rt.out()).run.metadata).toEqual({ env: "ci" });
   });
 
   it("exits 2 on run_not_found", async () => {

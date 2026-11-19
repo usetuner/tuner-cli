@@ -69,6 +69,11 @@
                 "noise_intensity": { "type": ["number", "null"] }
               }
             },
+            "metadata": {
+              "description": "Key-value pairs sent with --meta, as the API returns them; null when the run has none.",
+              "type": ["object", "null"],
+              "additionalProperties": { "type": "string" }
+            },
             "started_at": { "type": ["string", "null"] },
             "completed_at": { "type": ["string", "null"] }
           }

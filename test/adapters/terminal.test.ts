@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   intensitiesText,
+  metadataLine,
   noiseLine,
   painter,
   scenarioLine,
@@ -54,6 +55,16 @@ describe("terminal renderer", () => {
     expect(noiseLine(makeRun({ noise_intensity: null }))).toBe("Noise: cafe");
     expect(noiseLine(makeRun({ noise_environment: null }))).toBeUndefined();
     expect(noiseLine(undefined)).toBeUndefined();
+  });
+
+  it("prints the run's metadata on one line, or nothing", () => {
+    expect(metadataLine(makeRun({ metadata: { commit: "abc", env: "staging" } }))).toBe(
+      "Metadata: commit=abc · env=staging",
+    );
+    expect(metadataLine(makeRun({ metadata: {} }))).toBeUndefined();
+    expect(metadataLine(makeRun({ metadata: null }))).toBeUndefined();
+    expect(metadataLine(makeRun())).toBeUndefined();
+    expect(metadataLine(undefined)).toBeUndefined();
   });
 
   it("joins the summary and pads the table", () => {
