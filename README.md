@@ -161,14 +161,14 @@ to another workspace, the command stops with `config_error`. For where the key f
 
 Exit codes are a contract: changing one is a breaking change.
 
-| Exit | Meaning                                                                                                                                                         |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | Every scenario passed. Also `--no-wait`, `runs`, the lists and `auth` on success.                                                                               |
-| 1    | At least one scenario failed its evals (`result: failed`, `reason: agent_failed`).                                                                              |
-| 2    | A problem you must fix: a bad flag, a rejected key, an unknown agent, tag, scenario or workspace, no credits, the agent busy, `run_not_found` or any other 4xx. |
-| 3    | Tuner couldn't finish the run: unreachable after retries, a 5xx, `run_start_failed`, `reason: tuner_error`, a run canceled elsewhere, or `--timeout` reached.   |
-| 130  | Interrupted by SIGINT: Ctrl-C, or a canceled GitHub Actions job. The run was canceled first.                                                                    |
-| 143  | Stopped by SIGTERM, for example from `kill` or a process manager. The run was canceled first.                                                                   |
+| Exit | Meaning                                                                                                                                                                       |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Every scenario passed. Also `--no-wait`, `runs`, the lists and `auth` on success.                                                                                             |
+| 1    | At least one scenario failed its evals (`result: failed`, `reason: agent_failed`).                                                                                            |
+| 2    | A problem you must fix: a bad flag, a rejected key, an unknown agent, tag, scenario or workspace, no credits, the agent busy, `run_not_found` or any other 4xx but 429.       |
+| 3    | Tuner couldn't finish the run: unreachable or rate limited after retries, a 5xx, `run_start_failed`, `reason: tuner_error`, a run canceled elsewhere, or `--timeout` reached. |
+| 130  | Interrupted by SIGINT: Ctrl-C, or a canceled GitHub Actions job. The run was canceled first.                                                                                  |
+| 143  | Stopped by SIGTERM, for example from `kill` or a process manager. The run was canceled first.                                                                                 |
 
 When several apply, the worst wins: 1, then 2, then 3. The JSON `reason` and `error.code`
 keep the detail. Per-code exits are in [Errors and retries](docs/errors.md).

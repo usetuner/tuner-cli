@@ -10,12 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking
 
 - Exit codes follow the CI/CD spec: 0 every scenario passed, 1 a scenario failed its evals, 2 a problem you must fix, 3 Tuner couldn't finish the run. Runs that end `tuner_error`, are canceled elsewhere, or reach `--timeout` now exit 3 (were 0). When several apply, the worst wins: 1, then 2, then 3. `schema/run-result.v1.json` allows `exit_code` 3; `schema_version` stays 1.
+- `rate_limited` exits 3 everywhere, like any failure that outlasts the retries (was 2 in `auth login`).
+- `tuner sim`, `tuner runs` and the other groups run without a subcommand exit 2 (were 0), so a typo in CI can't pass.
+- A CLI crash exits 3 (was 2).
 
 ### Deprecated
 
 - `tuner sim run --fail-on-inconclusive` has no effect and prints a warning to stderr; it will be removed in a later minor version.
 
 ### Changed
+
+- `sim run` no longer retries its start request on a 5xx: a `run_start_failed` exits 3 at once instead of creating more failed runs. It still retries a network error and a 429.
+- `runs cancel`, the list reads and `auth login` retry 429, 5xx and network errors for up to 30 seconds, like `runs get`.
+- Every failure has its own message that says what to do: `run_in_flight` names the agent and the run, `insufficient_credits` says the run can't start, a run canceled elsewhere says so, a broken credentials file is named instead of reported as no key, and a proxy's HTML error page is named by its status instead of printed.
+- A 2xx response that is empty or not JSON exits 3 with `unexpected_response`, and an unknown `result` or `reason` asks you to upgrade.
 
 - On `--timeout`, `sim run` prints the elapsed time and the `--timeout` value.
 - `tuner sim run` names the agent and its numeric ID in the start banner, e.g. `Agent: booking-staging (616)`.
