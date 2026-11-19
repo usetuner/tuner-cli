@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AGENT_PATH, FakeApi, WS, apiError, json, makeRuntime, run, whoami } from "../helpers.js";
 
 const WS_PATH = `/api/v1/workspaces/${WS}`;
+
+afterEach(() => vi.useRealTimers());
 const base = () => new FakeApi().on("GET", "/api/v1/whoami", json(200, whoami()));
 
 const scenario = { id: 311, name: "Refund request", type: "routine", tags: ["smoke", "billing"] };
@@ -135,10 +137,28 @@ describe("list commands", () => {
     [apiError(404, "workspace_not_found", "Workspace not found"), 2],
     [apiError(400, "validation_error", "Bad request"), 2],
   ])("languages list maps an API error to its exit code (%#)", async (reply, code) => {
+    vi.useFakeTimers();
     const api = base().on("GET", `${WS_PATH}/caller-personas`, reply);
     const rt = makeRuntime(api);
-    expect(await run(rt, "languages", "list")).toBe(code);
+    const p = run(rt, "languages", "list");
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await p).toBe(code);
     expect(rt.err()).toMatch(/^Error: /);
+  });
+
+  it("retries a list read on a 5xx, like the lookups before it", async () => {
+    vi.useFakeTimers();
+    const api = base().on(
+      "GET",
+      `${WS_PATH}/caller-personas`,
+      apiError(502, "internal_error", "Bad gateway"),
+      json(200, { personas: [persona] }),
+    );
+    const rt = makeRuntime(api);
+    const p = run(rt, "languages", "list");
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(await p).toBe(0);
+    expect(api.calls("GET", `${WS_PATH}/caller-personas`)).toHaveLength(2);
   });
 
   it("scenarios list exits 2 on an unknown agent", async () => {

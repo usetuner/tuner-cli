@@ -7,15 +7,19 @@ import type {
   ScenarioList,
 } from "../domain/types.js";
 import type { AppDeps } from "../ports.js";
-import { SHORT_GIVE_UP_MS } from "./retry.js";
+import { SHORT_GIVE_UP_MS, withRetry } from "./retry.js";
 import { resolveTarget } from "./target.js";
 
 const target = (deps: AppDeps, flags: GlobalFlags, needAgent: boolean, agent?: string) =>
   resolveTarget(deps, { flags, agent, needAgent, giveUpMs: SHORT_GIVE_UP_MS });
 
+/** A list read, retried like the lookups before it. */
+const read = async <T>(deps: AppDeps, fn: () => Promise<T>): Promise<T> =>
+  (await withRetry(fn, { clock: deps.clock, giveUpMs: SHORT_GIVE_UP_MS }))!;
+
 export async function listAgents(deps: AppDeps, flags: GlobalFlags): Promise<Agent[]> {
   const t = await target(deps, flags, false);
-  return t.api.listAgents(t.workspace.id);
+  return read(deps, () => t.api.listAgents(t.workspace.id));
 }
 
 export async function listScenarios(
@@ -25,7 +29,9 @@ export async function listScenarios(
   tag?: string,
 ): Promise<NonNullable<ScenarioList["scenarios"]>> {
   const t = await target(deps, flags, true, agent);
-  const { scenarios = [] } = await t.api.listScenarios(t.workspace.id, t.agent!.id, tag);
+  const { scenarios = [] } = await read(deps, () =>
+    t.api.listScenarios(t.workspace.id, t.agent!.id, tag),
+  );
   return scenarios;
 }
 
@@ -34,7 +40,7 @@ export async function listLanguages(
   flags: GlobalFlags,
 ): Promise<CallerOptions["personas"]> {
   const t = await target(deps, flags, false);
-  return (await t.api.listCallerPersonas(t.workspace.id)).personas;
+  return (await read(deps, () => t.api.listCallerPersonas(t.workspace.id))).personas;
 }
 
 export async function listNoise(
@@ -42,7 +48,7 @@ export async function listNoise(
   flags: GlobalFlags,
 ): Promise<NoiseEnvironments["environments"]> {
   const t = await target(deps, flags, false);
-  return (await t.api.listNoiseEnvironments(t.workspace.id)).environments;
+  return (await read(deps, () => t.api.listNoiseEnvironments(t.workspace.id))).environments;
 }
 
 export async function listProfiles(
@@ -51,6 +57,8 @@ export async function listProfiles(
   agent?: string,
 ): Promise<NonNullable<ProfileList["simulation_profiles"]>> {
   const t = await target(deps, flags, true, agent);
-  const { simulation_profiles = [] } = await t.api.listProfiles(t.workspace.id, t.agent!.id);
+  const { simulation_profiles = [] } = await read(deps, () =>
+    t.api.listProfiles(t.workspace.id, t.agent!.id),
+  );
   return simulation_profiles;
 }

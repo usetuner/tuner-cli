@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TunerClient } from "../../src/adapters/http-client.js";
-import { ApiError, NetworkError } from "../../src/domain/errors.js";
+import { ApiError, NetworkError, UnexpectedResponseError } from "../../src/domain/errors.js";
 import { VERSION } from "../../src/adapters/version.js";
 import {
   AGENT_PATH,
@@ -8,6 +8,7 @@ import {
   FakeApi,
   RUN,
   apiError,
+  hang,
   json,
   makeRuntime,
   networkError,
@@ -75,6 +76,36 @@ describe("TunerClient", () => {
     expect(err.code).toBe("insufficient_access");
   });
 
+  it("names the status instead of printing an HTML error page", async () => {
+    const api = new FakeApi().on(
+      "GET",
+      "/api/v1/whoami",
+      new Response("<html><body>502 Bad Gateway</body></html>", {
+        status: 502,
+        statusText: "Bad Gateway",
+      }),
+    );
+    const err = await client(api)
+      .whoami()
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err.detail).toBe(`502 Bad Gateway from ${BASE}`);
+  });
+
+  it.each([
+    ["not JSON", "<html>login</html>", "not JSON"],
+    ["empty", "", "empty"],
+  ])("rejects a 2xx that is %s", async (_n, body, what) => {
+    const api = new FakeApi().on("GET", "/api/v1/whoami", new Response(body, { status: 200 }));
+    const err = await client(api)
+      .whoami()
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(UnexpectedResponseError);
+    expect(err.message).toBe(
+      `Tuner sent a response this CLI can't read (200, ${what}) from GET ${BASE}/api/v1/whoami. Check --base-url (or TUNER_BASE_URL).`,
+    );
+  });
+
   it("reads Retry-After", async () => {
     const api = new FakeApi().on(
       "GET",
@@ -85,6 +116,48 @@ describe("TunerClient", () => {
       .getRun(12, 77, RUN)
       .catch((e) => e);
     expect(err.retryAfterSeconds).toBe(60);
+  });
+
+  it.each([
+    ["ECONNREFUSED", false],
+    ["ENOTFOUND", false],
+    ["EAI_AGAIN", false],
+    ["UND_ERR_CONNECT_TIMEOUT", false],
+    ["ECONNRESET", true],
+    ["UND_ERR_SOCKET", true],
+  ])("marks %s as sent: %s", async (code, sent) => {
+    const api = new FakeApi().on(
+      "POST",
+      `${AGENT_PATH}/simulation-runs/select`,
+      networkError(code),
+    );
+    const err = await client(api)
+      .startRun(12, 77, { tag: "x" })
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(NetworkError);
+    expect(err.sent).toBe(sent);
+  });
+
+  it("marks the client timeout as sent: the outcome is unknown", async () => {
+    vi.useFakeTimers();
+    const api = new FakeApi().on("POST", `${AGENT_PATH}/simulation-runs/select`, hang);
+    const p = client(api)
+      .startRun(12, 77, { tag: "x" })
+      .catch((e) => e);
+    await vi.advanceTimersByTimeAsync(31_000);
+    const err = await p;
+    expect(err.message).toBe(`Request to ${BASE} timed out after 30s`);
+    expect(err.sent).toBe(true);
+  });
+
+  it("searches the agent's runs by status", async () => {
+    const api = new FakeApi().on(
+      "GET",
+      `${AGENT_PATH}/simulation-runs/search`,
+      json(200, { simulation_runs: [], total: 0 }),
+    );
+    await client(api).searchRuns(12, 77, "running");
+    expect(api.requests[0]!.url.search).toBe("?run_status=running&limit=1");
   });
 
   it("wraps network failures", async () => {

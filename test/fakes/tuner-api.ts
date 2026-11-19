@@ -23,6 +23,7 @@ export class FakeTunerApi implements TunerApi {
   getAgent: TunerApi["getAgent"] = (...a) => this.invoke("getAgent", a);
   listAgents: TunerApi["listAgents"] = (...a) => this.invoke("listAgents", a);
   startRun: TunerApi["startRun"] = (...a) => this.invoke("startRun", a);
+  searchRuns: TunerApi["searchRuns"] = (...a) => this.invoke("searchRuns", a);
   getRun: TunerApi["getRun"] = (...a) => this.invoke("getRun", a);
   cancelRun: TunerApi["cancelRun"] = (...a) => this.invoke("cancelRun", a);
   listScenarios: TunerApi["listScenarios"] = (...a) => this.invoke("listScenarios", a);

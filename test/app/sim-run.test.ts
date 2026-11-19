@@ -99,7 +99,7 @@ describe("runSimulation", () => {
     const f = fakeDeps(
       api({
         startRun: async () => {
-          throw new NetworkError("down");
+          throw new NetworkError("down", false);
         },
       }),
     );
@@ -173,6 +173,8 @@ describe("runSimulation", () => {
     );
     const r = await runSimulation(f, input());
     expect(r).toMatchObject({ kind: "finished", reason: "run_not_found", exitCode: 2 });
-    expect(f.output.lines.at(-1)).toContain("Could not read run 4821: gone");
+    expect(f.output.lines.at(-1)).toContain(
+      "Could not read run 4821: Run 4821 not found for this agent.",
+    );
   });
 });

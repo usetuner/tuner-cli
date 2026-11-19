@@ -3,8 +3,8 @@ import { noiseLine, summaryLine, terminalOutput } from "../adapters/terminal.js"
 import { runSimulation } from "../app/sim-run.js";
 import { type OutputFormat, buildDocument } from "../domain/document.js";
 import { EXIT } from "../domain/exit.js";
+import { runEndMessage } from "../domain/run-end.js";
 import { summarize } from "../domain/run-summary.js";
-import type { Output } from "../ports.js";
 import type { CommandContext } from "./shared.js";
 
 export interface SimRunOptions {
@@ -44,7 +44,7 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
 
   if (r.kind === "error") {
     output.progress(`Error: ${r.error?.message}`);
-    if (r.exitCode === EXIT.TUNER_FAULT) warnTunerFault(output, r.reason);
+    if (r.exitCode === EXIT.TUNER_FAULT) output.progress(tunerFault(r.reason));
   } else if (r.kind === "started" && !json) {
     runtime.stdout.write(`${r.runId}\n${r.run?.dashboard_url ? r.run.dashboard_url + "\n" : ""}`);
     const noise = noiseLine(r.run);
@@ -60,11 +60,13 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
     } else if (run?.dashboard_url) {
       output.progress(run.dashboard_url);
     }
-    if (exitCode === EXIT.TUNER_FAULT) {
-      warnTunerFault(output, reason);
-    } else if (reason === "agent_failed") {
-      output.progress("Result: failed (agent_failed)");
-    }
+    const end =
+      r.terminal && r.runId !== undefined
+        ? runEndMessage(r.runId, run?.result ?? null, reason)
+        : exitCode === EXIT.TUNER_FAULT
+          ? tunerFault(reason)
+          : undefined;
+    if (end) output.progress(end);
   }
 
   if (json) {
@@ -84,6 +86,5 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
   return r.exitCode;
 }
 
-function warnTunerFault(output: Output, reason: string | null): void {
-  output.progress(`Tuner couldn't finish this run (${reason ?? "tuner_error"}).`);
-}
+const tunerFault = (reason: string | null) =>
+  `Tuner couldn't finish this run (${reason ?? "tuner_error"}).`;

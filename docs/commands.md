@@ -61,9 +61,10 @@ How it behaves:
 - With `--no-wait`, it prints the run ID and the dashboard link on stdout and exits.
 - The Tuner API decides every scenario `verdict`, the run `result` and the `reason`. The CLI shows
   them and maps them to an exit code. It never computes its own.
-- A run Tuner couldn't finish (`tuner_error`, canceled elsewhere, or `--timeout` reached) exits
-  3 and prints `Tuner couldn't finish this run (<reason>).` A signal still exits 130 or 143. See
-  [Errors and retries](errors.md#run-reasons).
+- A run Tuner couldn't finish (`tuner_error` or `--timeout` reached) exits 3 and prints
+  `Tuner couldn't finish this run (<reason>).` A run canceled elsewhere also exits 3 and says it
+  was canceled outside this command. A signal still exits 130 or 143. See
+  [Errors and retries](errors.md#how-a-run-ends).
 - `--fail-on-inconclusive` is deprecated: it is still accepted, has no effect, and prints a
   warning to stderr. It will be removed in a later minor version.
 - For `--timeout`, Ctrl-C and SIGTERM, see [CI and signals](ci.md).

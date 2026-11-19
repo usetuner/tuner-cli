@@ -5,7 +5,7 @@ import { CliError } from "../domain/errors.js";
 import type { Whoami } from "../domain/types.js";
 import type { AppDeps } from "../ports.js";
 import { describeKeySource } from "./credentials.js";
-import { SHORT_GIVE_UP_MS } from "./retry.js";
+import { SHORT_GIVE_UP_MS, withRetry } from "./retry.js";
 import { resolveTarget } from "./target.js";
 
 /** Validates a key with whoami, then stores it. `readKey` runs only without --api-key. */
@@ -25,9 +25,13 @@ export async function login(
   }
   let whoami: Whoami;
   try {
-    whoami = await deps.connect(baseUrl, key).whoami();
+    const api = deps.connect(baseUrl, key);
+    whoami = (await withRetry(() => api.whoami(), {
+      clock: deps.clock,
+      giveUpMs: SHORT_GIVE_UP_MS,
+    }))!;
   } catch (err) {
-    throw toCliError(err);
+    throw toCliError(err, flags.apiKey ? { keySource: "--api-key" } : {});
   }
   const path = await deps.credentials.write(key);
   return { whoami, path };

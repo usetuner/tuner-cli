@@ -17,7 +17,31 @@ export type RunReason = "agent_failed" | "tuner_error" | "timeout" | "canceled";
 /** Worst first: an agent failure, then a problem the customer must fix, then a Tuner fault. */
 const SEVERITY: readonly number[] = [EXIT.AGENT_FAILED, EXIT.USAGE, EXIT.TUNER_FAULT];
 
-const TUNER_FAULT_CODES = new Set(["tuner_error", "internal_error", "run_start_failed"]);
+/** Exit for every error `code` the CLI raises or the API returns. */
+export const EXIT_FOR_CODE: Readonly<Record<string, number>> = {
+  usage_error: EXIT.USAGE,
+  config_error: EXIT.USAGE,
+  invalid_api_key: EXIT.USAGE,
+  insufficient_access: EXIT.USAGE,
+  workspace_not_found: EXIT.USAGE,
+  agent_not_found: EXIT.USAGE,
+  scenario_not_found: EXIT.USAGE,
+  run_not_found: EXIT.USAGE,
+  no_scenarios_for_tag: EXIT.USAGE,
+  run_too_large: EXIT.USAGE,
+  unresolved_name: EXIT.USAGE,
+  insufficient_credits: EXIT.USAGE,
+  run_in_flight: EXIT.USAGE,
+  simulation_not_configured: EXIT.USAGE,
+  validation_error: EXIT.USAGE,
+  // Retried like an outage; still failing when retries run out is Tuner's side.
+  rate_limited: EXIT.TUNER_FAULT,
+  run_start_failed: EXIT.TUNER_FAULT,
+  internal_error: EXIT.TUNER_FAULT,
+  tuner_error: EXIT.TUNER_FAULT,
+  unexpected_response: EXIT.TUNER_FAULT,
+  start_outcome_unknown: EXIT.TUNER_FAULT,
+};
 
 export function exitForSignal(signal: Signal): number {
   return signal === "SIGINT" ? EXIT.SIGINT : EXIT.SIGTERM;
@@ -50,10 +74,13 @@ export function exitForTimeout(result: RunResult | null, serverReason: RunReason
   return worstExit(codes);
 }
 
-/** Exit code for an error `code` (API or CLI), with the HTTP status when there is one. */
+/**
+ * Exit code for an error `code` (API or CLI). A 5xx is always 3. An unknown code falls back
+ * by HTTP status: 4xx is 2, anything else 3.
+ */
 export function exitForError(code: string, status?: number): number {
-  if (TUNER_FAULT_CODES.has(code) || (status !== undefined && status >= 500)) {
-    return EXIT.TUNER_FAULT;
-  }
-  return EXIT.USAGE;
+  if (status !== undefined && status >= 500) return EXIT.TUNER_FAULT;
+  const known = EXIT_FOR_CODE[code];
+  if (known !== undefined) return known;
+  return status !== undefined && status >= 400 ? EXIT.USAGE : EXIT.TUNER_FAULT;
 }

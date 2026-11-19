@@ -1,4 +1,4 @@
-import { ApiError, NetworkError } from "../domain/errors.js";
+import { ApiError, NetworkError, UnexpectedResponseError } from "../domain/errors.js";
 import type { Runtime, TunerApi } from "../ports.js";
 import type {
   Agent,
@@ -6,6 +6,8 @@ import type {
   NoiseEnvironments,
   ProfileList,
   Run,
+  RunSearch,
+  RunStatus,
   ScenarioList,
   StartRunRequest,
   StartRunResponse,
@@ -14,6 +16,18 @@ import type {
 import { CLIENT_HEADER, VERSION } from "./version.js";
 
 const REQUEST_TIMEOUT_MS = 30_000;
+/** Failures before a connection exists, so the request never reached Tuner. */
+const NOT_SENT = new Set([
+  "ECONNREFUSED",
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "ENETDOWN",
+  "EHOSTDOWN",
+  "EADDRNOTAVAIL",
+  "UND_ERR_CONNECT_TIMEOUT",
+]);
 const REQUEST_ID_HEADERS = ["x-request-id", "x-amzn-requestid", "x-amzn-trace-id"];
 
 export interface ClientOptions {
@@ -64,10 +78,10 @@ export class TunerClient implements TunerApi {
       if (options.signal?.aborted) throw err;
       const cause = (err as { cause?: { code?: string } }).cause?.code;
       const message = timeout.signal.aborted
-        ? `Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`
+        ? `Request to ${url.origin} timed out after ${REQUEST_TIMEOUT_MS / 1000}s`
         : `Could not reach ${url.origin}${cause ? ` (${cause})` : ""}`;
       if (verbose) runtime.stderr.write(`[http] ${method} ${url.pathname} failed: ${message}\n`);
-      throw new NetworkError(message);
+      throw new NetworkError(message, timeout.signal.aborted || !NOT_SENT.has(cause ?? ""));
     } finally {
       clearTimeout(timer);
       options.signal?.removeEventListener("abort", onOuterAbort);
@@ -94,8 +108,21 @@ export class TunerClient implements TunerApi {
     if (!response.ok) {
       const body = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
       const code = typeof body.code === "string" ? body.code : fallbackCode(response.status);
-      const detail = "detail" in body ? body.detail : text || response.statusText;
+      // A proxy or wrong --base-url sends HTML; name the status instead of printing the page.
+      const plain = text.trim();
+      const detail =
+        "detail" in body
+          ? body.detail
+          : plain && !plain.startsWith("<") && plain.length <= 200
+            ? plain
+            : `${response.status} ${response.statusText || "error"} from ${url.origin}`;
       throw new ApiError(response.status, code, detail, body, retryAfter(response.headers));
+    }
+    if (parsed === undefined) {
+      throw new UnexpectedResponseError(
+        `Tuner sent a response this CLI can't read (${response.status}, ${text ? "not JSON" : "empty"}) from ` +
+          `${method} ${url.origin}${url.pathname}. Check --base-url (or TUNER_BASE_URL).`,
+      );
     }
     return parsed as T;
   }
@@ -113,6 +140,12 @@ export class TunerClient implements TunerApi {
 
   listAgents(workspaceId: number): Promise<Agent[]> {
     return this.request("GET", `${ws(workspaceId)}/agents/`);
+  }
+
+  searchRuns(workspaceId: number, agentId: number, status: RunStatus): Promise<RunSearch> {
+    return this.request("GET", `${agent(workspaceId, agentId)}/simulation-runs/search`, {
+      query: { run_status: status, limit: "1" },
+    });
   }
 
   startRun(

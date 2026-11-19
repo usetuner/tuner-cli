@@ -16,7 +16,13 @@ export interface RetryOptions {
   giveUpMs: number;
   signal?: AbortSignal;
   onRetry?: (err: ApiError | NetworkError, delayMs: number) => void;
+  /** Narrows which retryable errors are retried; defaults to all of them. */
+  retryOn?: (err: ApiError | NetworkError) => boolean;
 }
+
+/** For a request that is not idempotent: retry only when it never reached Tuner, or a 429. */
+export const notSent = (err: ApiError | NetworkError): boolean =>
+  err instanceof NetworkError ? !err.sent : err.status === 429;
 
 /**
  * Retries 429, 5xx and network errors with backoff 3, 6, 12 s capped at 30 s, honoring
@@ -34,7 +40,7 @@ export async function withRetry<T>(
       return await fn(opts.signal);
     } catch (err) {
       if (opts.signal?.aborted) return undefined;
-      if (!isRetryable(err)) throw err;
+      if (!isRetryable(err) || (opts.retryOn && !opts.retryOn(err))) throw err;
       const now = opts.clock.now();
       firstFailureAt ??= now;
       if (now - firstFailureAt >= opts.giveUpMs) throw new GaveUpError(err);

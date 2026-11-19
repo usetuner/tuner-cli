@@ -29,13 +29,22 @@ export class ApiError extends Error {
   }
 }
 
-/** The request never got a response (DNS, refused, reset, timeout). */
+/**
+ * The request never got a response. `sent` is false only when no connection was made (DNS,
+ * refused): Tuner can't have acted on it. A timeout or a reset leaves the outcome unknown.
+ */
 export class NetworkError extends Error {
   readonly retryable = true;
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly sent = true,
+  ) {
     super(message);
   }
 }
+
+/** A response the CLI can't read: a 2xx whose body is empty or not JSON. Not retried. */
+export class UnexpectedResponseError extends Error {}
 
 /** Retries ran out after 5 minutes (or the command's budget) of consecutive failures. */
 export class GaveUpError extends Error {

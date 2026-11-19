@@ -185,11 +185,11 @@ couldn't finish the run (outage, 5xx, tuner_error, --timeout reached), 130 SIGIN
     await program.parseAsync(expandHelpPath(argv), { from: "user" });
   } catch (err) {
     if (err instanceof CommanderError) {
-      const ok = ["commander.helpDisplayed", "commander.version", "commander.help"].includes(
-        err.code,
-      );
-      if (ok) return EXIT.OK;
-      return EXIT.USAGE;
+      // `tuner sim` with no subcommand prints help as an error (exitCode 1): a usage error.
+      const ok =
+        ["commander.helpDisplayed", "commander.version"].includes(err.code) ||
+        (err.code === "commander.help" && err.exitCode === 0);
+      return ok ? EXIT.OK : EXIT.USAGE;
     }
     throw err;
   }

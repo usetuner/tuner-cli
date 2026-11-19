@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   AGENT_PATH,
   FakeApi,
@@ -14,6 +14,8 @@ import {
 
 const GET = `${AGENT_PATH}/simulation-runs/${RUN}`;
 const CANCEL = `${GET}/cancel`;
+afterEach(() => vi.useRealTimers());
+
 const base = () => new FakeApi().on("GET", "/api/v1/whoami", json(200, whoami()));
 
 describe("runs get", () => {
@@ -42,7 +44,7 @@ describe("runs get", () => {
       base().on("GET", GET, apiError(404, "run_not_found", "Simulation run not found")),
     );
     expect(await run(rt, "runs", "get", String(RUN))).toBe(2);
-    expect(rt.err()).toContain("Simulation run not found");
+    expect(rt.err()).toContain("Run 4821 not found for this agent. Check the run ID and --agent.");
   });
 
   it("exits 2 on a bad run ID without calling the API", async () => {
@@ -92,6 +94,31 @@ describe("runs cancel", () => {
       base().on("POST", CANCEL, apiError(404, "run_not_found", "Simulation run not found")),
     );
     expect(await run(rt, "runs", "cancel", String(RUN))).toBe(2);
+  });
+
+  it("retries a cancel that hit a busy run (503), since cancel is idempotent", async () => {
+    vi.useFakeTimers();
+    const api = base().on(
+      "POST",
+      CANCEL,
+      apiError(503, "internal_error", "Another request was updating the run"),
+      json(200, makeRun({ status: "canceled", result: "canceled", reason: "canceled" })),
+    );
+    const rt = makeRuntime(api);
+    const p = run(rt, "runs", "cancel", String(RUN));
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(await p).toBe(0);
+    expect(api.calls("POST", CANCEL)).toHaveLength(2);
+  });
+
+  it("exits 3 when the cancel keeps failing", async () => {
+    vi.useFakeTimers();
+    const api = base().on("POST", CANCEL, apiError(503, "internal_error", "busy"));
+    const rt = makeRuntime(api);
+    const p = run(rt, "runs", "cancel", String(RUN));
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await p).toBe(3);
+    expect(rt.err()).toContain("Tuner kept failing (503 internal_error), and retries ran out.");
   });
 
   it("prints JSON", async () => {

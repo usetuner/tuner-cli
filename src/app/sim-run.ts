@@ -1,6 +1,7 @@
 import { type GlobalFlags, resolveAgentRef } from "../domain/config.js";
 import { formatDuration } from "../domain/duration.js";
-import { toCliError } from "../domain/error-message.js";
+import { startOutcomeUnknown, toCliError } from "../domain/error-message.js";
+import { NetworkError } from "../domain/errors.js";
 import { EXIT, type RunReason, exitForRun, exitForSignal, exitForTimeout } from "../domain/exit.js";
 import {
   DEFAULT_TIMEOUT,
@@ -9,9 +10,9 @@ import {
   parseTimeout,
 } from "../domain/inputs.js";
 import type { Run, StartRunRequest } from "../domain/types.js";
-import type { AppDeps, Output, Signals } from "../ports.js";
+import type { AppDeps, Output, Signals, TunerApi } from "../ports.js";
 import { type PollOutcome, StopController, cancelAndWait, pollRun } from "./poll.js";
-import { POLL_GIVE_UP_MS, withRetry } from "./retry.js";
+import { POLL_GIVE_UP_MS, notSent, withRetry } from "./retry.js";
 import { type Target, resolveTarget } from "./target.js";
 
 export interface SimRunInput {
@@ -38,6 +39,8 @@ export interface SimRunResult {
   target?: Target;
   reason: string | null;
   exitCode: number;
+  /** The run reached a final state on its own (not stopped, not given up on). */
+  terminal?: boolean;
   error?: { code: string; message: string; [key: string]: unknown };
 }
 
@@ -64,11 +67,12 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     runId,
     target,
   });
-  const fail = (err: unknown, tag?: string): SimRunResult => {
+  const fail = (err: unknown, tag?: string, agentName?: string): SimRunResult => {
     if (stop.signal) {
       return result({ kind: "canceled", reason: "canceled", exitCode: exitForSignal(stop.signal) });
     }
-    const cli = toCliError(err, { tag, agentRef: resolveAgentRef(input.agent, deps) });
+    const agentRef = resolveAgentRef(input.agent, deps);
+    const cli = toCliError(err, { tag, agentRef, agentName });
     if (cli.reason === "tuner_error") {
       return result({
         kind: "error",
@@ -112,14 +116,20 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
     let started;
     try {
       // The POST itself is not aborted by a signal, so a run it creates can still be canceled.
+      // Not idempotent: retry only a request that never reached Tuner, or a 429.
       started = await withRetry(() => api.startRun(workspace.id, agent.id, body), {
         clock: deps.clock,
         giveUpMs: POLL_GIVE_UP_MS,
         signal: stop.abortSignal,
         onRetry: retrying,
+        retryOn: notSent,
       });
     } catch (err) {
-      return fail(err, input.start.tag);
+      if (err instanceof NetworkError && err.sent && !stop.signal) {
+        const inFlight = await findInFlightRun(api, workspace.id, agent.id);
+        return fail(startOutcomeUnknown(err.message, inFlight));
+      }
+      return fail(err, input.start.tag, agent.name);
     }
     if (!started) {
       return result({
@@ -206,14 +216,37 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
       reason = "tuner_error";
       exitCode = exitForRun(run?.result ?? null, "tuner_error");
     } else {
-      const cli = toCliError(outcome.error);
+      const cli = toCliError(outcome.error, { runId });
       output.progress(`Could not read run ${runId}: ${cli.message} ${stillGoing(runId)}`);
       reason = cli.reason;
       exitCode = cli.exitCode;
     }
-    return result({ kind: "finished", run, reason, exitCode });
+    return result({
+      kind: "finished",
+      run,
+      reason,
+      exitCode,
+      terminal: outcome.kind === "terminal",
+    });
   } finally {
     unsubscribe();
+  }
+}
+
+/** The agent's run in progress (at most one), null if none, undefined if the lookup failed. */
+async function findInFlightRun(
+  api: TunerApi,
+  workspaceId: number,
+  agentId: number,
+): Promise<number | null | undefined> {
+  try {
+    for (const status of ["pending", "running"] as const) {
+      const { simulation_runs } = await api.searchRuns(workspaceId, agentId, status);
+      if (simulation_runs[0]) return simulation_runs[0].id;
+    }
+    return null;
+  } catch {
+    return undefined;
   }
 }
 
