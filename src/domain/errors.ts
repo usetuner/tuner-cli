@@ -29,10 +29,16 @@ export class ApiError extends Error {
   }
 }
 
-/** The request never got a response (DNS, refused, reset, timeout). */
+/**
+ * The request never got a response. `sent` is false only when no connection was made (DNS,
+ * refused): Tuner can't have acted on it. A timeout or a reset leaves the outcome unknown.
+ */
 export class NetworkError extends Error {
   readonly retryable = true;
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly sent = true,
+  ) {
     super(message);
   }
 }

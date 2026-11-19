@@ -6,6 +6,8 @@ import type {
   NoiseEnvironments,
   ProfileList,
   Run,
+  RunSearch,
+  RunStatus,
   ScenarioList,
   StartRunRequest,
   StartRunResponse,
@@ -14,6 +16,18 @@ import type {
 import { CLIENT_HEADER, VERSION } from "./version.js";
 
 const REQUEST_TIMEOUT_MS = 30_000;
+/** Failures before a connection exists, so the request never reached Tuner. */
+const NOT_SENT = new Set([
+  "ECONNREFUSED",
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "ENETDOWN",
+  "EHOSTDOWN",
+  "EADDRNOTAVAIL",
+  "UND_ERR_CONNECT_TIMEOUT",
+]);
 const REQUEST_ID_HEADERS = ["x-request-id", "x-amzn-requestid", "x-amzn-trace-id"];
 
 export interface ClientOptions {
@@ -67,7 +81,7 @@ export class TunerClient implements TunerApi {
         ? `Request to ${url.origin} timed out after ${REQUEST_TIMEOUT_MS / 1000}s`
         : `Could not reach ${url.origin}${cause ? ` (${cause})` : ""}`;
       if (verbose) runtime.stderr.write(`[http] ${method} ${url.pathname} failed: ${message}\n`);
-      throw new NetworkError(message);
+      throw new NetworkError(message, timeout.signal.aborted || !NOT_SENT.has(cause ?? ""));
     } finally {
       clearTimeout(timer);
       options.signal?.removeEventListener("abort", onOuterAbort);
@@ -126,6 +140,12 @@ export class TunerClient implements TunerApi {
 
   listAgents(workspaceId: number): Promise<Agent[]> {
     return this.request("GET", `${ws(workspaceId)}/agents/`);
+  }
+
+  searchRuns(workspaceId: number, agentId: number, status: RunStatus): Promise<RunSearch> {
+    return this.request("GET", `${agent(workspaceId, agentId)}/simulation-runs/search`, {
+      query: { run_status: status, limit: "1" },
+    });
   }
 
   startRun(

@@ -22,6 +22,7 @@ export interface Recorded {
   path: string;
   headers: Record<string, string>;
   body: unknown;
+  signal?: AbortSignal;
 }
 
 type Reply = Response | Error | ((req: Recorded) => Response | Promise<Response>);
@@ -51,6 +52,13 @@ export function networkError(code = "ECONNREFUSED"): Error {
   return Object.assign(new TypeError("fetch failed"), { cause: { code } });
 }
 
+/** A reply that never comes: it rejects only when the request is aborted (client timeout). */
+export function hang(req: Recorded): Promise<Response> {
+  return new Promise((_, reject) =>
+    req.signal?.addEventListener("abort", () => reject(new Error("aborted"))),
+  );
+}
+
 /** Routes by method and path; each route replays its replies in order, repeating the last. */
 export class FakeApi {
   readonly requests: Recorded[] = [];
@@ -77,6 +85,7 @@ export class FakeApi {
       path: url.pathname,
       headers,
       body: init?.body ? JSON.parse(String(init.body)) : undefined,
+      signal: init?.signal ?? undefined,
     };
     this.requests.push(req);
     const route = this.routes.find((r) => r.method === req.method && r.path === req.path);

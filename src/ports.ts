@@ -6,6 +6,8 @@ import type {
   NoiseEnvironments,
   ProfileList,
   Run,
+  RunSearch,
+  RunStatus,
   ScenarioList,
   StartRunRequest,
   StartRunResponse,
@@ -23,6 +25,8 @@ export interface TunerApi {
     body: StartRunRequest,
     signal?: AbortSignal,
   ): Promise<StartRunResponse>;
+  /** The agent's runs with this status, newest first. */
+  searchRuns(workspaceId: number, agentId: number, status: RunStatus): Promise<RunSearch>;
   getRun(workspaceId: number, agentId: number, runId: number, signal?: AbortSignal): Promise<Run>;
   cancelRun(workspaceId: number, agentId: number, runId: number): Promise<Run>;
   listScenarios(workspaceId: number, agentId: number, tag?: string): Promise<ScenarioList>;
