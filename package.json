@@ -1,5 +1,5 @@
 {
-  "name": "@usetuner/cli",
+  "name": "@usetuner.ai/cli",
   "version": "0.1.0",
   "description": "Run Tuner voice-agent simulations from the command line",
   "license": "UNLICENSED",
