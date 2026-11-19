@@ -32,7 +32,7 @@ describe("auth use cases", () => {
       },
     });
     await expect(login(f.deps, { apiKey: "bad" }, async () => "")).rejects.toThrow(
-      "API key rejected: Invalid API key.",
+      "API key rejected (Invalid API key); key from --api-key.",
     );
     expect(f.credentials.key).toBeUndefined();
   });

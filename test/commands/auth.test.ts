@@ -1,7 +1,9 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { FileCredentialStore } from "../../src/adapters/credential-store.js";
 import { FakeApi, apiError, json, makeRuntime, run, whoami } from "../helpers.js";
+
+afterEach(() => vi.useRealTimers());
 
 const ok = () => new FakeApi().on("GET", "/api/v1/whoami", json(200, whoami(null)));
 
@@ -17,6 +19,32 @@ describe("auth login", () => {
     expect(rt.out()).toContain("Logged in to workspace Acme (12) with key ci-staging (…9f3a)");
   });
 
+  it("retries a 429 or 5xx like the other commands, then saves the key", async () => {
+    vi.useFakeTimers();
+    const api = new FakeApi().on(
+      "GET",
+      "/api/v1/whoami",
+      apiError(429, "rate_limited", "slow", {}, { "retry-after": "1" }),
+      apiError(502, "internal_error", "Bad gateway"),
+      json(200, whoami(null)),
+    );
+    const rt = makeRuntime(api, { env: { TUNER_API_KEY: undefined } });
+    const p = run(rt, "auth", "login", "--api-key", "tr_api_new");
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(await p).toBe(0);
+    expect(api.requests).toHaveLength(3);
+  });
+
+  it("exits 3 when Tuner keeps rate limiting, like every other command", async () => {
+    vi.useFakeTimers();
+    const api = new FakeApi().on("GET", "/api/v1/whoami", apiError(429, "rate_limited", "slow"));
+    const rt = makeRuntime(api, { env: { TUNER_API_KEY: undefined } });
+    const p = run(rt, "auth", "login", "--api-key", "tr_api_new");
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await p).toBe(3);
+    expect(rt.err()).toContain("Tuner kept rate limiting requests (429 rate_limited)");
+  });
+
   it("does not save a rejected key", async () => {
     const api = new FakeApi().on(
       "GET",
@@ -26,7 +54,7 @@ describe("auth login", () => {
     const rt = makeRuntime(api);
     expect(await run(rt, "auth", "login", "--api-key", "tr_api_bad")).toBe(2);
     expect(existsSync(new FileCredentialStore(rt.configDir).path)).toBe(false);
-    expect(rt.err()).toContain("API key rejected: Invalid API key.");
+    expect(rt.err()).toContain("API key rejected (Invalid API key); key from --api-key.");
   });
 
   it("reads the key from stdin when not a TTY", async () => {
@@ -80,7 +108,24 @@ describe("auth status", () => {
     );
     const rt = makeRuntime(api);
     expect(await run(rt, "--api-key", "tr_api_x", "auth", "status")).toBe(2);
-    expect(rt.err()).toContain("(key from --api-key)");
+    expect(rt.err()).toContain("; key from --api-key.");
+  });
+});
+
+describe("stored key problems", () => {
+  it("names a broken credentials file and exits 2", async () => {
+    const rt = makeRuntime(ok(), { env: { TUNER_API_KEY: undefined } });
+    const path = new FileCredentialStore(rt.configDir).path;
+    mkdirSync(rt.configDir, { recursive: true });
+    writeFileSync(path, "{broken");
+    expect(await run(rt, "auth", "status")).toBe(2);
+    expect(rt.err()).toContain(`Can't read the stored API key at ${path} (not valid JSON).`);
+  });
+
+  it("says there is no key when nothing is stored", async () => {
+    const rt = makeRuntime(ok(), { env: { TUNER_API_KEY: undefined } });
+    expect(await run(rt, "auth", "status")).toBe(2);
+    expect(rt.err()).toContain("No API key. Set TUNER_API_KEY or run `tuner auth login`.");
   });
 });
 

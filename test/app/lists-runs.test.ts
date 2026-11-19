@@ -47,7 +47,7 @@ describe("run use cases", () => {
     expect(f.api.called("getRun")[1]).toEqual([12, 77, 4821]);
   });
 
-  it("cancels once without retrying", async () => {
+  it("retries the idempotent cancel, then gives up", async () => {
     const f = fakeDeps({
       whoami: async () => whoami(),
       cancelRun: async () => {
@@ -55,6 +55,6 @@ describe("run use cases", () => {
       },
     });
     await expect(cancelRun(f.deps, { flags: {}, agent: "a", runId: 1 })).rejects.toThrow("down");
-    expect(f.api.called("cancelRun")).toHaveLength(1);
+    expect(f.api.called("cancelRun").length).toBeGreaterThan(1);
   });
 });
