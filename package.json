@@ -22,7 +22,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "gen:openapi": "sh scripts/gen-openapi.sh",
+    "gen:openapi": "node scripts/fetch-openapi.mjs",
+    "openapi:check": "node scripts/fetch-openapi.mjs --check",
     "gen:types": "openapi-typescript openapi/openapi.json --default-non-nullable false -o src/generated/api.ts",
     "gen": "npm run gen:openapi && npm run gen:types",
     "prepack": "npm run build"
