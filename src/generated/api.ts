@@ -7031,7 +7031,7 @@ export interface components {
              * @description Whether calls in the owning run are expected to be graded by evals.
              */
             evals_expected: boolean;
-            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
+            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
             /** @description `agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
             failure_category: components["schemas"]["FailureCategory"] | null;
@@ -7346,7 +7346,7 @@ export interface components {
              * @description Label of the scenario: the generated persona, or the library scenario's name for runs from saved scenarios. Null if not available, and for replay runs.
              */
             persona?: string | null;
-            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
+            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
             /** @description `agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
             failure_category: components["schemas"]["FailureCategory"] | null;
@@ -7752,7 +7752,7 @@ export interface components {
             simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Run Mode
@@ -7923,7 +7923,7 @@ export interface components {
             simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Run Mode
@@ -8116,7 +8116,7 @@ export interface components {
             run_mode?: string;
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
         };
         /**

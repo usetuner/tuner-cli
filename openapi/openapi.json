@@ -22618,7 +22618,7 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/Verdict",
-            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
+            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
           },
           "failure_category": {
             "anyOf": [
@@ -23203,7 +23203,7 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/Verdict",
-            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your provider account is out of credits or quota, or your agent's line was busy), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
+            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
           },
           "failure_category": {
             "anyOf": [
@@ -23906,7 +23906,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           },
           "run_mode": {
             "type": "string",
@@ -24224,7 +24224,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           },
           "run_mode": {
             "type": "string",
@@ -24595,7 +24595,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's side (provider account out of credits or quota, or the agent's line busy), else `tuner_error`. `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           }
         },
         "type": "object",
