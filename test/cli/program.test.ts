@@ -45,6 +45,18 @@ describe("program", () => {
     expect(rt.out()).not.toMatch(/\b(4|5|124) /);
   });
 
+  it.each([
+    [["sim"], 2],
+    [["runs"], 2],
+    [[], 2],
+    [["help"], 0],
+    [["help", "sim", "run"], 0],
+  ])("tuner %j without a command to run exits %d", async (args, exit) => {
+    const rt = makeRuntime(new FakeApi());
+    expect(await run(rt, ...args)).toBe(exit);
+    expect(rt.out() + rt.err()).toContain("Usage: tuner");
+  });
+
   it("runs --help shows get and cancel", async () => {
     const rt = makeRuntime(new FakeApi());
     expect(await run(rt, "runs", "--help")).toBe(0);
