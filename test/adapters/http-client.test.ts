@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TunerClient } from "../../src/adapters/http-client.js";
-import { ApiError, NetworkError } from "../../src/domain/errors.js";
+import { ApiError, NetworkError, UnexpectedResponseError } from "../../src/domain/errors.js";
 import { VERSION } from "../../src/adapters/version.js";
 import {
   AGENT_PATH,
@@ -73,6 +73,36 @@ describe("TunerClient", () => {
       .whoami()
       .catch((e) => e);
     expect(err.code).toBe("insufficient_access");
+  });
+
+  it("names the status instead of printing an HTML error page", async () => {
+    const api = new FakeApi().on(
+      "GET",
+      "/api/v1/whoami",
+      new Response("<html><body>502 Bad Gateway</body></html>", {
+        status: 502,
+        statusText: "Bad Gateway",
+      }),
+    );
+    const err = await client(api)
+      .whoami()
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err.detail).toBe(`502 Bad Gateway from ${BASE}`);
+  });
+
+  it.each([
+    ["not JSON", "<html>login</html>", "not JSON"],
+    ["empty", "", "empty"],
+  ])("rejects a 2xx that is %s", async (_n, body, what) => {
+    const api = new FakeApi().on("GET", "/api/v1/whoami", new Response(body, { status: 200 }));
+    const err = await client(api)
+      .whoami()
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(UnexpectedResponseError);
+    expect(err.message).toBe(
+      `Tuner sent a response this CLI can't read (200, ${what}) from GET ${BASE}/api/v1/whoami. Check --base-url (or TUNER_BASE_URL).`,
+    );
   });
 
   it("reads Retry-After", async () => {
