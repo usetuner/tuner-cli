@@ -71,8 +71,11 @@ export function noiseLine(run: Run | undefined): string | undefined {
 export function metadataLine(run: Run | undefined): string | undefined {
   const entries = Object.entries(run?.metadata ?? {});
   if (!entries.length) return undefined;
-  const text = (v: unknown) => (typeof v === "string" ? v : JSON.stringify(v));
-  return `Metadata: ${entries.map(([k, v]) => `${k}=${text(v)}`).join(" · ")}`;
+  // Strip control characters so stored values can't inject terminal escapes or newlines.
+  // eslint-disable-next-line no-control-regex
+  const clean = (s: string) => s.replace(/[\u0000-\u001f\u007f-\u009f]/g, "");
+  const text = (v: unknown) => clean(typeof v === "string" ? v : JSON.stringify(v));
+  return `Metadata: ${entries.map(([k, v]) => `${clean(k)}=${text(v)}`).join(" · ")}`;
 }
 
 /** Left-aligned columns; the last column is not padded. */

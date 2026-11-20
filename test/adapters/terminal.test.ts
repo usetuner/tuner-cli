@@ -64,6 +64,9 @@ describe("terminal renderer", () => {
     expect(metadataLine(makeRun({ metadata: { n: 3, o: { a: 1 }, z: null } }))).toBe(
       'Metadata: n=3 · o={"a":1} · z=null',
     );
+    expect(metadataLine(makeRun({ metadata: { "k\u001b[2J": "a\nb\u001b[31m\u009b" } }))).toBe(
+      "Metadata: k[2J=ab[31m",
+    );
     expect(metadataLine(makeRun({ metadata: {} }))).toBeUndefined();
     expect(metadataLine(makeRun({ metadata: null }))).toBeUndefined();
     expect(metadataLine(makeRun())).toBeUndefined();
