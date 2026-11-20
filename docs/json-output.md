@@ -51,14 +51,16 @@ means a new version.
 }
 ```
 
-| Field          | Meaning                                                                                                                                       |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `reason`       | `null` for a passed run; `agent_failed`, `tuner_error`, `timeout` or `canceled` for a run that started; or the error `code` when nothing ran. |
-| `run`          | `null` when nothing ran.                                                                                                                      |
-| `run.metadata` | The run's `--meta` pairs as Tuner returns them; `null` when the run has none. Older runs may hold non-string values.                          |
-| `run.tag`      | The tag the run was started with; `null` when started by scenario IDs. Absent when Tuner doesn't return it.                                   |
-| `error`        | Present when nothing ran, with `code` and `message`. A `canceled` document has no `error`.                                                    |
-| `exit_code`    | The process exit code.                                                                                                                        |
+| Field       | Meaning                                                                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reason`    | `null` for a passed run; `agent_failed`, `tuner_error`, `timeout` or `canceled` for a run that started; or the error `code` when nothing ran. |
+| `run`       | `null` when nothing ran.                                                                                                                      |
+| `error`     | Present when nothing ran, with `code` and `message`. A `canceled` document has no `error`.                                                    |
+| `exit_code` | The process exit code.                                                                                                                        |
+
+`run.metadata` holds the run's `--meta` pairs as Tuner returns them, or `null` when the run has
+none; older runs may hold non-string values. `run.tag` is the tag the run was started with, or
+`null` when it was started by scenario IDs; it is absent when Tuner doesn't return it.
 
 ## List documents
 
