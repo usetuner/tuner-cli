@@ -80,6 +80,18 @@ describe("--output json matches schema_version 1", () => {
     expect(check(rt.out()).run.metadata).toEqual(meta);
   });
 
+  it("run with the tag it was started with", async () => {
+    const rt = makeRuntime(happyApi(makeRun({ tag: "smoke" })));
+    expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(0);
+    expect(check(rt.out()).run.tag).toBe("smoke");
+  });
+
+  it("no tag key when Tuner doesn't return one", async () => {
+    const rt = makeRuntime(happyApi());
+    expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(0);
+    expect(check(rt.out()).run).not.toHaveProperty("tag");
+  });
+
   it("failed run", async () => {
     const failed = makeRun({
       result: "failed",
