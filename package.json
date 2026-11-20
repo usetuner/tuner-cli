@@ -42,10 +42,7 @@
     "gen:types": "openapi-typescript openapi/openapi.json --default-non-nullable false -o src/generated/api.ts",
     "gen": "npm run gen:openapi && npm run gen:types",
     "prepack": "npm run build",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm test",
-    "release:patch": "npm version patch && npm publish",
-    "release:minor": "npm version minor && npm publish",
-    "release:major": "npm version major && npm publish"
+    "prepublishOnly": "npm run typecheck && npm run lint && npm test"
   },
   "publishConfig": {
     "access": "public"
