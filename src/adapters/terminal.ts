@@ -67,6 +67,17 @@ export function noiseLine(run: Run | undefined): string | undefined {
   return `Noise: ${slug}${gain != null ? ` · intensity ${gainText(gain)}` : ""}`;
 }
 
+/** `Metadata: commit=abc · env=staging`, or undefined when the run has none. */
+export function metadataLine(run: Run | undefined): string | undefined {
+  const entries = Object.entries(run?.metadata ?? {});
+  if (!entries.length) return undefined;
+  // Strip control characters so stored values can't inject terminal escapes or newlines.
+  // eslint-disable-next-line no-control-regex
+  const clean = (s: string) => s.replace(/[\u0000-\u001f\u007f-\u009f]/g, "");
+  const text = (v: unknown) => clean(typeof v === "string" ? v : JSON.stringify(v));
+  return `Metadata: ${entries.map(([k, v]) => `${clean(k)}=${text(v)}`).join(" · ")}`;
+}
+
 /** Left-aligned columns; the last column is not padded. */
 export function table(headers: string[], rows: string[][]): string {
   const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => (r[i] ?? "").length)));
@@ -101,8 +112,8 @@ export function writeRun(runtime: Pick<Runtime, "stdout" | "env">, run: Run): vo
   const paint = painter(useColor(stdout, runtime));
   const reason = run.reason ? ` (${run.reason})` : "";
   stdout.write(`Run ${run.id} · ${run.status} · result ${run.result}${reason}\n`);
-  const noise = noiseLine(run);
-  stdout.write(noise ? `${noise}\n\n` : "\n");
+  const extra = [noiseLine(run), metadataLine(run)].filter(Boolean);
+  stdout.write(extra.length ? `${extra.join("\n")}\n\n` : "\n");
   for (const call of run.simulation_calls) stdout.write(scenarioLine(call, paint) + "\n");
   stdout.write(`\n${summaryLine(summarize(run))}\n${run.dashboard_url}\n`);
 }

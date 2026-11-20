@@ -69,6 +69,14 @@
                 "noise_intensity": { "type": ["number", "null"] }
               }
             },
+            "metadata": {
+              "description": "Key-value pairs sent with --meta, as the API returns them; null when the run has none. Values are strings, except on older runs, which may hold any JSON value.",
+              "type": ["object", "null"]
+            },
+            "tag": {
+              "description": "The tag the run was started with; null when it was started by scenario IDs. Absent when Tuner doesn't return it.",
+              "type": ["string", "null"]
+            },
             "started_at": { "type": ["string", "null"] },
             "completed_at": { "type": ["string", "null"] }
           }

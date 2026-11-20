@@ -58,6 +58,10 @@ means a new version.
 | `error`     | Present when nothing ran, with `code` and `message`. A `canceled` document has no `error`.                                                    |
 | `exit_code` | The process exit code.                                                                                                                        |
 
+`run.metadata` holds the run's `--meta` pairs as Tuner returns them, or `null` when the run has
+none; older runs may hold non-string values. `run.tag` is the tag the run was started with, or
+`null` when it was started by scenario IDs; it is absent when Tuner doesn't return it.
+
 ## List documents
 
 The list commands print `{ "schema_version": 1, "<items>": [...] }`, where `<items>` is
