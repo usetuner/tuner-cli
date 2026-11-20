@@ -70,9 +70,8 @@
               }
             },
             "metadata": {
-              "description": "Key-value pairs sent with --meta, as the API returns them; null when the run has none.",
-              "type": ["object", "null"],
-              "additionalProperties": { "type": "string" }
+              "description": "Key-value pairs sent with --meta, as the API returns them; null when the run has none. Values are strings, except on older runs, which may hold any JSON value.",
+              "type": ["object", "null"]
             },
             "started_at": { "type": ["string", "null"] },
             "completed_at": { "type": ["string", "null"] }

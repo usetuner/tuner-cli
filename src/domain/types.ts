@@ -7,7 +7,10 @@ export type Agent = Schemas["Agent"];
 /** Run metadata, stored as sent with `--meta`. */
 export type RunMetadata = Record<string, string>;
 // The deployed schema doesn't return `metadata` yet; drop this once the types are regenerated.
-export type Run = Schemas["SimulationRunGetResponse"] & { metadata?: RunMetadata | null };
+// Older runs may hold any JSON object, so values are not always strings.
+export type Run = Schemas["SimulationRunGetResponse"] & {
+  metadata?: Record<string, unknown> | null;
+};
 export type SimCall = Schemas["SimulationCallDetailResponse"];
 export type Verdict = Schemas["Verdict"];
 export type RunResult = Schemas["RunResult"];

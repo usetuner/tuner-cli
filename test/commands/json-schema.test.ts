@@ -73,6 +73,13 @@ describe("--output json matches schema_version 1", () => {
     expect(rt.err()).not.toContain("Metadata:");
   });
 
+  it("run with non-string metadata from an older run", async () => {
+    const meta = { build: 42, extra: { a: 1 } };
+    const rt = makeRuntime(happyApi(makeRun({ metadata: meta })));
+    expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(0);
+    expect(check(rt.out()).run.metadata).toEqual(meta);
+  });
+
   it("failed run", async () => {
     const failed = makeRun({
       result: "failed",

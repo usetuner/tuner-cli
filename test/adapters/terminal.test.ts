@@ -61,6 +61,9 @@ describe("terminal renderer", () => {
     expect(metadataLine(makeRun({ metadata: { commit: "abc", env: "staging" } }))).toBe(
       "Metadata: commit=abc · env=staging",
     );
+    expect(metadataLine(makeRun({ metadata: { n: 3, o: { a: 1 }, z: null } }))).toBe(
+      'Metadata: n=3 · o={"a":1} · z=null',
+    );
     expect(metadataLine(makeRun({ metadata: {} }))).toBeUndefined();
     expect(metadataLine(makeRun({ metadata: null }))).toBeUndefined();
     expect(metadataLine(makeRun())).toBeUndefined();

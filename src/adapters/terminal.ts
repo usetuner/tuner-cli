@@ -71,7 +71,8 @@ export function noiseLine(run: Run | undefined): string | undefined {
 export function metadataLine(run: Run | undefined): string | undefined {
   const entries = Object.entries(run?.metadata ?? {});
   if (!entries.length) return undefined;
-  return `Metadata: ${entries.map(([k, v]) => `${k}=${v}`).join(" · ")}`;
+  const text = (v: unknown) => (typeof v === "string" ? v : JSON.stringify(v));
+  return `Metadata: ${entries.map(([k, v]) => `${k}=${text(v)}`).join(" · ")}`;
 }
 
 /** Left-aligned columns; the last column is not padded. */
