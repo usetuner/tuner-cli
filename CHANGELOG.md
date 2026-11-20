@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0]
+
 ### Added
 
 - `tuner sim run --meta key=value`, repeatable: send metadata with the run. `sim run` and `runs get` show it as a `Metadata:` line, and JSON output adds `run.metadata`, plus `run.tag` when Tuner returns it.
