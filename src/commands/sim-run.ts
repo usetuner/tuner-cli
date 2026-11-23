@@ -1,5 +1,5 @@
 import { writeJson } from "../adapters/json.js";
-import { noiseLine, summaryLine, terminalOutput } from "../adapters/terminal.js";
+import { metadataLine, noiseLine, summaryLine, terminalOutput } from "../adapters/terminal.js";
 import { runSimulation } from "../app/sim-run.js";
 import { type OutputFormat, buildDocument } from "../domain/document.js";
 import { EXIT } from "../domain/exit.js";
@@ -15,6 +15,7 @@ export interface SimRunOptions {
   profile?: string;
   noise?: string;
   noiseIntensity?: string;
+  meta?: string[];
   output?: OutputFormat;
   wait?: boolean;
   timeout?: string;
@@ -47,14 +48,12 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
     if (r.exitCode === EXIT.TUNER_FAULT) output.progress(tunerFault(r.reason));
   } else if (r.kind === "started" && !json) {
     runtime.stdout.write(`${r.runId}\n${r.run?.dashboard_url ? r.run.dashboard_url + "\n" : ""}`);
-    const noise = noiseLine(r.run);
-    if (noise) output.progress(noise);
+    for (const line of [noiseLine(r.run), metadataLine(r.run)]) if (line) output.progress(line);
   } else if (r.kind === "finished") {
     const { run, reason, exitCode } = r;
     output.run(run);
     if (!json) {
-      const noise = noiseLine(run);
-      if (noise) output.progress(noise);
+      for (const line of [noiseLine(run), metadataLine(run)]) if (line) output.progress(line);
       runtime.stdout.write(`\n${summaryLine(summarize(run))}\n`);
       if (run?.dashboard_url) runtime.stdout.write(`${run.dashboard_url}\n`);
     } else if (run?.dashboard_url) {

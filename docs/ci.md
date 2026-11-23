@@ -2,9 +2,7 @@
 
 ## GitHub Actions
 
-The package is not on npm yet, so build the CLI from source in the job. While the repo is private,
-the checkout needs a token that can read `usetuner/tuner-cli`. The full workflow is in the
-[README](../README.md#use-in-ci-github-actions).
+Install the published package with `npm install -g @usetuner.ai/cli`, then run `tuner`. The full workflow is in the [README](../README.md#use-in-ci-github-actions).
 
 Points to keep:
 

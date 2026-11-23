@@ -68,15 +68,20 @@ Each layer is a directory under `src/`. The ports (`TunerApi`, `CredentialStore`
 
 ## Releasing
 
-Publishing to npm is manual. You need to be a member of the `usetuner.ai` npm org.
+Merging to `main` publishes to npm. The `release` workflow publishes when the version in
+`package.json` is not on npm yet, then tags `vX.Y.Z` and creates a GitHub release from that
+version's `CHANGELOG.md` section.
 
-1. Move the `Unreleased` entries in `CHANGELOG.md` under the new version and merge that to `main`.
-2. From an up-to-date `main`, run `npm login`, then `npm run release:patch` (or `release:minor`, `release:major`).
-3. Push the version commit and tag: `git push --follow-tags`.
+1. In your PR, run `npm version patch --no-git-tag-version` (or `minor`, `major`) and move the
+   `Unreleased` entries in `CHANGELOG.md` under a new `## [X.Y.Z]` heading.
+2. Merge. The workflow runs typecheck, lint and tests, then publishes.
 
-For the first release (0.1.0), run `npm publish` instead: `release:patch` would bump to 0.1.1 first.
+The `version-bump` check fails a PR that changes `src/`, `schema/`, `package.json` or
+`package-lock.json` without a bump. Docs, tests and workflow changes need no bump.
 
-`release:*` runs `npm version` and `npm publish`. `prepublishOnly` runs typecheck, lint and tests, and `prepack` builds `dist/`.
+One-time setup: the workflow publishes with npm trusted publishing, so no token is stored. On
+npmjs.com, open `@usetuner.ai/cli` → Settings → Trusted Publisher → GitHub Actions, and enter
+org `usetuner`, repo `tuner-cli`, workflow `release.yml`.
 
 ## Security
 

@@ -4,7 +4,14 @@ type Schemas = components["schemas"];
 
 export type Whoami = Schemas["WhoamiResponse"];
 export type Agent = Schemas["Agent"];
-export type Run = Schemas["SimulationRunGetResponse"];
+/** Run metadata, stored as sent with `--meta`. */
+export type RunMetadata = Record<string, string>;
+// The deployed schema doesn't return `metadata` or `tag` yet; drop this once the types are regenerated.
+// Older runs may hold any JSON object, so values are not always strings.
+export type Run = Schemas["SimulationRunGetResponse"] & {
+  metadata?: Record<string, unknown> | null;
+  tag?: string | null;
+};
 export type SimCall = Schemas["SimulationCallDetailResponse"];
 export type Verdict = Schemas["Verdict"];
 export type RunResult = Schemas["RunResult"];

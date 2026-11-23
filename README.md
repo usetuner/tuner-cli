@@ -2,10 +2,7 @@
 
 Run Tuner voice-agent simulations from your terminal and your CI.
 
-[![ci](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml)
-
-> [!NOTE]
-> It supports Linux and macOS. Windows is not supported yet.
+> **Note:** It supports Linux and macOS. Windows is not supported yet.
 
 ## Install
 
@@ -90,6 +87,15 @@ tuner noise list
 tuner sim run --tag smoke --noise cafe --noise-intensity high
 ```
 
+### Tag a run with metadata
+
+```bash
+tuner sim run --tag smoke --meta commit="$(git rev-parse HEAD)" --meta branch=main
+```
+
+Repeat `--meta key=value` for each pair. Tuner stores them with the run, and `tuner runs get` shows
+them.
+
 ### Cancel a run
 
 ```bash
@@ -120,14 +126,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: actions/checkout@v4
-        with:
-          repository: usetuner/tuner-cli
-          path: tuner-cli
-          token: ${{ secrets.TUNER_CLI_READ_TOKEN }} # needed while the repo is private
-      - name: Build the Tuner CLI
-        working-directory: tuner-cli
-        run: npm ci && npm run build && npm link
+      - run: npm install -g @usetuner.ai/cli
       - name: Run Tuner simulations
         env:
           TUNER_API_KEY: ${{ secrets.TUNER_API_KEY }}
