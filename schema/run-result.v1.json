@@ -119,6 +119,7 @@
               "passed",
               "failed",
               "not_connected",
+              "setup_error",
               "platform_error",
               "unreported",
               "analysis_failed",
@@ -127,7 +128,9 @@
               "canceled"
             ]
           },
-          "failure_category": { "enum": ["agent_failed", "tuner_error", "canceled", null] },
+          "failure_category": {
+            "enum": ["agent_failed", "setup_error", "tuner_error", "canceled", null]
+          },
           "failed_evals": {
             "type": "array",
             "items": {
@@ -142,7 +145,7 @@
       }
     },
     "reason": {
-      "description": "agent_failed, tuner_error, timeout or canceled for a run that started; the error code when nothing ran; null when the run passed.",
+      "description": "agent_failed, setup_error, tuner_error, timeout or canceled for a run that started; the error code when nothing ran; null when the run passed.",
       "type": ["string", "null"]
     },
     "exit_code": { "enum": [0, 1, 2, 3, 130, 143] },

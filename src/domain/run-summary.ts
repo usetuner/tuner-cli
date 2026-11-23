@@ -11,6 +11,7 @@ export interface Summary {
 
 const INCONCLUSIVE: Verdict[] = [
   "not_connected",
+  "setup_error",
   "platform_error",
   "unreported",
   "analysis_failed",

@@ -60,7 +60,7 @@ export async function simRun(ctx: CommandContext, opts: SimRunOptions): Promise<
       output.progress(run.dashboard_url);
     }
     const end =
-      r.terminal && r.runId !== undefined
+      r.runId !== undefined && (r.terminal || reason === "setup_error")
         ? runEndMessage(r.runId, run?.result ?? null, reason)
         : exitCode === EXIT.TUNER_FAULT
           ? tunerFault(reason)

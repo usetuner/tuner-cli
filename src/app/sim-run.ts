@@ -205,7 +205,9 @@ export async function runSimulation(deps: SimRunDeps, input: SimRunInput): Promi
         const serverReason = (run?.reason as RunReason | null | undefined) ?? null;
         exitCode = exitForTimeout(run?.result ?? null, serverReason);
         reason =
-          serverReason === "agent_failed" || serverReason === "tuner_error"
+          serverReason === "agent_failed" ||
+          serverReason === "setup_error" ||
+          serverReason === "tuner_error"
             ? serverReason
             : "timeout";
       }

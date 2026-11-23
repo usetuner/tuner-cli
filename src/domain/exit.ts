@@ -12,7 +12,7 @@ export const EXIT = {
 export type Signal = "SIGINT" | "SIGTERM";
 
 /** `reason` codes for a run that started. */
-export type RunReason = "agent_failed" | "tuner_error" | "timeout" | "canceled";
+export type RunReason = "agent_failed" | "setup_error" | "tuner_error" | "timeout" | "canceled";
 
 /** Worst first: an agent failure, then a problem the customer must fix, then a Tuner fault. */
 const SEVERITY: readonly number[] = [EXIT.AGENT_FAILED, EXIT.USAGE, EXIT.TUNER_FAULT];
@@ -57,6 +57,7 @@ export function worstExit(codes: number[]): number {
 export function exitForRun(result: RunResult | null, reason: RunReason | null): number {
   const codes: number[] = [];
   if (result === "failed" || reason === "agent_failed") codes.push(EXIT.AGENT_FAILED);
+  if (reason === "setup_error") codes.push(EXIT.USAGE);
   if (reason === "tuner_error" || reason === "canceled" || reason === "timeout") {
     codes.push(EXIT.TUNER_FAULT);
   }
@@ -66,11 +67,12 @@ export function exitForRun(result: RunResult | null, reason: RunReason | null): 
 
 /**
  * Exit code for a run we stopped at `--timeout` (3), unless the server already says the
- * agent failed. Our cancel makes the server say `canceled`, which adds nothing.
+ * agent failed or the setup did. Our cancel makes the server say `canceled`, which adds nothing.
  */
 export function exitForTimeout(result: RunResult | null, serverReason: RunReason | null): number {
   const codes: number[] = [EXIT.TUNER_FAULT];
   if (result === "failed" || serverReason === "agent_failed") codes.push(EXIT.AGENT_FAILED);
+  if (serverReason === "setup_error") codes.push(EXIT.USAGE);
   return worstExit(codes);
 }
 

@@ -18,6 +18,7 @@ const VERDICT_STYLE: Record<Verdict, { mark: string; label: string; color: numbe
   ran: { mark: "✓", label: "ran", color: 32 },
   failed: { mark: "✗", label: "failed", color: 31 },
   not_connected: { mark: "!", label: "not connected", color: 33 },
+  setup_error: { mark: "!", label: "setup error", color: 33 },
   platform_error: { mark: "!", label: "platform error", color: 33 },
   unreported: { mark: "!", label: "unreported", color: 33 },
   analysis_failed: { mark: "!", label: "analysis failed", color: 33 },
@@ -31,7 +32,8 @@ export function scenarioLine(call: SimCall, paint: Paint): string {
   const evals = call.failed_evals.map((e) => e.name).filter(Boolean);
   const tail = evals.length ? `   failed evals: ${evals.join(", ")}` : "";
   const failure =
-    call.failure_category === "tuner_error" && call.failure?.message
+    (call.failure_category === "tuner_error" || call.failure_category === "setup_error") &&
+    call.failure?.message
       ? `   ${call.failure.message}`
       : "";
   return `  ${head} ${scenarioName(call)}${tail}${failure}`;

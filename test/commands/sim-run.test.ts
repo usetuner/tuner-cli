@@ -61,6 +61,23 @@ const inconclusiveRun = () =>
     ],
   });
 
+const setupErrorRun = () =>
+  makeRun({
+    result: "inconclusive",
+    reason: "setup_error",
+    simulation_calls: [
+      call({
+        verdict: "setup_error",
+        failure_category: "setup_error",
+        failure: {
+          reason: "retell_credits_exhausted",
+          title: "Retell credits exhausted",
+          message: "Your Retell account is out of credits",
+        },
+      } as never),
+    ],
+  });
+
 const canceledRun = () =>
   makeRun({
     status: "canceled",
@@ -170,6 +187,22 @@ describe("sim run: results and exit codes", () => {
     expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
     expect(rt.err()).not.toContain("--fail-on-inconclusive");
     expect(rt.out()).toContain("! not connected");
+  });
+
+  it("exits 2 with what to fix on a setup_error run", async () => {
+    const rt = makeRuntime(happyApi(setupErrorRun()));
+    expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(2);
+    const doc = JSON.parse(rt.out());
+    expect(doc).toMatchObject({ reason: "setup_error", exit_code: 2 });
+    expect(rt.err()).toContain("Check your voice provider account's credits or quota");
+  });
+
+  it("prints the setup_error scenario and its cause", async () => {
+    const rt = makeRuntime(happyApi(setupErrorRun()));
+    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(2);
+    expect(rt.out()).toContain("! setup error");
+    expect(rt.out()).toContain("Your Retell account is out of credits");
+    expect(rt.out()).toContain("0 passed · 0 failed · 1 inconclusive");
   });
 
   it("exits 3 on a run canceled elsewhere", async () => {
@@ -665,6 +698,17 @@ describe("sim run: stop paths", () => {
     expect(doc.exit_code).toBe(3);
     expect(doc.reason).toBe("tuner_error");
     expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
+  });
+
+  it("--timeout on a run that just ended setup_error keeps that reason, exit 2", async () => {
+    vi.useFakeTimers();
+    const api = happyApi(pendingRun()).on("POST", CANCEL, json(200, setupErrorRun()));
+    const rt = makeRuntime(api);
+    const p = run(rt, "sim", "run", "--tag", "smoke", "--timeout", "90s", "--output", "json");
+    await vi.advanceTimersByTimeAsync(91_000);
+    expect(await p).toBe(2);
+    expect(JSON.parse(rt.out())).toMatchObject({ reason: "setup_error", exit_code: 2 });
+    expect(rt.err()).toContain("The run couldn't test your agent (setup_error).");
   });
 
   it.each([
