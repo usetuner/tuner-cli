@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1]
+
+### Changed
+
+- A run that fails on your own voice provider setup (out of credits or quota) ends `reason: setup_error`, exits 2 (was 3) and says what to check. `setup_error` is added to the verdict and `failure_category` enums in `schema/run-result.v1.json`; `schema_version` stays 1.
+
 ## [0.2.0]
 
 ### Added
