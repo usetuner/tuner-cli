@@ -339,6 +339,17 @@ describe("sim run: usage errors exit 2", () => {
     ],
     [["sim", "run", "--suite", "s", "--profile", "p"], "--suite can't be combined with --profile."],
     [["sim", "run", "--suite", "s", "--noise", "cafe"], "--suite can't be combined with --noise."],
+    [
+      ["sim", "run", "--suite", "s", "--noise-intensity", "high"],
+      "--suite can't be combined with --noise-intensity.",
+    ],
+    [["sim", "run", "--suite", ""], "--suite needs a suite name; got an empty value."],
+    [["sim", "run", "--suite", "   "], "--suite needs a suite name; got an empty value."],
+    [
+      ["sim", "run", "--suite", "", "--tag", "nightly"],
+      "--suite needs a suite name; got an empty value.",
+    ],
+    [["sim", "run", "--tag", "", "--scenario", "1"], "--tag needs a tag; got an empty value."],
     [["sim", "run", "--scenario", "abc"], "Invalid scenario ID 'abc'"],
     [["sim", "run", "--tag", "a", "--timeout", "soon"], "Invalid duration 'soon'"],
     [["sim", "run", "--tag", "a", "--base-url", "ftp://x"], "Base URL must be http or https"],

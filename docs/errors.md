@@ -30,7 +30,8 @@ json`, the `code` below is also in the document's `reason` and `error.code`, and
 | ---------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
 | Unknown command or flag, bad `--output`, missing arg | none           | `error: unknown option '--bogus'` (commander's text) and the usage                        |
 | A command group with no command (`tuner sim`)        | none           | The group's usage on stderr                                                               |
-| None, or more than one, of `--tag` and `--scenario`  | `usage_error`  | `Pass exactly one of --tag, --scenario or --suite.`                                       |
+| No selector, or `--tag` with `--scenario`            | `usage_error`  | `Pass exactly one of --tag, --scenario or --suite.`                                       |
+| An empty or blank `--suite` or `--tag`               | `usage_error`  | `--suite needs a suite name; got an empty value.`                                         |
 | `--suite` with a selector or setting flag            | `usage_error`  | `--suite can't be combined with --tag.` (names the flag)                                  |
 | A bad scenario ID                                    | `usage_error`  | `Invalid scenario ID 'x'. Use numeric IDs from` `tuner scenarios list`                    |
 | A bad run ID                                         | `usage_error`  | `Invalid run ID 'abc'. Use the numeric run ID.`                                           |

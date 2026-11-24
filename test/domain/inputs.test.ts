@@ -99,6 +99,18 @@ describe("buildStartBody with --suite", () => {
     );
   });
 
+  it.each(["", "   "])("rejects a blank suite name %j, even next to another selector", (suite) => {
+    const message = "--suite needs a suite name; got an empty value.";
+    expect(() => buildStartBody({ suite })).toThrow(message);
+    expect(() => buildStartBody({ suite, tag: "nightly" })).toThrow(message);
+  });
+
+  it.each(["", "  "])("rejects a blank tag %j, even next to another selector", (tag) => {
+    const message = "--tag needs a tag; got an empty value.";
+    expect(() => buildStartBody({ tag })).toThrow(message);
+    expect(() => buildStartBody({ tag, scenario: ["1"] })).toThrow(message);
+  });
+
   it("names the selector first when several flags clash", () => {
     expect(() => buildStartBody({ suite: "smoke", language: "en-US", tag: "t" })).toThrow(
       "--suite can't be combined with --tag.",

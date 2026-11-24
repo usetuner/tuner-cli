@@ -53,7 +53,7 @@ export function parseNoiseIntensity(value: string): string | number {
 
 /** A suite brings its own scenarios and settings, so none of these flags may go with --suite. */
 function flagSentWithSuite(opts: StartOptions): string | undefined {
-  if (opts.tag) return "--tag";
+  if (opts.tag !== undefined) return "--tag";
   if ((opts.scenario ?? []).length > 0) return "--scenario";
   if (opts.language) return "--language";
   if (opts.profile) return "--profile";
@@ -84,20 +84,29 @@ export function parseMetadata(values: string[]): RunMetadata {
   return Object.fromEntries(pairs);
 }
 
+/** An empty or blank value, e.g. from an unset shell variable, must not read as "flag not passed". */
+function rejectBlank(flag: string, value: string | undefined, what: string): void {
+  if (value !== undefined && !value.trim()) {
+    throw new CliError(`${flag} needs ${what}; got an empty value.`, "usage_error");
+  }
+}
+
 export function buildStartBody(opts: StartOptions): StartRunRequest {
   const scenarios = opts.scenario ?? [];
-  if (opts.suite) {
+  rejectBlank("--suite", opts.suite, "a suite name");
+  rejectBlank("--tag", opts.tag, "a tag");
+  if (opts.suite !== undefined) {
     const flag = flagSentWithSuite(opts);
     if (flag) throw new CliError(`--suite can't be combined with ${flag}.`, "usage_error");
     const suiteBody: StartRunRequest = { suite: opts.suite };
     if (opts.meta?.length) suiteBody.metadata = parseMetadata(opts.meta);
     return suiteBody;
   }
-  if (Boolean(opts.tag) === scenarios.length > 0) {
+  if ((opts.tag !== undefined) === scenarios.length > 0) {
     throw new CliError("Pass exactly one of --tag, --scenario or --suite.", "usage_error");
   }
   const body: StartRunRequest = {};
-  if (opts.tag) body.tag = opts.tag;
+  if (opts.tag !== undefined) body.tag = opts.tag;
   else body.selected_scenario_ids = parseScenarioIds(scenarios);
   if (opts.language) body.language = opts.language;
   if (opts.profile) body.profile = opts.profile;

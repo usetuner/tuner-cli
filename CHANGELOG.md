@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `tuner sim run --suite <name>` runs a suite with its scenarios and settings. `--meta` works with it.
 - `tuner suites list` lists the agent's suites with scenario count and settings.
 
+### Changed
+
+- An empty or blank `--suite` or `--tag` (for example from an unset shell variable) is now a usage error (exit 2). Before, an empty `--tag` was treated as not passed.
+
 ## [0.2.1]
 
 ### Changed

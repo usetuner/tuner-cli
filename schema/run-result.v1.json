@@ -74,7 +74,7 @@
               "type": ["object", "null"]
             },
             "tag": {
-              "description": "The tag the run was started with; null when it was started by scenario IDs. Absent when Tuner doesn't return it.",
+              "description": "The tag the run was started with; null when it was started by scenario IDs or from a suite. Absent when Tuner doesn't return it.",
               "type": ["string", "null"]
             },
             "started_at": { "type": ["string", "null"] },
