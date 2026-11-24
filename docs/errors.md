@@ -36,6 +36,8 @@ json`, the `code` below is also in the document's `reason` and `error.code`, and
 | A bad run ID                                         | `usage_error`  | `Invalid run ID 'abc'. Use the numeric run ID.`                                           |
 | A bad `--timeout`                                    | `usage_error`  | `Invalid duration '5x'. Use e.g. 90s, 30m, 1h.`                                           |
 | `--noise-intensity` without `--noise`                | `usage_error`  | `--noise-intensity needs --noise <slug>.`                                                 |
+| A `--meta` pair without `=` or with an empty key     | `usage_error`  | `Invalid --meta 'x'. Use key=value.`                                                      |
+| The same `--meta` key twice                          | `usage_error`  | `Duplicate --meta key 'k'. Pass each key once.`                                           |
 | A bad `--base-url` or `TUNER_BASE_URL`               | `usage_error`  | `Invalid base URL '…'.` or `Base URL must be http or https, got '…'.`                     |
 | `auth login` got an empty key                        | `usage_error`  | `No API key given. Pass --api-key, pipe the key on stdin, or run in a terminal.`          |
 | No key in the flag, the env or the stored file       | `config_error` | `No API key. Set TUNER_API_KEY or run` `tuner auth login`                                 |
@@ -92,34 +94,37 @@ never printed.
 A run that started ends with the server's `result` and `reason`. `sim run` prints the line below
 after the summary:
 
-| `result`       | `reason`       | Exit | Line                                                                                                                             |
-| -------------- | -------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `passed`       | `null`         | 0    | none                                                                                                                             |
-| `failed`       | `agent_failed` | 1    | `Result: failed (agent_failed)`                                                                                                  |
-| `inconclusive` | `tuner_error`  | 3    | `Tuner couldn't finish this run (tuner_error).` A call never connected, a platform error, a call unreported, or analysis failed. |
-| `canceled`     | `canceled`     | 3    | `Run 4821 was canceled outside this command (the dashboard or tuner runs cancel).`                                               |
-| anything else  | anything else  | 3    | `Tuner returned a result this CLI doesn't know (result: …, reason: …). Upgrade tuner-cli.`                                       |
+| `result`       | `reason`       | Exit | Line                                                                                                                                                                                                  |
+| -------------- | -------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `passed`       | `null`         | 0    | none                                                                                                                                                                                                  |
+| `failed`       | `agent_failed` | 1    | `Result: failed (agent_failed)`                                                                                                                                                                       |
+| `inconclusive` | `setup_error`  | 2    | `The run couldn't test your agent (setup_error). Check your voice provider account's credits or quota, then run it again.` Your own provider account (Retell, ElevenLabs) is out of credits or quota. |
+| `inconclusive` | `tuner_error`  | 3    | `Tuner couldn't finish this run (tuner_error).` A call never connected, a platform error, a call unreported, or analysis failed.                                                                      |
+| `canceled`     | `canceled`     | 3    | `Run 4821 was canceled outside this command (the dashboard or tuner runs cancel).`                                                                                                                    |
+| anything else  | anything else  | 3    | `Tuner returned a result this CLI doesn't know (result: …, reason: …). Upgrade tuner-cli.`                                                                                                            |
 
 The CLI's own stops:
 
-| Trigger                                   | `reason`       | Exit       | Message                                                                                                      |
-| ----------------------------------------- | -------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
-| `--timeout` reached                       | `timeout`      | 3          | `Timed out after 1h (--timeout 60m). Canceling run 4821...` then `Tuner couldn't finish this run (timeout).` |
-| `--timeout` reached, server said `failed` | `agent_failed` | 1          | as above, then the failed scenarios                                                                          |
-| Polling failed for 5 minutes              | `tuner_error`  | 3          | `Tuner unreachable for 5 minutes (…). Run 4821 may still be going; check it with tuner runs get 4821.`       |
-| Polling got a 4xx (key revoked, run gone) | that code      | 2          | `Could not read run 4821: <message> Run 4821 may still be going; …`                                          |
-| First SIGINT or SIGTERM                   | `canceled`     | 130 or 143 | `Canceling run 4821...` The run is canceled once; the CLI waits up to 10 seconds.                            |
-| Second signal                             | `canceled`     | 130 or 143 | `Stopped. Run 4821 may still be going; check it with tuner runs get 4821.`                                   |
-| A signal during any other command         | none           | 130 or 143 | none: nothing is running, so the command stops at once.                                                      |
-| `--no-wait`                               | `null`         | 0          | The run ID and link on stdout.                                                                               |
+| Trigger                                        | `reason`       | Exit       | Message                                                                                                      |
+| ---------------------------------------------- | -------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| `--timeout` reached                            | `timeout`      | 3          | `Timed out after 1h (--timeout 60m). Canceling run 4821...` then `Tuner couldn't finish this run (timeout).` |
+| `--timeout` reached, server said `failed`      | `agent_failed` | 1          | as above, then the failed scenarios                                                                          |
+| `--timeout` reached, server said `setup_error` | `setup_error`  | 2          | as above, then the `setup_error` line                                                                        |
+| Polling failed for 5 minutes                   | `tuner_error`  | 3          | `Tuner unreachable for 5 minutes (…). Run 4821 may still be going; check it with tuner runs get 4821.`       |
+| Polling got a 4xx (key revoked, run gone)      | that code      | 2          | `Could not read run 4821: <message> Run 4821 may still be going; …`                                          |
+| First SIGINT or SIGTERM                        | `canceled`     | 130 or 143 | `Canceling run 4821...` The run is canceled once; the CLI waits up to 10 seconds.                            |
+| Second signal                                  | `canceled`     | 130 or 143 | `Stopped. Run 4821 may still be going; check it with tuner runs get 4821.`                                   |
+| A signal during any other command              | none           | 130 or 143 | none: nothing is running, so the command stops at once.                                                      |
+| `--no-wait`                                    | `null`         | 0          | The run ID and link on stdout.                                                                               |
 
 `runs get` and `runs cancel` exit 0 whatever the run's result: they report it, they don't judge
 it. The list and `auth` commands exit 0 on success.
 
 ### Known gaps
 
-Tuner labels these runs `tuner_error` (exit 3) today, though they are yours to fix (exit 2):
-your voice provider out of credits or quota, and an agent that never answered the call. A crash
+An agent that never answered the call is labeled `tuner_error` (exit 3), though it may be yours
+to fix. A Tuner server that predates `setup_error` labels
+provider credits or quota `tuner_error` too. A crash
 of Tuner's own caller in the middle of a call can show as `agent_failed` (exit 1). Check the
 scenario's message and the dashboard before acting on the exit code alone.
 

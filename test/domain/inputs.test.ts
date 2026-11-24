@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CliError } from "../../src/domain/errors.js";
 import {
   buildStartBody,
+  parseMetadata,
   parseNoiseIntensity,
   parseRunId,
   parseScenarioIds,
@@ -65,6 +66,13 @@ describe("buildStartBody", () => {
       "--noise-intensity needs --noise <slug>.",
     );
   });
+  it("sends metadata only when --meta is given", () => {
+    expect(buildStartBody({ tag: "t", meta: ["commit=abc"] })).toEqual({
+      tag: "t",
+      metadata: { commit: "abc" },
+    });
+    expect(buildStartBody({ tag: "t", meta: [] })).toEqual({ tag: "t" });
+  });
   it("builds a scenario run", () => {
     expect(buildStartBody({ scenario: ["1", "2"] })).toEqual({ selected_scenario_ids: [1, 2] });
   });
@@ -95,6 +103,36 @@ describe("buildStartBody with --suite", () => {
     expect(() => buildStartBody({ suite: "smoke", language: "en-US", tag: "t" })).toThrow(
       "--suite can't be combined with --tag.",
     );
+  });
+});
+
+describe("parseMetadata", () => {
+  it("splits on the first = and keeps empty values and order", () => {
+    expect(parseMetadata(["commit=abc", "url=https://x/?a=b", "note="])).toEqual({
+      commit: "abc",
+      url: "https://x/?a=b",
+      note: "",
+    });
+  });
+  it("keeps a __proto__ key as a plain key", () => {
+    const meta = parseMetadata(["__proto__=x"]);
+    expect(Object.getPrototypeOf(meta)).toBe(Object.prototype);
+    expect(JSON.stringify(meta)).toBe('{"__proto__":"x"}');
+  });
+  it.each([
+    [["commit"], "Invalid --meta 'commit'. Use key=value."],
+    [["=abc"], "Invalid --meta '=abc': the key is empty. Use key=value."],
+    [["env=a", "env=b"], "Duplicate --meta key 'env'. Pass each key once."],
+  ])("rejects %j as a usage error", (values, message) => {
+    let err: unknown;
+    try {
+      parseMetadata(values);
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(CliError);
+    expect((err as CliError).reason).toBe("usage_error");
+    expect((err as CliError).message).toBe(message);
   });
 });
 

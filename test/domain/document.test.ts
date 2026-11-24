@@ -11,16 +11,17 @@ describe("summarize", () => {
         call({ verdict: "ran" }),
         call({ verdict: "failed" }),
         call({ verdict: "not_connected" }),
+        call({ verdict: "setup_error" }),
         call({ verdict: "analysis_failed" }),
         call({ verdict: "canceled" }),
         call({ verdict: "pending" }),
       ],
     });
     expect(summarize(run)).toEqual({
-      total: 7,
+      total: 8,
       passed: 2,
       failed: 1,
-      inconclusive: 2,
+      inconclusive: 3,
       canceled: 1,
       pending: 1,
     });

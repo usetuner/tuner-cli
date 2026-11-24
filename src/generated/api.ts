@@ -519,6 +519,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{workspace_id}/simulation-runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Run in Workspace
+         * @description Get one simulation run by its ID alone, in the same shape as Get Run.
+         *
+         *     Use this when you have a run ID but not its agent; `agent_id` in the response names it.
+         */
+        get: operations["get_simulation_run_in_workspace_api_v1_workspaces__workspace_id__simulation_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-profiles": {
         parameters: {
             query?: never;
@@ -4391,10 +4413,14 @@ export interface components {
             noise?: string | null;
             /**
              * Metadata
-             * @description Reserved. Stored with the run as sent; not returned.
+             * @description Text key-value pairs stored with the run and returned as sent, for example `commit`, `branch`, `pr_url` and `repo_url`. At most 20 keys; each key is 1 to 64 characters of letters, digits, `_`, `.` or `-`; each value is a string of at most 1024 characters with no null character. An empty object is stored as null.
+             * @example {
+             *       "branch": "main",
+             *       "commit": "4e3feaea"
+             *     }
              */
             metadata?: {
-                [key: string]: unknown;
+                [key: string]: string;
             } | null;
         };
         /**
@@ -5042,7 +5068,7 @@ export interface components {
          * FailureCategory
          * @enum {string}
          */
-        FailureCategory: "agent_failed" | "tuner_error" | "canceled";
+        FailureCategory: "agent_failed" | "setup_error" | "tuner_error" | "canceled";
         /**
          * FilterOption
          * @description Base schema for a single filter option.
@@ -7088,9 +7114,9 @@ export interface components {
              * @description Whether calls in the owning run are expected to be graded by evals.
              */
             evals_expected: boolean;
-            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
+            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
-            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
+            /** @description `agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
             failure_category: components["schemas"]["FailureCategory"] | null;
             /**
              * Failed Evals
@@ -7426,9 +7452,9 @@ export interface components {
              * @description Label of the scenario: the generated persona, or the library scenario's name for runs from saved scenarios. Null if not available, and for replay runs.
              */
             persona?: string | null;
-            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
+            /** @description Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet). */
             verdict: components["schemas"]["Verdict"];
-            /** @description `agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
+            /** @description `agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise. */
             failure_category: components["schemas"]["FailureCategory"] | null;
             /**
              * Failed Evals
@@ -7681,6 +7707,11 @@ export interface components {
              */
             id: number;
             /**
+             * Agent Id
+             * @description ID of the agent the run belongs to.
+             */
+            agent_id: number;
+            /**
              * Status
              * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
              */
@@ -7855,7 +7886,7 @@ export interface components {
             simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Run Mode
@@ -7863,6 +7894,23 @@ export interface components {
              * @default generate
              */
             run_mode?: string;
+            /**
+             * Metadata
+             * @description Key-value pairs sent with Run Saved Scenarios, exactly as sent. Null when none were sent.
+             * @example {
+             *       "branch": "main",
+             *       "commit": "4e3feaea"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Tag
+             * @description The tag the run was started with in Run Saved Scenarios. Null for runs started with `selected_scenario_ids` or a suite, and runs started from the dashboard.
+             * @example smoke
+             */
+            tag?: string | null;
         };
         /**
          * SimulationRunGetResponse
@@ -7875,6 +7923,11 @@ export interface components {
              */
             id: number;
             /**
+             * Agent Id
+             * @description ID of the agent the run belongs to.
+             */
+            agent_id: number;
+            /**
              * Status
              * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
              */
@@ -8049,7 +8102,7 @@ export interface components {
             simulation_calls: components["schemas"]["SimulationCallDetailResponse"][];
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
             /**
              * Run Mode
@@ -8057,6 +8110,23 @@ export interface components {
              * @default generate
              */
             run_mode?: string;
+            /**
+             * Metadata
+             * @description Key-value pairs sent with Run Saved Scenarios, exactly as sent. Null when none were sent.
+             * @example {
+             *       "branch": "main",
+             *       "commit": "4e3feaea"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Tag
+             * @description The tag the run was started with in Run Saved Scenarios. Null for runs started with `selected_scenario_ids` or a suite, and runs started from the dashboard.
+             * @example smoke
+             */
+            tag?: string | null;
             /**
              * Is Terminal
              * @description Whether the run has finished: `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `analyzing` is not terminal.
@@ -8265,7 +8335,7 @@ export interface components {
             run_mode?: string;
             /** @description Overall result: `pending` until the run is terminal; then `failed` if any scenario failed, `canceled` if the run was canceled, `inconclusive` if any scenario could not be judged, else `passed`. */
             result: components["schemas"]["RunResult"];
-            /** @description `agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise. */
+            /** @description `agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise. */
             reason: components["schemas"]["FailureCategory"] | null;
         };
         /**
@@ -9442,7 +9512,7 @@ export interface components {
          * Verdict
          * @enum {string}
          */
-        Verdict: "passed" | "failed" | "not_connected" | "platform_error" | "unreported" | "analysis_failed" | "ran" | "pending" | "canceled";
+        Verdict: "passed" | "failed" | "not_connected" | "setup_error" | "platform_error" | "unreported" | "analysis_failed" | "ran" | "pending" | "canceled";
         /**
          * VoiceClipResponse
          * @description A single caller-turn clip within a voice clip set, in playback order.
@@ -12701,6 +12771,79 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_simulation_run_in_workspace_api_v1_workspaces__workspace_id__simulation_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the simulation run. */
+                run_id: number;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunGetResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The workspace was not found, or the run is not one of its simulation runs (replay runs and runs of deleted agents included). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

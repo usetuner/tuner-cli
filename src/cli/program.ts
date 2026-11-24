@@ -86,6 +86,11 @@ couldn't finish the run (outage, 5xx, tuner_error, --timeout reached), 130 SIGIN
       "--noise-intensity <level>",
       "noise level: low, medium (default) or high, or 0.5, 1.0, 1.5; see tuner noise list",
     )
+    .option(
+      "--meta <key=value>",
+      "attach key=value metadata to the run, e.g. commit=abc; repeat for several",
+      collect,
+    )
     .addOption(outputOption())
     .option("--no-wait", "print the run ID and exit without waiting")
     .option(

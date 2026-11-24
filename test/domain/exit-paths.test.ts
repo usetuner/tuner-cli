@@ -421,6 +421,20 @@ const RUN_ENDS: [string, string | null, string | null, number, string | undefine
   ["every scenario passed", "passed", null, 0, undefined],
   ["a scenario failed its evals", "failed", "agent_failed", 1, "Result: failed (agent_failed)"],
   [
+    "a setup problem to fix (provider credits or quota)",
+    "inconclusive",
+    "setup_error",
+    2,
+    "The run couldn't test your agent (setup_error). Check your voice provider account's credits or quota, then run it again.",
+  ],
+  [
+    "a scenario failed and another hit a setup problem",
+    "failed",
+    "setup_error",
+    1,
+    "Result: failed (agent_failed)",
+  ],
+  [
     "Tuner couldn't finish (not connected, platform error, unreported, analysis failed)",
     "inconclusive",
     "tuner_error",
@@ -468,6 +482,7 @@ describe("run ends", () => {
   it.each([
     ["timeout, nothing failed yet", null, null, 3],
     ["timeout after the server said failed", "failed", "agent_failed", 1],
+    ["timeout after the server said setup_error", "inconclusive", "setup_error", 2],
   ] as const)("%s", (_path, result, reason, exit) => {
     expect(exitForTimeout(result, reason)).toBe(exit);
   });

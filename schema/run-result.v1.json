@@ -69,6 +69,14 @@
                 "noise_intensity": { "type": ["number", "null"] }
               }
             },
+            "metadata": {
+              "description": "Key-value pairs sent with --meta, as the API returns them; null when the run has none. Values are strings, except on older runs, which may hold any JSON value.",
+              "type": ["object", "null"]
+            },
+            "tag": {
+              "description": "The tag the run was started with; null when it was started by scenario IDs. Absent when Tuner doesn't return it.",
+              "type": ["string", "null"]
+            },
             "started_at": { "type": ["string", "null"] },
             "completed_at": { "type": ["string", "null"] }
           }
@@ -111,6 +119,7 @@
               "passed",
               "failed",
               "not_connected",
+              "setup_error",
               "platform_error",
               "unreported",
               "analysis_failed",
@@ -119,7 +128,9 @@
               "canceled"
             ]
           },
-          "failure_category": { "enum": ["agent_failed", "tuner_error", "canceled", null] },
+          "failure_category": {
+            "enum": ["agent_failed", "setup_error", "tuner_error", "canceled", null]
+          },
           "failed_evals": {
             "type": "array",
             "items": {
@@ -134,7 +145,7 @@
       }
     },
     "reason": {
-      "description": "agent_failed, tuner_error, timeout or canceled for a run that started; the error code when nothing ran; null when the run passed.",
+      "description": "agent_failed, setup_error, tuner_error, timeout or canceled for a run that started; the error code when nothing ran; null when the run passed.",
       "type": ["string", "null"]
     },
     "exit_code": { "enum": [0, 1, 2, 3, 130, 143] },

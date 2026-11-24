@@ -61,6 +61,23 @@ const inconclusiveRun = () =>
     ],
   });
 
+const setupErrorRun = () =>
+  makeRun({
+    result: "inconclusive",
+    reason: "setup_error",
+    simulation_calls: [
+      call({
+        verdict: "setup_error",
+        failure_category: "setup_error",
+        failure: {
+          reason: "retell_credits_exhausted",
+          title: "Retell credits exhausted",
+          message: "Your Retell account is out of credits",
+        },
+      } as never),
+    ],
+  });
+
 const canceledRun = () =>
   makeRun({
     status: "canceled",
@@ -134,6 +151,37 @@ describe("sim run: results and exit codes", () => {
     expect(api.calls("POST", SELECT)[0]!.body).toEqual({ suite: "smoke" });
   });
 
+  it("sends --meta along with --suite", async () => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", "--suite", "smoke", "--meta", "commit=abc")).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).toEqual({
+      suite: "smoke",
+      metadata: { commit: "abc" },
+    });
+  });
+
+  it("sends --meta pairs as metadata and prints the run's metadata", async () => {
+    const api = happyApi(makeRun({ metadata: { commit: "abc", env: "staging" } }));
+    const rt = makeRuntime(api);
+    const argv = ["--tag", "smoke", "--meta", "commit=abc", "--meta", "env=staging"];
+    expect(await run(rt, "sim", "run", ...argv)).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).toEqual({
+      tag: "smoke",
+      metadata: { commit: "abc", env: "staging" },
+    });
+    expect(rt.err()).toContain("Metadata: commit=abc · env=staging\n");
+    expect(rt.out()).not.toContain("Metadata:");
+  });
+
+  it("sends no metadata and prints no Metadata line without --meta", async () => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).not.toHaveProperty("metadata");
+    expect(rt.err()).not.toContain("Metadata:");
+  });
+
   it("sends selected_scenario_ids for --scenario, repeated or comma-separated", async () => {
     const api = happyApi();
     const rt = makeRuntime(api);
@@ -156,6 +204,22 @@ describe("sim run: results and exit codes", () => {
     expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
     expect(rt.err()).not.toContain("--fail-on-inconclusive");
     expect(rt.out()).toContain("! not connected");
+  });
+
+  it("exits 2 with what to fix on a setup_error run", async () => {
+    const rt = makeRuntime(happyApi(setupErrorRun()));
+    expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(2);
+    const doc = JSON.parse(rt.out());
+    expect(doc).toMatchObject({ reason: "setup_error", exit_code: 2 });
+    expect(rt.err()).toContain("Check your voice provider account's credits or quota");
+  });
+
+  it("prints the setup_error scenario and its cause", async () => {
+    const rt = makeRuntime(happyApi(setupErrorRun()));
+    expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(2);
+    expect(rt.out()).toContain("! setup error");
+    expect(rt.out()).toContain("Your Retell account is out of credits");
+    expect(rt.out()).toContain("0 passed · 0 failed · 1 inconclusive");
   });
 
   it("exits 3 on a run canceled elsewhere", async () => {
@@ -279,12 +343,34 @@ describe("sim run: usage errors exit 2", () => {
     [["sim", "run", "--tag", "a", "--timeout", "soon"], "Invalid duration 'soon'"],
     [["sim", "run", "--tag", "a", "--base-url", "ftp://x"], "Base URL must be http or https"],
     [["sim", "run", "--tag", "a", "--noise-intensity", "high"], "--noise-intensity needs --noise"],
+    [["sim", "run", "--tag", "a", "--meta", "bad"], "Invalid --meta 'bad'. Use key=value."],
+    [["sim", "run", "--tag", "a", "--meta", "=x"], "Invalid --meta '=x': the key is empty."],
+    [
+      ["sim", "run", "--tag", "a", "--meta", "k=1", "--meta", "k=2"],
+      "Duplicate --meta key 'k'. Pass each key once.",
+    ],
   ])("%j", async (argv, message) => {
     const api = happyApi();
     const rt = makeRuntime(api);
     expect(await run(rt, ...argv)).toBe(2);
     expect(rt.err()).toContain(message);
     expect(api.calls("POST", SELECT)).toHaveLength(0);
+  });
+
+  it("exits 2 with the API's message when it rejects the metadata (422)", async () => {
+    const msg = "Value error, metadata has 21 keys; the limit is 20";
+    const api = happyApi().on(
+      "POST",
+      SELECT,
+      apiError(422, "validation_error", [{ loc: ["body", "metadata"], msg, type: "value_error" }]),
+    );
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", "--tag", "a", "--meta", "k=v", "--output", "json")).toBe(2);
+    const doc = JSON.parse(rt.out());
+    expect(doc.exit_code).toBe(2);
+    expect(doc.error.code).toBe("validation_error");
+    expect(doc.error.message).toContain(msg);
+    expect(rt.err()).toContain(msg);
   });
 
   it("rejects an unknown --output", async () => {
@@ -575,8 +661,18 @@ describe("sim run: --no-wait", () => {
     expect(await run(rt, "sim", "run", "--tag", "smoke", "--no-wait")).toBe(0);
     expect(rt.out()).toBe(`${RUN}\nhttps://app.usetuner.ai/simulations?agent=77&run=${RUN}\n`);
     expect(rt.err()).toContain("Noise: cafe · intensity 1.0");
+    expect(rt.err()).not.toContain("Metadata:");
     expect(api.calls("GET", GET)).toHaveLength(1);
     expect(api.calls("POST", CANCEL)).toHaveLength(0);
+  });
+
+  it("prints the run's metadata on stderr", async () => {
+    const rt = makeRuntime(happyApi(pendingRun({ metadata: { branch: "main" } })));
+    expect(
+      await run(rt, "sim", "run", "--tag", "smoke", "--meta", "branch=main", "--no-wait"),
+    ).toBe(0);
+    expect(rt.out()).toBe(`${RUN}\nhttps://app.usetuner.ai/simulations?agent=77&run=${RUN}\n`);
+    expect(rt.err()).toContain("Metadata: branch=main");
   });
 
   it("is never canceled by a signal after it returns", async () => {
@@ -633,6 +729,17 @@ describe("sim run: stop paths", () => {
     expect(doc.exit_code).toBe(3);
     expect(doc.reason).toBe("tuner_error");
     expect(rt.err()).toContain("Tuner couldn't finish this run (tuner_error).");
+  });
+
+  it("--timeout on a run that just ended setup_error keeps that reason, exit 2", async () => {
+    vi.useFakeTimers();
+    const api = happyApi(pendingRun()).on("POST", CANCEL, json(200, setupErrorRun()));
+    const rt = makeRuntime(api);
+    const p = run(rt, "sim", "run", "--tag", "smoke", "--timeout", "90s", "--output", "json");
+    await vi.advanceTimersByTimeAsync(91_000);
+    expect(await p).toBe(2);
+    expect(JSON.parse(rt.out())).toMatchObject({ reason: "setup_error", exit_code: 2 });
+    expect(rt.err()).toContain("The run couldn't test your agent (setup_error).");
   });
 
   it.each([

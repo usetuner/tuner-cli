@@ -39,12 +39,13 @@ Start a simulation run and wait for its result.
 | `--profile <name>`          | Test profile name; see `tuner profiles list`                                 |
 | `--noise <slug>`            | Background noise slug; see `tuner noise list`                                |
 | `--noise-intensity <level>` | `low`, `medium` (default) or `high`, or `0.5`, `1.0`, `1.5`; needs `--noise` |
+| `--meta <key=value>`        | Attach metadata to the run, e.g. `commit=abc`; repeat for several pairs      |
 | `--output <format>`         | `text` or `json`                                                             |
 | `--no-wait`                 | Print the run ID and exit without waiting                                    |
 | `--timeout <duration>`      | Cancel the run after this long, e.g. `90s`, `30m`, `1h` (default `60m`)      |
 | `--fail-on-inconclusive`    | Deprecated, no effect: inconclusive and timed-out runs exit 3                |
 
-Pass exactly one of `--tag`, `--scenario` or `--suite`. A suite brings its own scenarios and settings, so `--suite` can't be combined with `--tag`, `--scenario`, `--language`, `--profile`, `--noise` or `--noise-intensity`.
+Pass exactly one of `--tag`, `--scenario` or `--suite`. A suite brings its own scenarios and settings, so `--suite` can't be combined with `--tag`, `--scenario`, `--language`, `--profile`, `--noise` or `--noise-intensity`. `--meta` works with all three.
 
 ```bash
 tuner sim run --tag smoke
@@ -54,6 +55,8 @@ tuner sim run --scenario 311,312 --agent booking-staging
 tuner sim run --tag smoke --language en-GB --profile "Returning customer"
 tuner sim run --tag smoke --noise cafe --noise-intensity high
 tuner sim run --tag smoke --timeout 30m --output json
+tuner sim run --tag smoke --meta commit=abc123 --meta env=staging
+tuner sim run --suite smoke --meta commit=abc123
 ```
 
 How it behaves:
@@ -65,15 +68,22 @@ How it behaves:
   them and maps them to an exit code. It never computes its own.
 - A run Tuner couldn't finish (`tuner_error` or `--timeout` reached) exits 3 and prints
   `Tuner couldn't finish this run (<reason>).` A run canceled elsewhere also exits 3 and says it
-  was canceled outside this command. A signal still exits 130 or 143. See
+  was canceled outside this command. A run that ends `setup_error` (your own voice provider account
+  is out of credits or quota) exits 2 and says what to check. A signal
+  still exits 130 or 143. See
   [Errors and retries](errors.md#how-a-run-ends).
+- `--meta` splits each pair on the first `=`, so values may contain `=`. A pair without `=`, an
+  empty key or a repeated key is a usage error (exit 2). Tuner stores the pairs as sent and
+  enforces the limits; a pair it rejects exits 2 with its message. The run's metadata prints as
+  one `Metadata:` line on stderr, and as `run.metadata` in JSON output.
 - `--fail-on-inconclusive` is deprecated: it is still accepted, has no effect, and prints a
   warning to stderr. It will be removed in a later minor version.
 - For `--timeout`, Ctrl-C and SIGTERM, see [CI and signals](ci.md).
 
 ## `tuner runs get <run-id>`
 
-Print a run's status, per-scenario verdicts and result.
+Print a run's status, per-scenario verdicts and result, plus a `Metadata:` line when the run has
+metadata.
 
 | Flag                 | What it does                      |
 | -------------------- | --------------------------------- |

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   intensitiesText,
+  metadataLine,
   noiseLine,
   painter,
   scenarioLine,
@@ -38,6 +39,16 @@ describe("terminal renderer", () => {
         plain,
       ),
     ).toContain("! platform error  Reschedule an existing booking   SIP 503");
+    expect(
+      scenarioLine(
+        call({
+          verdict: "setup_error",
+          failure_category: "setup_error",
+          failure: { message: "Retell credits exhausted" },
+        } as never),
+        plain,
+      ),
+    ).toContain("! setup error     Reschedule an existing booking   Retell credits exhausted");
     expect(scenarioLine(call({ verdict: "brand_new" as never }), plain)).toContain("? brand_new");
   });
 
@@ -54,6 +65,22 @@ describe("terminal renderer", () => {
     expect(noiseLine(makeRun({ noise_intensity: null }))).toBe("Noise: cafe");
     expect(noiseLine(makeRun({ noise_environment: null }))).toBeUndefined();
     expect(noiseLine(undefined)).toBeUndefined();
+  });
+
+  it("prints the run's metadata on one line, or nothing", () => {
+    expect(metadataLine(makeRun({ metadata: { commit: "abc", env: "staging" } }))).toBe(
+      "Metadata: commit=abc · env=staging",
+    );
+    expect(metadataLine(makeRun({ metadata: { n: 3, o: { a: 1 }, z: null } }))).toBe(
+      'Metadata: n=3 · o={"a":1} · z=null',
+    );
+    expect(metadataLine(makeRun({ metadata: { "k\u001b[2J": "a\nb\u001b[31m\u009b" } }))).toBe(
+      "Metadata: k[2J=ab[31m",
+    );
+    expect(metadataLine(makeRun({ metadata: {} }))).toBeUndefined();
+    expect(metadataLine(makeRun({ metadata: null }))).toBeUndefined();
+    expect(metadataLine(makeRun())).toBeUndefined();
+    expect(metadataLine(undefined)).toBeUndefined();
   });
 
   it("joins the summary and pads the table", () => {

@@ -1,6 +1,6 @@
 import { parseDuration } from "./duration.js";
 import { CliError, detailText } from "./errors.js";
-import type { StartRunRequest } from "./types.js";
+import type { RunMetadata, StartRunRequest } from "./types.js";
 
 export const DEFAULT_TIMEOUT = "60m";
 
@@ -12,6 +12,7 @@ export interface StartOptions {
   profile?: string;
   noise?: string;
   noiseIntensity?: string;
+  meta?: string[];
 }
 
 export function parseRunId(value: string): number {
@@ -61,12 +62,36 @@ function flagSentWithSuite(opts: StartOptions): string | undefined {
   return undefined;
 }
 
+/** `--meta key=value` pairs, split on the first `=`. The API enforces the limits. */
+export function parseMetadata(values: string[]): RunMetadata {
+  const pairs = new Map<string, string>();
+  for (const pair of values) {
+    const eq = pair.indexOf("=");
+    if (eq === -1) throw new CliError(`Invalid --meta '${pair}'. Use key=value.`, "usage_error");
+    const key = pair.slice(0, eq);
+    if (!key) {
+      throw new CliError(
+        `Invalid --meta '${pair}': the key is empty. Use key=value.`,
+        "usage_error",
+      );
+    }
+    if (pairs.has(key)) {
+      throw new CliError(`Duplicate --meta key '${key}'. Pass each key once.`, "usage_error");
+    }
+    pairs.set(key, pair.slice(eq + 1));
+  }
+  // fromEntries defines own properties, so a `__proto__` key stays a plain key.
+  return Object.fromEntries(pairs);
+}
+
 export function buildStartBody(opts: StartOptions): StartRunRequest {
   const scenarios = opts.scenario ?? [];
   if (opts.suite) {
     const flag = flagSentWithSuite(opts);
     if (flag) throw new CliError(`--suite can't be combined with ${flag}.`, "usage_error");
-    return { suite: opts.suite };
+    const suiteBody: StartRunRequest = { suite: opts.suite };
+    if (opts.meta?.length) suiteBody.metadata = parseMetadata(opts.meta);
+    return suiteBody;
   }
   if (Boolean(opts.tag) === scenarios.length > 0) {
     throw new CliError("Pass exactly one of --tag, --scenario or --suite.", "usage_error");
@@ -86,5 +111,6 @@ export function buildStartBody(opts: StartOptions): StartRunRequest {
       opts.noiseIntensity,
     ) as StartRunRequest["noise_intensity"];
   }
+  if (opts.meta?.length) body.metadata = parseMetadata(opts.meta);
   return body;
 }

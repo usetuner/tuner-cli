@@ -3458,6 +3458,121 @@
         }
       }
     },
+    "/api/v1/workspaces/{workspace_id}/simulation-runs/{run_id}": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Get Run in Workspace",
+        "description": "Get one simulation run by its ID alone, in the same shape as Get Run.\n\nUse this when you have a run ID but not its agent; `agent_id` in the response names it.",
+        "operationId": "get_simulation_run_in_workspace_api_v1_workspaces__workspace_id__simulation_runs__run_id__get",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "ID of the simulation run.",
+              "title": "Run Id"
+            },
+            "description": "ID of the simulation run."
+          },
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "Workspace ID. Find this in Workspace > General Settings.",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace ID. Find this in Workspace > General Settings."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationRunGetResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "invalid_api_key",
+                  "detail": "Not authenticated"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "You do not have access to this workspace.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "insufficient_access",
+                  "detail": "User does not have access to workspace 42"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The workspace was not found, or the run is not one of its simulation runs (replay runs and runs of deleted agents included).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Workspace not found": {
+                    "summary": "Workspace not found",
+                    "value": {
+                      "code": "workspace_not_found",
+                      "detail": "Workspace with ID 42 not found"
+                    }
+                  },
+                  "Run not found": {
+                    "summary": "Run not found",
+                    "value": {
+                      "code": "run_not_found",
+                      "detail": "Simulation run with ID 4821 not found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-profiles": {
       "get": {
         "tags": [
@@ -17609,15 +17724,32 @@
           "metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "patternProperties": {
+                  "^[A-Za-z0-9_.-]+$": {
+                    "type": "string",
+                    "maxLength": 1024,
+                    "pattern": "^[^\\x00]*$"
+                  }
+                },
+                "propertyNames": {
+                  "maxLength": 64,
+                  "minLength": 1
+                },
+                "type": "object",
+                "maxProperties": 20
               },
               {
                 "type": "null"
               }
             ],
             "title": "Metadata",
-            "description": "Reserved. Stored with the run as sent; not returned."
+            "description": "Text key-value pairs stored with the run and returned as sent, for example `commit`, `branch`, `pr_url` and `repo_url`. At most 20 keys; each key is 1 to 64 characters of letters, digits, `_`, `.` or `-`; each value is a string of at most 1024 characters with no null character. An empty object is stored as null.",
+            "examples": [
+              {
+                "branch": "main",
+                "commit": "4e3feaea"
+              }
+            ]
           }
         },
         "type": "object",
@@ -18911,6 +19043,7 @@
         "type": "string",
         "enum": [
           "agent_failed",
+          "setup_error",
           "tuner_error",
           "canceled"
         ],
@@ -22933,7 +23066,7 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/Verdict",
-            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
+            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
           },
           "failure_category": {
             "anyOf": [
@@ -22944,7 +23077,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
+            "description": "`agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
           },
           "failed_evals": {
             "items": {
@@ -23553,7 +23686,7 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/Verdict",
-            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
+            "description": "Outcome of the scenario: `passed`, `failed` (an eval failed), `not_connected` (the call never connected), `setup_error` (your voice provider account is out of credits or quota), `platform_error` (something went wrong on Tuner's side), `unreported` (no call data arrived), `analysis_failed` (evals never came back), `ran` (finished in a run without evals), `canceled` (the run was canceled before this call finished), or `pending` (not finished yet)."
           },
           "failure_category": {
             "anyOf": [
@@ -23564,7 +23697,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` for a `failed` verdict; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
+            "description": "`agent_failed` for a `failed` verdict; `setup_error` for `setup_error`; `tuner_error` for `not_connected`, `platform_error`, `unreported` and `analysis_failed`; `canceled` for `canceled`; null otherwise."
           },
           "failed_evals": {
             "items": {
@@ -23977,6 +24110,11 @@
             "title": "Id",
             "description": "ID of the simulation run."
           },
+          "agent_id": {
+            "type": "integer",
+            "title": "Agent Id",
+            "description": "ID of the agent the run belongs to."
+          },
           "status": {
             "type": "string",
             "title": "Status",
@@ -24306,18 +24444,53 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           },
           "run_mode": {
             "type": "string",
             "title": "Run Mode",
             "description": "`generate` for runs with generated scenarios, `select` for library scenarios.",
             "default": "generate"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Key-value pairs sent with Run Saved Scenarios, exactly as sent. Null when none were sent.",
+            "examples": [
+              {
+                "branch": "main",
+                "commit": "4e3feaea"
+              }
+            ]
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag",
+            "description": "The tag the run was started with in Run Saved Scenarios. Null for runs started with `selected_scenario_ids` or a suite, and runs started from the dashboard.",
+            "examples": [
+              "smoke"
+            ]
           }
         },
         "type": "object",
         "required": [
           "id",
+          "agent_id",
           "status",
           "created_at",
           "failure_reason",
@@ -24346,6 +24519,11 @@
             "title": "Id",
             "description": "ID of the simulation run."
           },
+          "agent_id": {
+            "type": "integer",
+            "title": "Agent Id",
+            "description": "ID of the agent the run belongs to."
+          },
           "status": {
             "type": "string",
             "title": "Status",
@@ -24675,13 +24853,47 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           },
           "run_mode": {
             "type": "string",
             "title": "Run Mode",
             "description": "`generate` for runs with generated scenarios, `select` for library scenarios.",
             "default": "generate"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Key-value pairs sent with Run Saved Scenarios, exactly as sent. Null when none were sent.",
+            "examples": [
+              {
+                "branch": "main",
+                "commit": "4e3feaea"
+              }
+            ]
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag",
+            "description": "The tag the run was started with in Run Saved Scenarios. Null for runs started with `selected_scenario_ids` or a suite, and runs started from the dashboard.",
+            "examples": [
+              "smoke"
+            ]
           },
           "is_terminal": {
             "type": "boolean",
@@ -24697,6 +24909,7 @@
         "type": "object",
         "required": [
           "id",
+          "agent_id",
           "status",
           "created_at",
           "failure_reason",
@@ -25098,7 +25311,7 @@
                 "type": "null"
               }
             ],
-            "description": "`agent_failed` when `result` is `failed`, `tuner_error` when `inconclusive`, `canceled` when `canceled`, null otherwise."
+            "description": "`agent_failed` when `result` is `failed`. When `inconclusive`: `setup_error` if any scenario failed on the customer's own provider account (out of credits or quota), else `tuner_error`. `canceled` when `canceled`, null otherwise."
           }
         },
         "type": "object",
@@ -27376,6 +27589,7 @@
           "passed",
           "failed",
           "not_connected",
+          "setup_error",
           "platform_error",
           "unreported",
           "analysis_failed",
