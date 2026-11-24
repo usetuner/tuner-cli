@@ -7,6 +7,7 @@ export const DEFAULT_TIMEOUT = "60m";
 export interface StartOptions {
   tag?: string;
   scenario?: string[];
+  suite?: string;
   language?: string;
   profile?: string;
   noise?: string;
@@ -50,6 +51,17 @@ export function parseNoiseIntensity(value: string): string | number {
   return /^\d+(\.\d*)?$|^\.\d+$/.test(value.trim()) ? Number(value) : value;
 }
 
+/** A suite brings its own scenarios and settings, so none of these flags may go with --suite. */
+function flagSentWithSuite(opts: StartOptions): string | undefined {
+  if (opts.tag !== undefined) return "--tag";
+  if ((opts.scenario ?? []).length > 0) return "--scenario";
+  if (opts.language) return "--language";
+  if (opts.profile) return "--profile";
+  if (opts.noise) return "--noise";
+  if (opts.noiseIntensity !== undefined) return "--noise-intensity";
+  return undefined;
+}
+
 /** `--meta key=value` pairs, split on the first `=`. The API enforces the limits. */
 export function parseMetadata(values: string[]): RunMetadata {
   const pairs = new Map<string, string>();
@@ -72,13 +84,29 @@ export function parseMetadata(values: string[]): RunMetadata {
   return Object.fromEntries(pairs);
 }
 
+/** An empty or blank value, e.g. from an unset shell variable, must not read as "flag not passed". */
+function rejectBlank(flag: string, value: string | undefined, what: string): void {
+  if (value !== undefined && !value.trim()) {
+    throw new CliError(`${flag} needs ${what}; got an empty value.`, "usage_error");
+  }
+}
+
 export function buildStartBody(opts: StartOptions): StartRunRequest {
   const scenarios = opts.scenario ?? [];
-  if (Boolean(opts.tag) === scenarios.length > 0) {
-    throw new CliError("Pass exactly one of --tag or --scenario.", "usage_error");
+  rejectBlank("--suite", opts.suite, "a suite name");
+  rejectBlank("--tag", opts.tag, "a tag");
+  if (opts.suite !== undefined) {
+    const flag = flagSentWithSuite(opts);
+    if (flag) throw new CliError(`--suite can't be combined with ${flag}.`, "usage_error");
+    const suiteBody: StartRunRequest = { suite: opts.suite };
+    if (opts.meta?.length) suiteBody.metadata = parseMetadata(opts.meta);
+    return suiteBody;
+  }
+  if ((opts.tag !== undefined) === scenarios.length > 0) {
+    throw new CliError("Pass exactly one of --tag, --scenario or --suite.", "usage_error");
   }
   const body: StartRunRequest = {};
-  if (opts.tag) body.tag = opts.tag;
+  if (opts.tag !== undefined) body.tag = opts.tag;
   else body.selected_scenario_ids = parseScenarioIds(scenarios);
   if (opts.language) body.language = opts.language;
   if (opts.profile) body.profile = opts.profile;

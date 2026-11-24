@@ -25,6 +25,8 @@ export type ScenarioList = Schemas["ScenarioListResponse"];
 export type CallerOptions = Schemas["CallerOptionsResponse"];
 export type NoiseEnvironments = Schemas["NoiseEnvironmentsResponse"];
 export type ProfileList = Schemas["SimulationProfileListResponse"];
+export type SuiteList = Schemas["SuiteListResponse"];
+export type Suite = Schemas["SuiteListItem"];
 
 /** Agent identity as the CLI prints it. */
 export interface ResolvedAgent {

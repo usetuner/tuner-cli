@@ -60,12 +60,13 @@ means a new version.
 
 `run.metadata` holds the run's `--meta` pairs as Tuner returns them, or `null` when the run has
 none; older runs may hold non-string values. `run.tag` is the tag the run was started with, or
-`null` when it was started by scenario IDs; it is absent when Tuner doesn't return it.
+`null` when it was started by scenario IDs or from a suite; it is absent when Tuner doesn't return
+it. The document doesn't say which suite a run came from.
 
 ## List documents
 
 The list commands print `{ "schema_version": 1, "<items>": [...] }`, where `<items>` is
-`scenarios`, `languages`, `noise_environments`, `profiles` or `agents`.
+`scenarios`, `suites`, `languages`, `noise_environments`, `profiles` or `agents`.
 
 ## On failure
 

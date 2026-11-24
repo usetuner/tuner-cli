@@ -386,12 +386,14 @@ export interface paths {
          * Run Saved Scenarios
          * @description Start a run from saved scenarios.
          *
-         *     Places a call for each scenario you pick from your scenario library, by id or by tag. No
-         *     new scenarios are generated, so you can re-test the same cases. The caller persona,
-         *     profile and noise can be given by name (`language`, `profile`, `noise`) instead of id.
-         *     Each call is scored against every `PASS_FAIL` eval on the agent. Atomic: if any id or
-         *     name is invalid, the whole request is rejected and nothing is created. To have Tuner
-         *     generate new scenarios instead, use Run AI-Generated Scenarios.
+         *     Places a call for each scenario you pick from your scenario library, by id or by tag, or
+         *     for every scenario in one of your suites (`suite_id` or `suite`). A suite run uses the
+         *     suite's scenarios and settings, so send no scenario or setting field with it. No new
+         *     scenarios are generated, so you can re-test the same cases. The caller persona, profile
+         *     and noise can be given by name (`language`, `profile`, `noise`) instead of id. Each call
+         *     is scored against every `PASS_FAIL` eval on the agent. Atomic: if any id or name is
+         *     invalid, the whole request is rejected and nothing is created. To have Tuner generate
+         *     new scenarios instead, use Run AI-Generated Scenarios.
          */
         post: operations["create_select_simulation_run_api_v1_workspaces__workspace_id__agents__agent_id__simulation_runs_select_post"];
         delete?: never;
@@ -517,6 +519,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{workspace_id}/simulation-runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Run in Workspace
+         * @description Get one simulation run by its ID alone, in the same shape as Get Run.
+         *
+         *     Use this when you have a run ID but not its agent; `agent_id` in the response names it.
+         */
+        get: operations["get_simulation_run_in_workspace_api_v1_workspaces__workspace_id__simulation_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/simulation-profiles": {
         parameters: {
             query?: never;
@@ -565,6 +589,49 @@ export interface paths {
          *     Runs that already used this profile keep their snapshot of it.
          */
         delete: operations["delete_simulation_profile_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles__profile_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/suites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Suites
+         * @description List an agent's suites, newest first.
+         *
+         *     A suite is a saved list of scenarios with the run settings they always use. Each suite
+         *     comes with its scenario count, its settings and its most recent run.
+         */
+        get: operations["list_suites_api_v1_workspaces__workspace_id__agents__agent_id__suites_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspace_id}/agents/{agent_id}/suites/{suite_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Suite
+         * @description Get one suite with its settings and its scenarios in run order.
+         */
+        get: operations["get_suite_api_v1_workspaces__workspace_id__agents__agent_id__suites__suite_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4300,7 +4367,7 @@ export interface components {
             noise_intensity?: ("low" | "medium" | "high") | (0.5 | 1 | 1.5) | null;
             /**
              * Selected Scenario Ids
-             * @description IDs of the library scenarios to run, in the order they are queued, 1 to 100. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`.
+             * @description IDs of the library scenarios to run, 1 to 100, in the order they are queued. Duplicates are rejected. Send exactly one of `selected_scenario_ids` and `tag`, or run a suite with `suite_id` or `suite` instead.
              * @example [
              *       31,
              *       32,
@@ -4310,10 +4377,22 @@ export interface components {
             selected_scenario_ids?: number[] | null;
             /**
              * Tag
-             * @description Run every active library scenario of this agent whose tags include this exact, case-sensitive value, in ascending scenario ID order. Send exactly one of `selected_scenario_ids` and `tag`.
+             * @description Run every active library scenario of this agent whose tags include this exact, case-sensitive value, in ascending scenario ID order. Send exactly one of `selected_scenario_ids` and `tag`, or run a suite with `suite_id` or `suite` instead.
              * @example smoke
              */
             tag?: string | null;
+            /**
+             * Suite Id
+             * @description ID of one of this agent's suites. The run uses the suite's scenarios, in the suite's order, and the suite's settings (maximum call duration, language, background noise and test profile). Send either `suite_id` or `suite`, and no scenario or setting field with it.
+             * @example 5
+             */
+            suite_id?: number | null;
+            /**
+             * Suite
+             * @description Name of one of this agent's suites, compared ignoring case. Works like `suite_id`. Send either `suite_id` or `suite`, and no scenario or setting field with it.
+             * @example Smoke
+             */
+            suite?: string | null;
             /**
              * Language
              * @description Caller persona by `code` (`en-US`, case-insensitive) or exact `name`. Use instead of `caller_persona_id`.
@@ -4334,10 +4413,14 @@ export interface components {
             noise?: string | null;
             /**
              * Metadata
-             * @description Reserved. Stored with the run as sent; not returned.
+             * @description Text key-value pairs stored with the run and returned as sent, for example `commit`, `branch`, `pr_url` and `repo_url`. At most 20 keys; each key is 1 to 64 characters of letters, digits, `_`, `.` or `-`; each value is a string of at most 1024 characters with no null character. An empty object is stored as null.
+             * @example {
+             *       "branch": "main",
+             *       "commit": "4e3feaea"
+             *     }
              */
             metadata?: {
-                [key: string]: unknown;
+                [key: string]: string;
             } | null;
         };
         /**
@@ -4818,7 +4901,7 @@ export interface components {
          * @description Machine-readable `code` on every error response.
          * @enum {string}
          */
-        ErrorCode: "invalid_api_key" | "insufficient_access" | "insufficient_credits" | "workspace_not_found" | "agent_not_found" | "scenario_not_found" | "run_not_found" | "no_scenarios_for_tag" | "run_too_large" | "unresolved_name" | "run_in_flight" | "simulation_not_configured" | "run_start_failed" | "rate_limited" | "validation_error" | "internal_error";
+        ErrorCode: "invalid_api_key" | "insufficient_access" | "insufficient_credits" | "workspace_not_found" | "agent_not_found" | "scenario_not_found" | "suite_not_found" | "suite_name_taken" | "suite_full" | "suite_has_no_scenarios" | "suite_profile_deleted" | "run_not_found" | "no_scenarios_for_tag" | "run_too_large" | "unresolved_name" | "run_in_flight" | "simulation_not_configured" | "run_start_failed" | "rate_limited" | "validation_error" | "internal_error";
         /**
          * ErrorResponse
          * @description Error body returned when a request fails.
@@ -7228,6 +7311,11 @@ export interface components {
             updated_at: string;
             /** @description The scenario's most recent execution. Only populated by List Scenarios; null if the scenario has never been run. */
             last_run?: components["schemas"]["ScenarioExecutionItem"] | null;
+            /**
+             * Suites
+             * @description The suites the scenario belongs to, ordered by name. Empty if none.
+             */
+            suites?: components["schemas"]["ScenarioSuiteRef"][];
         };
         /**
          * ScenarioSaveSelection
@@ -7244,6 +7332,24 @@ export interface components {
              * Name
              * @description Name for the new library scenario, up to 200 characters. Must not be blank.
              * @example Customer disputes a charge
+             */
+            name: string;
+        };
+        /**
+         * ScenarioSuiteRef
+         * @description A suite a scenario belongs to.
+         */
+        ScenarioSuiteRef: {
+            /**
+             * Id
+             * @description Suite ID.
+             * @example 3
+             */
+            id: number;
+            /**
+             * Name
+             * @description Suite name.
+             * @example Smoke
              */
             name: string;
         };
@@ -7601,6 +7707,11 @@ export interface components {
              */
             id: number;
             /**
+             * Agent Id
+             * @description ID of the agent the run belongs to.
+             */
+            agent_id: number;
+            /**
              * Status
              * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
              */
@@ -7672,6 +7783,29 @@ export interface components {
             noise_intensity?: number | null;
             /** @description The background-noise environment used, if one was given. */
             noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
+            /**
+             * Suite Id
+             * @description ID of the suite the run was started from. Null for runs not started from a suite.
+             * @example 5
+             */
+            suite_id?: number | null;
+            /**
+             * Suite Name
+             * @description Name the suite had when the run started, even if the suite was renamed or deleted since. Null for runs not started from a suite.
+             * @example Smoke
+             */
+            suite_name?: string | null;
+            /**
+             * Suite Exists
+             * @description `true` while the suite still exists, `false` once it has been deleted. Null for runs not started from a suite.
+             */
+            suite_exists?: boolean | null;
+            /**
+             * Max Call Duration Minutes
+             * @description Maximum length of each simulated call in this run, in minutes.
+             * @example 3
+             */
+            max_call_duration_minutes: number;
             /**
              * Scenario Source
              * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
@@ -7760,6 +7894,23 @@ export interface components {
              * @default generate
              */
             run_mode?: string;
+            /**
+             * Metadata
+             * @description Key-value pairs sent with Run Saved Scenarios, exactly as sent. Null when none were sent.
+             * @example {
+             *       "branch": "main",
+             *       "commit": "4e3feaea"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Tag
+             * @description The tag the run was started with in Run Saved Scenarios. Null for runs started with `selected_scenario_ids` or a suite, and runs started from the dashboard.
+             * @example smoke
+             */
+            tag?: string | null;
         };
         /**
          * SimulationRunGetResponse
@@ -7772,6 +7923,11 @@ export interface components {
              */
             id: number;
             /**
+             * Agent Id
+             * @description ID of the agent the run belongs to.
+             */
+            agent_id: number;
+            /**
              * Status
              * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `complete` means every call finished and was analyzed. `running` means calls are still executing, or have finished but none has been received yet. `analyzing` means calls have finished executing and some are still being reported or evaluated. `failed`, `unreported` and `analysis_failed` mean no call was analyzed, because every call failed, no call report arrived, or analysis failed, respectively. `failed` is also used when scenario generation fails; see `failure_reason`. `partial` is a mix of these. `canceled` means the run was canceled before its calls finished.
              */
@@ -7843,6 +7999,29 @@ export interface components {
             noise_intensity?: number | null;
             /** @description The background-noise environment used, if one was given. */
             noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
+            /**
+             * Suite Id
+             * @description ID of the suite the run was started from. Null for runs not started from a suite.
+             * @example 5
+             */
+            suite_id?: number | null;
+            /**
+             * Suite Name
+             * @description Name the suite had when the run started, even if the suite was renamed or deleted since. Null for runs not started from a suite.
+             * @example Smoke
+             */
+            suite_name?: string | null;
+            /**
+             * Suite Exists
+             * @description `true` while the suite still exists, `false` once it has been deleted. Null for runs not started from a suite.
+             */
+            suite_exists?: boolean | null;
+            /**
+             * Max Call Duration Minutes
+             * @description Maximum length of each simulated call in this run, in minutes.
+             * @example 3
+             */
+            max_call_duration_minutes: number;
             /**
              * Scenario Source
              * @description `generated` for generated and saved-scenario runs, `recorded_clips` for replay runs.
@@ -7931,6 +8110,23 @@ export interface components {
              * @default generate
              */
             run_mode?: string;
+            /**
+             * Metadata
+             * @description Key-value pairs sent with Run Saved Scenarios, exactly as sent. Null when none were sent.
+             * @example {
+             *       "branch": "main",
+             *       "commit": "4e3feaea"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Tag
+             * @description The tag the run was started with in Run Saved Scenarios. Null for runs started with `selected_scenario_ids` or a suite, and runs started from the dashboard.
+             * @example smoke
+             */
+            tag?: string | null;
             /**
              * Is Terminal
              * @description Whether the run has finished: `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`. `analyzing` is not terminal.
@@ -7998,6 +8194,29 @@ export interface components {
             noise_intensity?: number | null;
             /** @description The background-noise environment used, if one was given. */
             noise_environment?: components["schemas"]["NoiseEnvironmentResponse"] | null;
+            /**
+             * Suite Id
+             * @description ID of the suite the run was started from. Null for runs not started from a suite.
+             * @example 5
+             */
+            suite_id?: number | null;
+            /**
+             * Suite Name
+             * @description Name the suite had when the run started, even if the suite was renamed or deleted since. Null for runs not started from a suite.
+             * @example Smoke
+             */
+            suite_name?: string | null;
+            /**
+             * Suite Exists
+             * @description `true` while the suite still exists, `false` once it has been deleted. Null for runs not started from a suite.
+             */
+            suite_exists?: boolean | null;
+            /**
+             * Max Call Duration Minutes
+             * @description Maximum length of each simulated call in this run, in minutes.
+             * @example 3
+             */
+            max_call_duration_minutes: number;
         };
         /**
          * SimulationRunSearchItem
@@ -8517,6 +8736,335 @@ export interface components {
             current_period_end?: number | null;
             /** Quantity */
             quantity: number;
+        };
+        /**
+         * SuiteCreateRequest
+         * @description Create a suite from a name, its settings and, optionally, its first scenarios.
+         */
+        SuiteCreateRequest: {
+            /**
+             * Name
+             * @description Suite name, 1 to 60 characters after trimming. Unique among the agent's suites, ignoring case.
+             * @example Smoke
+             */
+            name: string;
+            /** @description Run settings the suite always runs with. */
+            settings: components["schemas"]["SuiteSettings"];
+            /**
+             * Scenario Ids
+             * @description IDs of library scenarios to start the suite with, in order. Duplicates are ignored. At most 20 in total.
+             * @example [
+             *       31,
+             *       32,
+             *       33
+             *     ]
+             */
+            scenario_ids?: number[];
+        };
+        /**
+         * SuiteDetailResponse
+         * @description A suite with its scenarios in run order.
+         */
+        SuiteDetailResponse: {
+            /**
+             * Id
+             * @description Suite ID.
+             * @example 5
+             */
+            id: number;
+            /**
+             * Name
+             * @description Suite name.
+             * @example Smoke
+             */
+            name: string;
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the suite was created.
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description When the suite was last changed.
+             */
+            updated_at: string;
+            /**
+             * Scenario Count
+             * @description Number of scenarios in the suite.
+             * @example 12
+             */
+            scenario_count: number;
+            /** @description Run settings the suite uses. */
+            settings: components["schemas"]["SuiteSettingsResponse"];
+            /**
+             * Profile Deleted
+             * @description `true` when the suite's simulation profile has been deleted. Running the suite then fails until a different profile is set in the suite's settings in the Tuner dashboard.
+             */
+            profile_deleted: boolean;
+            /**
+             * Is Running
+             * @description `true` while the suite's latest run has not settled.
+             */
+            is_running: boolean;
+            /** @description The most recent run of this suite, or `null` if it has never run. */
+            last_run: components["schemas"]["SuiteLastRun"] | null;
+            /**
+             * Scenarios
+             * @description The suite's scenarios, in the order they run.
+             */
+            scenarios: components["schemas"]["SuiteScenarioItem"][];
+        };
+        /**
+         * SuiteLastRun
+         * @description The most recent run started from a suite.
+         */
+        SuiteLastRun: {
+            /**
+             * Id
+             * @description ID of the run.
+             * @example 88
+             */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the run was started.
+             */
+            created_at: string;
+            /**
+             * Status
+             * @description Run status: `pending`, `running`, `analyzing`, `complete`, `partial`, `failed`, `unreported`, `analysis_failed` or `canceled`.
+             * @example complete
+             */
+            status: string;
+            /**
+             * In Progress
+             * @description `true` while the run has not settled (`pending`, `running` or `analyzing`).
+             */
+            in_progress: boolean;
+            /**
+             * Passed Count
+             * @description Number of scenarios that passed.
+             * @example 10
+             */
+            passed_count: number;
+            /**
+             * Failed Count
+             * @description Number of scenarios that failed.
+             * @example 2
+             */
+            failed_count: number;
+            /**
+             * In Progress Count
+             * @description Number of scenarios still waiting for results.
+             * @example 0
+             */
+            in_progress_count: number;
+        };
+        /**
+         * SuiteListItem
+         * @description A suite with its settings and latest run.
+         */
+        SuiteListItem: {
+            /**
+             * Id
+             * @description Suite ID.
+             * @example 5
+             */
+            id: number;
+            /**
+             * Name
+             * @description Suite name.
+             * @example Smoke
+             */
+            name: string;
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the suite was created.
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description When the suite was last changed.
+             */
+            updated_at: string;
+            /**
+             * Scenario Count
+             * @description Number of scenarios in the suite.
+             * @example 12
+             */
+            scenario_count: number;
+            /** @description Run settings the suite uses. */
+            settings: components["schemas"]["SuiteSettingsResponse"];
+            /**
+             * Profile Deleted
+             * @description `true` when the suite's simulation profile has been deleted. Running the suite then fails until a different profile is set in the suite's settings in the Tuner dashboard.
+             */
+            profile_deleted: boolean;
+            /**
+             * Is Running
+             * @description `true` while the suite's latest run has not settled.
+             */
+            is_running: boolean;
+            /** @description The most recent run of this suite, or `null` if it has never run. */
+            last_run: components["schemas"]["SuiteLastRun"] | null;
+        };
+        /**
+         * SuiteListResponse
+         * @description An agent's suites, newest first.
+         */
+        SuiteListResponse: {
+            /**
+             * Suites
+             * @description The agent's suites, newest first.
+             */
+            suites: components["schemas"]["SuiteListItem"][];
+        };
+        /**
+         * SuiteScenarioItem
+         * @description A scenario in a suite.
+         */
+        SuiteScenarioItem: {
+            /**
+             * Id
+             * @description Scenario ID.
+             * @example 31
+             */
+            id: number;
+            /**
+             * Name
+             * @description Scenario name.
+             * @example Caller asks to reschedule
+             */
+            name: string;
+            /**
+             * Type
+             * @description `routine` or `pressure`.
+             * @enum {string}
+             */
+            type: "routine" | "pressure";
+            /** @description Outcome of this scenario in the suite's latest run: `passed`, `failed`, `not_connected`, `platform_error`, `unreported`, `analysis_failed`, `ran`, `pending` or `canceled`. Null if the suite has never run or the latest run did not include this scenario. */
+            last_result: components["schemas"]["Verdict"] | null;
+        };
+        /**
+         * SuiteScenariosRequest
+         * @description Scenarios to add to a suite or remove from it.
+         */
+        SuiteScenariosRequest: {
+            /**
+             * Scenario Ids
+             * @description IDs of the library scenarios, in the order they should be added.
+             * @example [
+             *       31,
+             *       32
+             *     ]
+             */
+            scenario_ids: number[];
+        };
+        /**
+         * SuiteSettings
+         * @description The run settings a suite stores: the same four a run takes, in the same units.
+         *
+         *     Nothing here is optional except the profile and the noise pair, so a request always
+         *     describes every setting of the suite.
+         */
+        SuiteSettings: {
+            /**
+             * Max Call Duration Minutes
+             * @description Maximum length of each simulated call, in minutes (1-12). Defaults to 3.
+             * @default 3
+             * @example 3
+             */
+            max_call_duration_minutes?: number;
+            /**
+             * Caller Persona Id
+             * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas.
+             * @example 1
+             */
+            caller_persona_id: number;
+            /**
+             * Simulation Profile Id
+             * @description ID of a simulation profile belonging to this agent. Its fields are given to the simulated caller as facts about themselves. Optional.
+             * @example 12
+             */
+            simulation_profile_id?: number | null;
+            /**
+             * Noise Environment Id
+             * @description ID of a background-noise environment to mix into the call. Get valid IDs from List Noise Environments. Must be sent together with `noise_intensity`.
+             * @example 2
+             */
+            noise_environment_id?: number | null;
+            /**
+             * Noise Intensity
+             * @description Loudness of the background noise, as an intensity name (`low`, `medium`, `high`) or its gain (`0.5`, `1.0`, `1.5`). Names are listed per environment by List Noise Environments. A name is stored and returned as its gain. Must be sent together with `noise_environment_id`.
+             * @example medium
+             * @example 1
+             */
+            noise_intensity?: ("low" | "medium" | "high") | (0.5 | 1 | 1.5) | null;
+        };
+        /**
+         * SuiteSettingsResponse
+         * @description The run settings a suite uses every time it runs.
+         */
+        SuiteSettingsResponse: {
+            /**
+             * Max Call Duration Minutes
+             * @description Maximum length of each simulated call, in minutes.
+             * @example 3
+             */
+            max_call_duration_minutes: number;
+            /**
+             * Caller Persona Id
+             * @description ID of the caller persona.
+             * @example 1
+             */
+            caller_persona_id: number;
+            /** @description The caller persona: the language and accent the simulated caller uses. */
+            caller_persona: components["schemas"]["CallerPersonaResponse"] | null;
+            /**
+             * Simulation Profile Id
+             * @description ID of the simulation profile, or `null` when the suite uses none.
+             * @example 12
+             */
+            simulation_profile_id: number | null;
+            /**
+             * Simulation Profile Name
+             * @description Name of the simulation profile, or `null` when the suite uses none.
+             * @example Returning customer
+             */
+            simulation_profile_name: string | null;
+            /**
+             * Noise Environment Id
+             * @description ID of the background-noise environment, or `null` for no noise.
+             * @example 2
+             */
+            noise_environment_id: number | null;
+            /** @description The background-noise environment, or `null` for no noise. */
+            noise_environment: components["schemas"]["NoiseEnvironmentResponse"] | null;
+            /**
+             * Noise Intensity
+             * @description Gain applied to the background noise (0.5, 1.0 or 1.5), or `null`.
+             * @example 1
+             */
+            noise_intensity: number | null;
+        };
+        /**
+         * SuiteUpdateRequest
+         * @description Rename a suite, replace its settings, or both. Send at least one.
+         */
+        SuiteUpdateRequest: {
+            /**
+             * Name
+             * @description Suite name, 1 to 60 characters after trimming. Unique among the agent's suites, ignoring case. Omit to keep the current name.
+             * @example Smoke
+             */
+            name?: string | null;
+            /** @description New run settings. They replace all of the suite's settings: an omitted profile or noise pair is cleared. Omit to keep the current settings. */
+            settings?: components["schemas"]["SuiteSettings"] | null;
         };
         /**
          * SyncCallsQueuedResponse
@@ -11417,6 +11965,8 @@ export interface operations {
             query?: {
                 /** @description Only return runs with this status. */
                 status?: ("pending" | "running" | "analyzing" | "complete" | "partial" | "failed" | "unreported" | "analysis_failed" | "canceled") | null;
+                /** @description Only return runs started from this suite. */
+                suite_id?: number | null;
                 /** @description Page number, starting at 1. */
                 page?: number;
                 /** @description Number of runs per page (1-100). */
@@ -11737,18 +12287,12 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description A selected scenario id does not exist, is soft-deleted, or does not belong to this agent. */
+            /** @description A selected scenario id does not exist, is soft-deleted, or does not belong to this agent, or `suite_id` is not an active suite of this agent. */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "scenario_not_found",
-                     *       "detail": "Scenario 501 not found for this agent."
-                     *     }
-                     */
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
@@ -11767,18 +12311,12 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A `tag` with no scenarios, an unknown `language`, `profile` or `noise`, more than 100 scenarios, or conflicting fields also return 422, with `detail` as a validation list naming the field. */
+            /** @description The agent has no settings configured, its provider does not support simulations for its call direction, it has no `PASS_FAIL` eval configured, or the agent's SIP endpoint could not be reached. A suite with no scenarios, or whose test profile was deleted, also returns 422. A `tag` with no scenarios, an unknown `language`, `profile`, `noise` or `suite`, more than 100 scenarios, or conflicting fields (including any scenario or setting field sent with a suite) return 422 with `detail` as a validation list naming the field. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "simulation_not_configured",
-                     *       "detail": "Agent has no boolean (PASS_FAIL) evals. Add at least one before running a simulation."
-                     *     }
-                     */
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
@@ -12237,6 +12775,79 @@ export interface operations {
             };
         };
     };
+    get_simulation_run_in_workspace_api_v1_workspaces__workspace_id__simulation_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the simulation run. */
+                run_id: number;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunGetResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The workspace was not found, or the run is not one of its simulation runs (replay runs and runs of deleted agents included). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_simulation_profiles_api_v1_workspaces__workspace_id__agents__agent_id__simulation_profiles_get: {
         parameters: {
             query?: never;
@@ -12579,6 +13190,160 @@ export interface operations {
                      *       "detail": "Simulation profile with ID 9 not found"
                      *     }
                      */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_suites_api_v1_workspaces__workspace_id__agents__agent_id__suites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuiteListResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Agent not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "agent_not_found",
+                     *       "detail": "Agent with ID 17 not found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_suite_api_v1_workspaces__workspace_id__agents__agent_id__suites__suite_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID of the suite. */
+                suite_id: number;
+                /** @description Tuner's numeric agent ID, or your Agent ID from Agent Settings > Agent Connection. Digits-only values are read as the numeric ID. */
+                agent_id: string;
+                /** @description Workspace ID. Find this in Workspace > General Settings. */
+                workspace_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuiteDetailResponse"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "invalid_api_key",
+                     *       "detail": "Not authenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description You do not have access to this workspace. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "insufficient_access",
+                     *       "detail": "User does not have access to workspace 42"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The agent was not found, or the suite does not exist, was deleted, or belongs to another agent. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };

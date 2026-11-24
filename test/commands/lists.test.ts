@@ -97,6 +97,69 @@ describe("list commands", () => {
     expect(rt.out()).toMatch(/5\s+Returning customer/);
   });
 
+  const suite = (over: Record<string, unknown> = {}) => ({
+    id: 5,
+    name: "Smoke",
+    scenario_count: 12,
+    profile_deleted: false,
+    is_running: false,
+    last_run: null,
+    settings: {
+      max_call_duration_minutes: 3,
+      caller_persona: { code: "en-US", name: "English (US)" },
+      simulation_profile_name: "Returning customer",
+      noise_environment: { slug: "cafe", name: "Café" },
+      noise_intensity: 1.5,
+    },
+    ...over,
+  });
+
+  it("suites list prints name, scenario count and settings", async () => {
+    const api = base().on("GET", `${AGENT_PATH}/suites`, json(200, { suites: [suite()] }));
+    const rt = makeRuntime(api, { env: { TUNER_AGENT_ID: undefined } });
+    expect(await run(rt, "suites", "list", "--agent", "booking-staging")).toBe(0);
+    expect(rt.out()).toMatch(/NAME\s+SCENARIOS\s+MAX CALL\s+LANGUAGE\s+PROFILE\s+NOISE/);
+    expect(rt.out()).toMatch(/Smoke\s+12\s+3m\s+en-US\s+Returning customer\s+cafe 1\.5\n/);
+  });
+
+  it("suites list shows a dash for unset settings and marks a deleted profile", async () => {
+    const bare = {
+      max_call_duration_minutes: 5,
+      caller_persona: null,
+      simulation_profile_name: null,
+      noise_environment: null,
+      noise_intensity: null,
+    };
+    const api = base().on(
+      "GET",
+      `${AGENT_PATH}/suites`,
+      json(200, {
+        suites: [
+          suite({ name: "Bare", scenario_count: 0, settings: bare }),
+          suite({ name: "Broken", profile_deleted: true, settings: bare }),
+        ],
+      }),
+    );
+    const rt = makeRuntime(api);
+    expect(await run(rt, "suites", "list")).toBe(0);
+    expect(rt.out()).toMatch(/Bare\s+0\s+5m\s+-\s+-\s+-\n/);
+    expect(rt.out()).toMatch(/Broken\s+12\s+5m\s+-\s+\(deleted\)\s+-\n/);
+  });
+
+  it("suites list says so when the agent has none, and prints JSON on request", async () => {
+    const api = base().on("GET", `${AGENT_PATH}/suites`, json(200, { suites: [] }));
+    const rt = makeRuntime(api);
+    expect(await run(rt, "suites", "list")).toBe(0);
+    expect(rt.err()).toContain("No suites found.");
+    const rt2 = makeRuntime(
+      base().on("GET", `${AGENT_PATH}/suites`, json(200, { suites: [suite()] })),
+    );
+    expect(await run(rt2, "suites", "list", "--output", "json")).toBe(0);
+    const doc = JSON.parse(rt2.out());
+    expect(doc.schema_version).toBe(1);
+    expect(doc.suites[0].name).toBe("Smoke");
+  });
+
   it("prints JSON with schema_version", async () => {
     const api = base().on(
       "GET",

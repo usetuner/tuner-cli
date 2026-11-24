@@ -5,6 +5,7 @@ import type {
   NoiseEnvironments,
   ProfileList,
   ScenarioList,
+  SuiteList,
 } from "../domain/types.js";
 import type { AppDeps } from "../ports.js";
 import { SHORT_GIVE_UP_MS, withRetry } from "./retry.js";
@@ -61,4 +62,14 @@ export async function listProfiles(
     t.api.listProfiles(t.workspace.id, t.agent!.id),
   );
   return simulation_profiles;
+}
+
+export async function listSuites(
+  deps: AppDeps,
+  flags: GlobalFlags,
+  agent?: string,
+): Promise<SuiteList["suites"]> {
+  const t = await target(deps, flags, true, agent);
+  const { suites = [] } = await read(deps, () => t.api.listSuites(t.workspace.id, t.agent!.id));
+  return suites;
 }

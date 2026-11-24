@@ -30,7 +30,9 @@ json`, the `code` below is also in the document's `reason` and `error.code`, and
 | ---------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
 | Unknown command or flag, bad `--output`, missing arg | none           | `error: unknown option '--bogus'` (commander's text) and the usage                        |
 | A command group with no command (`tuner sim`)        | none           | The group's usage on stderr                                                               |
-| Both or neither of `--tag` and `--scenario`          | `usage_error`  | `Pass exactly one of --tag or --scenario.`                                                |
+| No selector, or `--tag` with `--scenario`            | `usage_error`  | `Pass exactly one of --tag, --scenario or --suite.`                                       |
+| An empty or blank `--suite` or `--tag`               | `usage_error`  | `--suite needs a suite name; got an empty value.`                                         |
+| `--suite` with a selector or setting flag            | `usage_error`  | `--suite can't be combined with --tag.` (names the flag)                                  |
 | A bad scenario ID                                    | `usage_error`  | `Invalid scenario ID 'x'. Use numeric IDs from` `tuner scenarios list`                    |
 | A bad run ID                                         | `usage_error`  | `Invalid run ID 'abc'. Use the numeric run ID.`                                           |
 | A bad `--timeout`                                    | `usage_error`  | `Invalid duration '5x'. Use e.g. 90s, 30m, 1h.`                                           |
@@ -58,6 +60,9 @@ json`, the `code` below is also in the document's `reason` and `error.code`, and
 | `no_scenarios_for_tag`      | 422     | `No scenarios tagged 'smoke'. Run` `tuner scenarios list` `to see tags.`                              | Fix `--tag`.                                        |
 | `run_too_large`             | 422     | `Run has 120 scenarios; the limit is 100. Split it into smaller tags or scenario lists.`              | Run fewer scenarios at once.                        |
 | `unresolved_name`           | 422     | `Unknown noise 'cafe2'. Run` `tuner noise list` (or the languages or profiles list)                   | Use a value from the list.                          |
+| `unresolved_name` (suite)   | 422     | `Unknown suite: smoke. Run` `tuner suites list`                                                       | Fix `--suite`.                                      |
+| `suite_has_no_scenarios`    | 422     | `Suite 'Smoke' has no scenarios. Add at least one before running it.`                                 | Add scenarios to the suite in Tuner.                |
+| `suite_profile_deleted`     | 422     | `The test profile of suite 'Smoke' was deleted. Choose another test profile in the suite's settings…` | Pick another test profile for the suite in Tuner.   |
 | `insufficient_credits`      | 402     | `Not enough credits to start this run (<detail>). Add credits or check the workspace plan in Tuner.`  | Add credits, or a plan that includes simulations.   |
 | `run_in_flight`             | 409     | `Agent 'x' already has a run in progress (4820). Wait for it to finish, then try again.` and its link | Wait, or cancel it with `tuner runs cancel 4820`.   |
 | `simulation_not_configured` | 422     | `The agent isn't set up for simulations: <detail>. Fix it in the agent's settings in Tuner.`          | No settings, no pass/fail eval, or SIP unreachable. |

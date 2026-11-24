@@ -32,4 +32,5 @@ export class FakeTunerApi implements TunerApi {
   listNoiseEnvironments: TunerApi["listNoiseEnvironments"] = (...a) =>
     this.invoke("listNoiseEnvironments", a);
   listProfiles: TunerApi["listProfiles"] = (...a) => this.invoke("listProfiles", a);
+  listSuites: TunerApi["listSuites"] = (...a) => this.invoke("listSuites", a);
 }

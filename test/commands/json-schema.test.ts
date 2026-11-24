@@ -86,6 +86,14 @@ describe("--output json matches schema_version 1", () => {
     expect(check(rt.out()).run.tag).toBe("smoke");
   });
 
+  it("suite run: a null tag and no suite field", async () => {
+    const rt = makeRuntime(happyApi(makeRun({ tag: null, suite_id: 5, suite_name: "Smoke" })));
+    expect(await run(rt, "sim", "run", "--suite", "smoke", "--output", "json")).toBe(0);
+    const doc = check(rt.out());
+    expect(doc.run.tag).toBeNull();
+    expect(Object.keys(doc.run).filter((key) => key.includes("suite"))).toEqual([]);
+  });
+
   it("no tag key when Tuner doesn't return one", async () => {
     const rt = makeRuntime(happyApi());
     expect(await run(rt, "sim", "run", "--tag", "smoke", "--output", "json")).toBe(0);

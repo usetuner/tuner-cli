@@ -1,6 +1,6 @@
 import { scenarioName } from "../domain/document.js";
 import { type Summary, summarize } from "../domain/run-summary.js";
-import type { Run, SimCall, Verdict } from "../domain/types.js";
+import type { Run, SimCall, Suite, Verdict } from "../domain/types.js";
 import type { Output, Runtime, Stream } from "../ports.js";
 
 export function useColor(stream: Stream, runtime: Pick<Runtime, "env">): boolean {
@@ -67,6 +67,18 @@ export function noiseLine(run: Run | undefined): string | undefined {
   if (!slug) return undefined;
   const gain = run.noise_intensity;
   return `Noise: ${slug}${gain != null ? ` · intensity ${gainText(gain)}` : ""}`;
+}
+
+/** A suite's run settings as table cells: max call, language, profile, noise. */
+export function suiteSettingsCells(suite: Suite): string[] {
+  const s = suite.settings;
+  const noise = s.noise_environment?.slug;
+  return [
+    `${s.max_call_duration_minutes}m`,
+    s.caller_persona?.code ?? "-",
+    suite.profile_deleted ? "(deleted)" : (s.simulation_profile_name ?? "-"),
+    noise ? `${noise}${s.noise_intensity != null ? ` ${gainText(s.noise_intensity)}` : ""}` : "-",
+  ];
 }
 
 /** `Metadata: commit=abc · env=staging`, or undefined when the run has none. */

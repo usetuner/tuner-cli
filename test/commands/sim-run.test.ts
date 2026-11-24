@@ -144,6 +144,23 @@ describe("sim run: results and exit codes", () => {
     });
   });
 
+  it("sends only the suite name for --suite and reports like a tag run", async () => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", "--suite", "smoke")).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).toEqual({ suite: "smoke" });
+  });
+
+  it("sends --meta along with --suite", async () => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", "--suite", "smoke", "--meta", "commit=abc")).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).toEqual({
+      suite: "smoke",
+      metadata: { commit: "abc" },
+    });
+  });
+
   it("sends --meta pairs as metadata and prints the run's metadata", async () => {
     const api = happyApi(makeRun({ metadata: { commit: "abc", env: "staging" } }));
     const rt = makeRuntime(api);
@@ -306,8 +323,33 @@ describe("sim run: agent resolution", () => {
 
 describe("sim run: usage errors exit 2", () => {
   it.each([
-    [["sim", "run"], "Pass exactly one of --tag or --scenario."],
-    [["sim", "run", "--tag", "a", "--scenario", "1"], "Pass exactly one of --tag or --scenario."],
+    [["sim", "run"], "Pass exactly one of --tag, --scenario or --suite."],
+    [
+      ["sim", "run", "--tag", "a", "--scenario", "1"],
+      "Pass exactly one of --tag, --scenario or --suite.",
+    ],
+    [["sim", "run", "--suite", "s", "--tag", "a"], "--suite can't be combined with --tag."],
+    [
+      ["sim", "run", "--suite", "s", "--scenario", "1"],
+      "--suite can't be combined with --scenario.",
+    ],
+    [
+      ["sim", "run", "--suite", "s", "--language", "en-US"],
+      "--suite can't be combined with --language.",
+    ],
+    [["sim", "run", "--suite", "s", "--profile", "p"], "--suite can't be combined with --profile."],
+    [["sim", "run", "--suite", "s", "--noise", "cafe"], "--suite can't be combined with --noise."],
+    [
+      ["sim", "run", "--suite", "s", "--noise-intensity", "high"],
+      "--suite can't be combined with --noise-intensity.",
+    ],
+    [["sim", "run", "--suite", ""], "--suite needs a suite name; got an empty value."],
+    [["sim", "run", "--suite", "   "], "--suite needs a suite name; got an empty value."],
+    [
+      ["sim", "run", "--suite", "", "--tag", "nightly"],
+      "--suite needs a suite name; got an empty value.",
+    ],
+    [["sim", "run", "--tag", "", "--scenario", "1"], "--tag needs a tag; got an empty value."],
     [["sim", "run", "--scenario", "abc"], "Invalid scenario ID 'abc'"],
     [["sim", "run", "--tag", "a", "--timeout", "soon"], "Invalid duration 'soon'"],
     [["sim", "run", "--tag", "a", "--base-url", "ftp://x"], "Base URL must be http or https"],

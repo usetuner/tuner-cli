@@ -32,7 +32,15 @@ const ERROR_PATHS: [string, unknown, Parameters<typeof toCliError>[1], number, s
     {},
     2,
     "usage_error",
-    "Pass exactly one of --tag or --scenario.",
+    "Pass exactly one of --tag, --scenario or --suite.",
+  ],
+  [
+    "--suite with another selector or setting",
+    thrown(() => buildStartBody({ suite: "smoke", tag: "a" })),
+    {},
+    2,
+    "usage_error",
+    "--suite can't be combined with --tag.",
   ],
   [
     "bad scenario ID",
@@ -131,6 +139,36 @@ const ERROR_PATHS: [string, unknown, Parameters<typeof toCliError>[1], number, s
     2,
     "scenario_not_found",
     "Scenario 501 not found for this agent. Run `tuner scenarios list` to see scenario IDs.",
+  ],
+  [
+    "unknown suite name",
+    api(422, "unresolved_name", [
+      { type: "value_error", loc: ["body", "suite"], msg: "Unknown suite: smoke", input: "smoke" },
+    ]),
+    {},
+    2,
+    "unresolved_name",
+    "Unknown suite: smoke. Run `tuner suites list`.",
+  ],
+  [
+    "suite_has_no_scenarios",
+    api(
+      422,
+      "suite_has_no_scenarios",
+      "Suite 'Smoke' has no scenarios. Add at least one before running it.",
+    ),
+    {},
+    2,
+    "suite_has_no_scenarios",
+    "Suite 'Smoke' has no scenarios. Add at least one before running it.",
+  ],
+  [
+    "suite_profile_deleted",
+    api(422, "suite_profile_deleted", "The test profile of suite 'Smoke' was deleted."),
+    {},
+    2,
+    "suite_profile_deleted",
+    "The test profile of suite 'Smoke' was deleted.",
   ],
   [
     "run_not_found",

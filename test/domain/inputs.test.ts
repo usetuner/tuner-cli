@@ -77,7 +77,44 @@ describe("buildStartBody", () => {
     expect(buildStartBody({ scenario: ["1", "2"] })).toEqual({ selected_scenario_ids: [1, 2] });
   });
   it.each([{}, { tag: "t", scenario: ["1"] }])("needs exactly one selector: %j", (opts) => {
-    expect(() => buildStartBody(opts)).toThrow("Pass exactly one of --tag or --scenario.");
+    expect(() => buildStartBody(opts)).toThrow("Pass exactly one of --tag, --scenario or --suite.");
+  });
+});
+
+describe("buildStartBody with --suite", () => {
+  it("sends only the suite name", () => {
+    expect(buildStartBody({ suite: "smoke" })).toEqual({ suite: "smoke" });
+  });
+
+  it.each([
+    [{ tag: "t" }, "--tag"],
+    [{ scenario: ["1"] }, "--scenario"],
+    [{ language: "en-US" }, "--language"],
+    [{ profile: "p" }, "--profile"],
+    [{ noise: "cafe" }, "--noise"],
+    [{ noiseIntensity: "high" }, "--noise-intensity"],
+  ])("can't be combined with %j", (other, flag) => {
+    expect(() => buildStartBody({ suite: "smoke", ...other })).toThrow(
+      `--suite can't be combined with ${flag}.`,
+    );
+  });
+
+  it.each(["", "   "])("rejects a blank suite name %j, even next to another selector", (suite) => {
+    const message = "--suite needs a suite name; got an empty value.";
+    expect(() => buildStartBody({ suite })).toThrow(message);
+    expect(() => buildStartBody({ suite, tag: "nightly" })).toThrow(message);
+  });
+
+  it.each(["", "  "])("rejects a blank tag %j, even next to another selector", (tag) => {
+    const message = "--tag needs a tag; got an empty value.";
+    expect(() => buildStartBody({ tag })).toThrow(message);
+    expect(() => buildStartBody({ tag, scenario: ["1"] })).toThrow(message);
+  });
+
+  it("names the selector first when several flags clash", () => {
+    expect(() => buildStartBody({ suite: "smoke", language: "en-US", tag: "t" })).toThrow(
+      "--suite can't be combined with --tag.",
+    );
   });
 });
 

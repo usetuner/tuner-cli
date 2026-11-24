@@ -1,6 +1,13 @@
 import { writeJson } from "../adapters/json.js";
-import { intensitiesText, table } from "../adapters/terminal.js";
-import { listAgents, listLanguages, listNoise, listProfiles, listScenarios } from "../app/lists.js";
+import { intensitiesText, suiteSettingsCells, table } from "../adapters/terminal.js";
+import {
+  listAgents,
+  listLanguages,
+  listNoise,
+  listProfiles,
+  listScenarios,
+  listSuites,
+} from "../app/lists.js";
 import { type OutputFormat, listDocument } from "../domain/document.js";
 import { EXIT } from "../domain/exit.js";
 import { type CommandContext, guard, isJson } from "./shared.js";
@@ -90,6 +97,19 @@ export function profilesList(ctx: CommandContext, opts: ListOptions): Promise<nu
       await listProfiles(ctx.deps, ctx.flags, opts.agent),
       ["ID", "NAME"],
       (p) => [String(p.id), p.name],
+    ),
+  );
+}
+
+export function suitesList(ctx: CommandContext, opts: ListOptions): Promise<number> {
+  return guard(ctx.runtime, async () =>
+    emit(
+      ctx,
+      opts.output,
+      "suites",
+      await listSuites(ctx.deps, ctx.flags, opts.agent),
+      ["NAME", "SCENARIOS", "MAX CALL", "LANGUAGE", "PROFILE", "NOISE"],
+      (s) => [s.name, String(s.scenario_count), ...suiteSettingsCells(s)],
     ),
   );
 }
