@@ -95,6 +95,7 @@ A few common runs:
 ```bash
 tuner sim run --scenario 311,312                     # specific scenarios
 tuner sim run --suite smoke                          # a saved suite with its own settings
+tuner sim run --tag smoke --max-concurrent-calls 3   # at most 3 calls at once, saved on the agent
 tuner sim run --tag smoke --noise cafe --noise-intensity high
 tuner sim run --tag smoke --meta commit="$(git rev-parse HEAD)"
 tuner sim run --tag smoke --output json > result.json  # JSON on stdout, progress on stderr

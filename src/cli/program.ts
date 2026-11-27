@@ -87,6 +87,10 @@ couldn't finish the run (outage, 5xx, tuner_error, --timeout reached), 130 SIGIN
       "noise level: low, medium (default) or high, or 0.5, 1.0, 1.5; see tuner noise list",
     )
     .option(
+      "--max-concurrent-calls <n>",
+      "most calls in progress at once, 1-10; saved on the agent for later runs",
+    )
+    .option(
       "--meta <key=value>",
       "attach key=value metadata to the run, e.g. commit=abc; repeat for several",
       collect,

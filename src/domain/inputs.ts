@@ -12,6 +12,7 @@ export interface StartOptions {
   profile?: string;
   noise?: string;
   noiseIntensity?: string;
+  maxConcurrentCalls?: string;
   meta?: string[];
 }
 
@@ -44,6 +45,16 @@ export function parseTimeout(value: string): number {
   } catch (err) {
     throw new CliError(detailText((err as Error).message), "usage_error");
   }
+}
+
+export function parseMaxConcurrentCalls(value: string): number {
+  if (!/^\d+$/.test(value.trim()) || Number(value) < 1 || Number(value) > 10) {
+    throw new CliError(
+      `Invalid --max-concurrent-calls '${value}'. Use a whole number from 1 to 10.`,
+      "usage_error",
+    );
+  }
+  return Number(value);
 }
 
 /** A number when the value is numeric, else the name as typed; the API resolves both. */
@@ -99,6 +110,7 @@ export function buildStartBody(opts: StartOptions): StartRunRequest {
     const flag = flagSentWithSuite(opts);
     if (flag) throw new CliError(`--suite can't be combined with ${flag}.`, "usage_error");
     const suiteBody: StartRunRequest = { suite: opts.suite };
+    addMaxConcurrentCalls(suiteBody, opts);
     if (opts.meta?.length) suiteBody.metadata = parseMetadata(opts.meta);
     return suiteBody;
   }
@@ -120,6 +132,14 @@ export function buildStartBody(opts: StartOptions): StartRunRequest {
       opts.noiseIntensity,
     ) as StartRunRequest["noise_intensity"];
   }
+  addMaxConcurrentCalls(body, opts);
   if (opts.meta?.length) body.metadata = parseMetadata(opts.meta);
   return body;
+}
+
+/** Omitted means the key stays out, so the API uses the agent's saved value. */
+function addMaxConcurrentCalls(body: StartRunRequest, opts: StartOptions): void {
+  if (opts.maxConcurrentCalls !== undefined) {
+    body.max_concurrent_calls = parseMaxConcurrentCalls(opts.maxConcurrentCalls);
+  }
 }

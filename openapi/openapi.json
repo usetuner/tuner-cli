@@ -12867,6 +12867,14 @@
             "description": "True for the auto-provisioned demo/sample agent. Excluded from real-agent counts that drive the welcome flow and zero-agent empty state.",
             "default": false
           },
+          "max_concurrent_calls": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Concurrent Calls",
+            "description": "Most simulation calls a run keeps in progress at the same time for this agent (1-10). Set by sending `max_concurrent_calls` when starting a run.",
+            "default": 10
+          },
           "deleted_at": {
             "anyOf": [
               {
@@ -17446,6 +17454,23 @@
               3
             ]
           },
+          "max_concurrent_calls": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Concurrent Calls",
+            "description": "Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.",
+            "examples": [
+              3
+            ]
+          },
           "selected_eval_ids": {
             "anyOf": [
               {
@@ -17522,6 +17547,23 @@
             "title": "Max Call Duration Minutes",
             "description": "Maximum length of each simulated call, in minutes (1-12). Defaults to 3.",
             "default": 3,
+            "examples": [
+              3
+            ]
+          },
+          "max_concurrent_calls": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Concurrent Calls",
+            "description": "Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.",
             "examples": [
               3
             ]
@@ -17765,6 +17807,23 @@
             "title": "Max Call Duration Minutes",
             "description": "Maximum length of each simulated call, in minutes (1-12). Defaults to 3.",
             "default": 3,
+            "examples": [
+              3
+            ]
+          },
+          "max_concurrent_calls": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Concurrent Calls",
+            "description": "Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.",
             "examples": [
               3
             ]
@@ -26426,6 +26485,23 @@
             "title": "Max Call Duration Minutes",
             "description": "Maximum length of each simulated call, in minutes (1-12). Defaults to 3.",
             "default": 3,
+            "examples": [
+              3
+            ]
+          },
+          "max_concurrent_calls": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Concurrent Calls",
+            "description": "Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.",
             "examples": [
               3
             ]

@@ -16,6 +16,7 @@ export interface SimRunOptions {
   profile?: string;
   noise?: string;
   noiseIntensity?: string;
+  maxConcurrentCalls?: string;
   meta?: string[];
   output?: OutputFormat;
   wait?: boolean;
