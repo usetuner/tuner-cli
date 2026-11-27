@@ -2,7 +2,7 @@
 
 ## GitHub Actions
 
-Install the published package with `npm install -g @usetuner.ai/cli`, then run `tuner`. The full workflow is in the [README](../README.md#use-in-ci-github-actions).
+Use [`usetuner/tuner-action`](https://github.com/usetuner/tuner-action), or install the published package with `npm install -g @usetuner.ai/cli` and run `tuner`. Both are shown in the [README](../README.md#use-in-ci).
 
 Points to keep:
 

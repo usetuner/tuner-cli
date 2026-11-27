@@ -1,124 +1,113 @@
 # Tuner CLI
 
-Run Tuner voice-agent simulations from your terminal and your CI.
+Run [Tuner](https://usetuner.ai) voice-agent simulations from your terminal and your CI, and fail the build when your agent fails its evals.
 
-> **Note:** It supports Linux and macOS. Windows is not supported yet.
+[![npm](https://img.shields.io/npm/v/@usetuner.ai/cli)](https://www.npmjs.com/package/@usetuner.ai/cli)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![CI](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/usetuner/tuner-cli/actions/workflows/ci.yml)
+
+Runs on Linux and macOS with Node 22 or later. Windows is not supported yet.
 
 ## Install
 
-You need Node 22 or later.
-
 ```bash
 npm install -g @usetuner.ai/cli
+tuner --version
 ```
 
-This puts `tuner` on your PATH. To run it without installing:
+Or run it without installing:
 
 ```bash
-npx @usetuner.ai/cli sim run --tag smoke
+npx @usetuner.ai/cli --help
 ```
 
-To build from source instead, see [CONTRIBUTING.md](CONTRIBUTING.md#setup).
+## Get an API key
 
-## Quick start
+Create a key in the [Tuner app](https://app.usetuner.ai) under **Settings → API Keys**
+([direct link](https://app.usetuner.ai/workspace-api-keys)). The key is shown once, when you
+create it. The key belongs to a workspace, and the CLI uses that workspace. See the
+[Tuner docs](https://docs.usetuner.ai) for agents, scenarios and evals.
 
-1. Store your API key. The command prompts for it without echoing and checks it before saving.
-
-   ```bash
-   tuner auth login
-   ```
-
-2. Pick the agent to test. Use its Agent ID or numeric ID from `tuner agents list`.
-
-   ```bash
-   export TUNER_AGENT_ID=booking-staging
-   ```
-
-3. See which scenarios a tag selects.
-
-   ```bash
-   tuner scenarios list --tag smoke
-   ```
-
-4. Run them and wait for the result.
-
-   ```bash
-   tuner sim run --tag smoke
-   ```
-
-   ```text
-   Workspace: Acme · Agent: Booking (staging) (77)
-   Running 3 scenarios (run 4821)...
-     ✓ passed          Reschedule appointment
-     ✓ passed          New booking
-     ✗ failed          Refund request   failed evals: Refund policy
-
-   2 passed · 1 failed · 0 inconclusive
-   https://app.usetuner.ai/simulations?agent=77&run=4821
-   Result: failed (agent_failed)
-   ```
-
-5. Read the exit code: `0` passed, `1` the agent failed, `2` a problem to fix, `3` Tuner
-   couldn't finish the run. See [Exit codes](#exit-codes).
-
-## Common tasks
-
-### Run one scenario
+## Quickstart
 
 ```bash
-tuner sim run --scenario 311
+tuner auth login                    # paste the key; it is checked, then stored
+tuner agents list                   # find your agent's ID
+export TUNER_AGENT_ID=<agent-id>
+tuner scenarios list --tag smoke    # see what a tag selects
+tuner sim run --tag smoke           # run them and wait for the result
 ```
 
-Repeat `--scenario` or comma-separate IDs to run several.
+```text
+Workspace: Acme · Agent: Booking (staging) (77)
+Running 3 scenarios (run 4821)...
+  ✓ passed          Reschedule appointment
+  ✓ passed          New booking
+  ✗ failed          Refund request   failed evals: Refund policy
 
-### Run a suite
-
-```bash
-tuner sim run --suite smoke
+2 passed · 1 failed · 0 inconclusive
+https://app.usetuner.ai/simulations?agent=77&run=4821
+Result: failed (agent_failed)
 ```
 
-A suite is a saved list of scenarios with its own run settings, so `--suite` can't be combined with `--tag`, `--scenario` or a setting flag. `tuner suites list` shows the agent's suites.
+The exit code tells you the outcome. See [Exit codes](#exit-codes).
 
-### Start without waiting and check later
+## Configuration
+
+Each setting is read from the flag, then the environment variable, then the stored file or the
+default.
+
+| Setting   | Flag         | Environment variable | Stored file or default                     |
+| --------- | ------------ | -------------------- | ------------------------------------------ |
+| API key   | `--api-key`  | `TUNER_API_KEY`      | `credentials.json` from `tuner auth login` |
+| Agent     | `--agent`    | `TUNER_AGENT_ID`     | none                                       |
+| Base URL  | `--base-url` | `TUNER_BASE_URL`     | `https://api.usetuner.ai`                  |
+| Workspace | none         | `TUNER_WORKSPACE_ID` | the API key's workspace                    |
+
+- `--agent` and `TUNER_AGENT_ID` take the agent's Agent ID or its numeric ID.
+- `TUNER_WORKSPACE_ID` is a guard: if the key belongs to another workspace, the command stops
+  with `config_error` (exit 2).
+- `NO_COLOR` turns off colored output.
+- Where `credentials.json` lives: [`tuner auth login`](docs/commands.md#tuner-auth-login).
+
+## Commands
+
+| Command                  | What it does                                               |
+| ------------------------ | ---------------------------------------------------------- |
+| `tuner sim run`          | Start a run by `--tag`, `--scenario` or `--suite` and wait |
+| `tuner runs get <id>`    | Print a run's status and result                            |
+| `tuner runs cancel <id>` | Cancel a run                                               |
+| `tuner agents list`      | List the workspace's agents                                |
+| `tuner scenarios list`   | List the agent's scenarios (`--tag` to filter)             |
+| `tuner suites list`      | List the agent's suites (values for `--suite`)             |
+| `tuner profiles list`    | List the agent's test profiles (values for `--profile`)    |
+| `tuner languages list`   | List caller languages (values for `--language`)            |
+| `tuner noise list`       | List background noises (values for `--noise`)              |
+| `tuner auth login`       | Check an API key and store it                              |
+| `tuner auth status`      | Show which key is in use and its workspace                 |
+| `tuner auth logout`      | Delete the stored key                                      |
+
+Global flags: `--api-key`, `--base-url`, `--verbose`, `-V/--version`, `-h/--help`. Every
+command except `auth` takes `--output text|json`.
+
+A few common runs:
 
 ```bash
-RUN_ID=$(tuner sim run --tag smoke --no-wait | head -n 1)
-tuner runs get "$RUN_ID"
-```
-
-`--no-wait` prints the run ID and the dashboard link, then exits.
-
-### Add background noise
-
-```bash
-tuner noise list
+tuner sim run --scenario 311,312                     # specific scenarios
+tuner sim run --suite smoke                          # a saved suite with its own settings
 tuner sim run --tag smoke --noise cafe --noise-intensity high
+tuner sim run --tag smoke --meta commit="$(git rev-parse HEAD)"
+tuner sim run --tag smoke --output json > result.json  # JSON on stdout, progress on stderr
+RUN_ID=$(tuner sim run --tag smoke --no-wait | head -n 1) && tuner runs get "$RUN_ID"
 ```
 
-### Tag a run with metadata
+Full flag reference: [docs/commands.md](docs/commands.md). JSON format:
+[docs/json-output.md](docs/json-output.md).
 
-```bash
-tuner sim run --tag smoke --meta commit="$(git rev-parse HEAD)" --meta branch=main
-```
+## Use in CI
 
-Repeat `--meta key=value` for each pair. Tuner stores them with the run, and `tuner runs get` shows
-them.
-
-### Cancel a run
-
-```bash
-tuner runs cancel 4821
-```
-
-### Get JSON output
-
-```bash
-tuner sim run --tag smoke --output json > result.json
-```
-
-stdout holds one JSON document and stderr carries progress. See [JSON output](docs/json-output.md).
-
-### Use in CI (GitHub Actions)
+In GitHub Actions, use [`usetuner/tuner-action`](https://github.com/usetuner/tuner-action). It
+installs the CLI, runs the simulations and reports the result on the job and the pull request.
 
 ```yaml
 name: voice-agent-tests
@@ -126,78 +115,50 @@ on: [pull_request]
 
 jobs:
   tuner:
-    # Fork PRs get no secrets, so skip them instead of failing with exit 2.
-    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 70 # keep above --timeout so the CLI can cancel the run
+    timeout-minutes: 70 # keep above the action's timeout (default 60m)
     steps:
-      - uses: actions/setup-node@v4
+      - uses: usetuner/tuner-action@v1
         with:
-          node-version: 22
-      - run: npm install -g @usetuner.ai/cli
-      - name: Run Tuner simulations
-        env:
-          TUNER_API_KEY: ${{ secrets.TUNER_API_KEY }}
-          TUNER_AGENT_ID: ${{ vars.TUNER_AGENT_ID }}
-        # exec replaces the step's shell with the CLI, so a job cancel's SIGINT reaches it.
-        run: exec tuner sim run --tag smoke --timeout 60m --output json > tuner-result.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: tuner-result
-          path: tuner-result.json
+          api-key: ${{ secrets.TUNER_API_KEY }}
+          agent: ${{ vars.TUNER_AGENT_ID }}
+          tag: smoke
 ```
 
-See [CI and signals](docs/ci.md) for why `exec` matters and how cancel works.
+To call the CLI directly in any CI, set `TUNER_API_KEY` and `TUNER_AGENT_ID` and run it with
+`exec`, so a job cancel reaches the CLI and it cancels the run:
 
-## Configuration
+```bash
+npm install -g @usetuner.ai/cli
+exec tuner sim run --tag smoke --timeout 60m --output json > tuner-result.json
+```
 
-Each setting comes from the flag first, then the environment variable, then the stored file or
-the default. Nothing else is read.
-
-| Setting   | Flag         | Environment variable | Stored file or default                     |
-| --------- | ------------ | -------------------- | ------------------------------------------ |
-| API key   | `--api-key`  | `TUNER_API_KEY`      | `credentials.json` from `tuner auth login` |
-| Base URL  | `--base-url` | `TUNER_BASE_URL`     | `https://api.usetuner.ai`                  |
-| Agent     | `--agent`    | `TUNER_AGENT_ID`     | none                                       |
-| Workspace | none         | `TUNER_WORKSPACE_ID` | none                                       |
-
-The workspace always comes from the API key. If you set `TUNER_WORKSPACE_ID` and the key belongs
-to another workspace, the command stops with `config_error`. For where the key file lives, see
-[`tuner auth login`](docs/commands.md#tuner-auth-login).
+Details on timeouts, signals and `exec`: [docs/ci.md](docs/ci.md).
 
 ## Exit codes
 
-Exit codes are a contract: changing one is a breaking change.
+Exit codes are a stable contract.
 
-| Exit | Meaning                                                                                                                                                                                        |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | Every scenario passed. Also `--no-wait`, `runs`, the lists and `auth` on success.                                                                                                              |
-| 1    | At least one scenario failed its evals (`result: failed`, `reason: agent_failed`).                                                                                                             |
-| 2    | A problem you must fix: a bad flag, a rejected key, an unknown agent, tag, scenario or workspace, no credits, the agent busy, `reason: setup_error`, `run_not_found` or any other 4xx but 429. |
-| 3    | Tuner couldn't finish the run: unreachable or rate limited after retries, a 5xx, `run_start_failed`, `reason: tuner_error`, a run canceled elsewhere, or `--timeout` reached.                  |
-| 130  | Interrupted by SIGINT: Ctrl-C, or a canceled GitHub Actions job. The run was canceled first.                                                                                                   |
-| 143  | Stopped by SIGTERM, for example from `kill` or a process manager. The run was canceled first.                                                                                                  |
+| Exit | Meaning                                                                                      |
+| ---- | -------------------------------------------------------------------------------------------- |
+| 0    | Every scenario passed (or the command succeeded)                                             |
+| 1    | At least one scenario failed its evals (`reason: agent_failed`)                              |
+| 2    | A problem you must fix: bad flag, rejected key, unknown agent/tag/scenario/suite, no credits |
+| 3    | Tuner couldn't finish the run: outage, 5xx, rate limited after retries, `--timeout` reached  |
+| 130  | Interrupted by SIGINT (Ctrl-C or a canceled CI job); the run was canceled first              |
+| 143  | Stopped by SIGTERM; the run was canceled first                                               |
 
-When several apply, the worst wins: 1, then 2, then 3. The JSON `reason` and `error.code`
-keep the detail. Per-code exits are in [Errors and retries](docs/errors.md).
+When several apply, the worst wins: 1, then 2, then 3. Every error code and its exit:
+[docs/errors.md](docs/errors.md).
 
-## Documentation
+## Support
 
-- [Command reference](docs/commands.md): every command and flag
-- [Errors and retries](docs/errors.md): error codes and what they mean
-- [JSON output](docs/json-output.md): `schema_version: 1` and the fields
-- [CI and signals](docs/ci.md): timeout, cancel and signal handling
+- Questions and bugs: [GitHub issues](https://github.com/usetuner/tuner-cli/issues)
+- Email: [support@usetuner.ai](mailto:support@usetuner.ai)
+- Security issues: see [SECURITY.md](SECURITY.md), not a public issue
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, scripts and the checks to run before a PR.
-Changes are listed in [CHANGELOG.md](CHANGELOG.md).
-
-## Security
-
-Report security issues as described in [SECURITY.md](SECURITY.md).
+Contributing: [CONTRIBUTING.md](CONTRIBUTING.md). Changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+[MIT](LICENSE)
