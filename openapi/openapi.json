@@ -29181,7 +29181,7 @@
   ],
   "servers": [
     {
-      "url": "https://voice-api.staging.ginni.ai"
+      "url": "https://api.usetuner.ai"
     }
   ]
 }
