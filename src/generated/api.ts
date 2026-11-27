@@ -1808,6 +1808,12 @@ export interface components {
              */
             is_sample?: boolean;
             /**
+             * Max Concurrent Calls
+             * @description Most simulation calls a run keeps in progress at the same time for this agent (1-10). Set by sending `max_concurrent_calls` when starting a run.
+             * @default 10
+             */
+            max_concurrent_calls?: number;
+            /**
              * Deleted At
              * @description Timestamp when the agent was deleted. Null if the agent is active.
              */
@@ -4302,6 +4308,12 @@ export interface components {
              */
             max_call_duration_minutes?: number;
             /**
+             * Max Concurrent Calls
+             * @description Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.
+             * @example 3
+             */
+            max_concurrent_calls?: number | null;
+            /**
              * Selected Eval Ids
              * @description IDs of `PASS_FAIL` evals to grade the replayed calls with. Omit, `null` or `[]` means no evals are run (a latency-only run).
              * @example [
@@ -4340,6 +4352,12 @@ export interface components {
              * @example 3
              */
             max_call_duration_minutes?: number;
+            /**
+             * Max Concurrent Calls
+             * @description Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.
+             * @example 3
+             */
+            max_concurrent_calls?: number | null;
             /**
              * Caller Persona Id
              * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas. When neither this nor `language` is sent, the agent's language picks the persona (English (American) by default).
@@ -4439,6 +4457,12 @@ export interface components {
              * @example 3
              */
             max_call_duration_minutes?: number;
+            /**
+             * Max Concurrent Calls
+             * @description Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.
+             * @example 3
+             */
+            max_concurrent_calls?: number | null;
             /**
              * Caller Persona Id
              * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas.
@@ -8980,6 +9004,12 @@ export interface components {
              * @example 3
              */
             max_call_duration_minutes?: number;
+            /**
+             * Max Concurrent Calls
+             * @description Most calls of this run in progress at the same time (1-10). Saved as the agent's `max_concurrent_calls` when the run starts, so later runs that omit it use the same value. Omit it to use the agent's saved value (10 unless changed). Scenarios above the limit wait as `pending` and start as calls finish.
+             * @example 3
+             */
+            max_concurrent_calls?: number | null;
             /**
              * Caller Persona Id
              * @description ID of the caller persona (language and accent) the simulated caller uses. Get valid IDs from List Caller Personas.
