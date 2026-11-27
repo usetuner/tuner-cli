@@ -35,9 +35,8 @@ npm ci && npm run lint && npm run format:check && npm run typecheck && npm run t
 
 `src/generated/` is generated from the backend's public OpenAPI schema. Never edit it by hand.
 
-1. Update `openapi/openapi.json`. Today `npm run gen:openapi` builds it from a local backend checkout; a step that fetches the public `/public/openapi.json` is coming.
-2. Run `npm run gen:types`.
-3. Commit both files together.
+1. Run `npm run gen`. It downloads the public schema from `https://api.usetuner.ai/public/openapi.json` (no auth) to `openapi/openapi.json`, then regenerates `src/generated/api.ts`. Set `TUNER_OPENAPI_URL` to use another server.
+2. Commit both files together.
 
 ## Layering
 
