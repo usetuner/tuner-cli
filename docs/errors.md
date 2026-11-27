@@ -35,6 +35,7 @@ json`, the `code` below is also in the document's `reason` and `error.code`, and
 | `--suite` with a selector or setting flag            | `usage_error`  | `--suite can't be combined with --tag.` (names the flag)                                  |
 | A bad scenario ID                                    | `usage_error`  | `Invalid scenario ID 'x'. Use numeric IDs from` `tuner scenarios list`                    |
 | A bad run ID                                         | `usage_error`  | `Invalid run ID 'abc'. Use the numeric run ID.`                                           |
+| A bad `--max-concurrent-calls`                       | `usage_error`  | `Invalid --max-concurrent-calls '11'. Use a whole number from 1 to 10.`                   |
 | A bad `--timeout`                                    | `usage_error`  | `Invalid duration '5x'. Use e.g. 90s, 30m, 1h.`                                           |
 | `--noise-intensity` without `--noise`                | `usage_error`  | `--noise-intensity needs --noise <slug>.`                                                 |
 | A `--meta` pair without `=` or with an empty key     | `usage_error`  | `Invalid --meta 'x'. Use key=value.`                                                      |

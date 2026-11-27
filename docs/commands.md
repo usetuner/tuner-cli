@@ -29,23 +29,24 @@ tuner --verbose scenarios list
 
 Start a simulation run and wait for its result.
 
-| Flag                        | What it does                                                                 |
-| --------------------------- | ---------------------------------------------------------------------------- |
-| `--tag <tag>`               | Run the agent's scenarios with this exact tag                                |
-| `--scenario <id>`           | Run this scenario ID; repeat it or comma-separate for several                |
-| `--suite <name>`            | Run this suite, with its scenarios and settings; see `tuner suites list`     |
-| `--agent <agent-id>`        | Agent ID or numeric ID; overrides `TUNER_AGENT_ID`                           |
-| `--language <language>`     | Caller language: a code (`en-US`) or full name; see `tuner languages list`   |
-| `--profile <name>`          | Test profile name; see `tuner profiles list`                                 |
-| `--noise <slug>`            | Background noise slug; see `tuner noise list`                                |
-| `--noise-intensity <level>` | `low`, `medium` (default) or `high`, or `0.5`, `1.0`, `1.5`; needs `--noise` |
-| `--meta <key=value>`        | Attach metadata to the run, e.g. `commit=abc`; repeat for several pairs      |
-| `--output <format>`         | `text` or `json`                                                             |
-| `--no-wait`                 | Print the run ID and exit without waiting                                    |
-| `--timeout <duration>`      | Cancel the run after this long, e.g. `90s`, `30m`, `1h` (default `60m`)      |
-| `--fail-on-inconclusive`    | Deprecated, no effect: inconclusive and timed-out runs exit 3                |
+| Flag                         | What it does                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `--tag <tag>`                | Run the agent's scenarios with this exact tag                                |
+| `--scenario <id>`            | Run this scenario ID; repeat it or comma-separate for several                |
+| `--suite <name>`             | Run this suite, with its scenarios and settings; see `tuner suites list`     |
+| `--agent <agent-id>`         | Agent ID or numeric ID; overrides `TUNER_AGENT_ID`                           |
+| `--language <language>`      | Caller language: a code (`en-US`) or full name; see `tuner languages list`   |
+| `--profile <name>`           | Test profile name; see `tuner profiles list`                                 |
+| `--noise <slug>`             | Background noise slug; see `tuner noise list`                                |
+| `--noise-intensity <level>`  | `low`, `medium` (default) or `high`, or `0.5`, `1.0`, `1.5`; needs `--noise` |
+| `--max-concurrent-calls <n>` | Most calls in progress at once, 1-10; saved on the agent for later runs      |
+| `--meta <key=value>`         | Attach metadata to the run, e.g. `commit=abc`; repeat for several pairs      |
+| `--output <format>`          | `text` or `json`                                                             |
+| `--no-wait`                  | Print the run ID and exit without waiting                                    |
+| `--timeout <duration>`       | Cancel the run after this long, e.g. `90s`, `30m`, `1h` (default `60m`)      |
+| `--fail-on-inconclusive`     | Deprecated, no effect: inconclusive and timed-out runs exit 3                |
 
-Pass exactly one of `--tag`, `--scenario` or `--suite`. A suite brings its own scenarios and settings, so `--suite` can't be combined with `--tag`, `--scenario`, `--language`, `--profile`, `--noise` or `--noise-intensity`. `--meta` works with all three.
+Pass exactly one of `--tag`, `--scenario` or `--suite`. A suite brings its own scenarios and settings, so `--suite` can't be combined with `--tag`, `--scenario`, `--language`, `--profile`, `--noise` or `--noise-intensity`. `--meta` and `--max-concurrent-calls` work with all three. Without `--max-concurrent-calls` the run uses the agent's saved value (10 unless changed).
 
 ```bash
 tuner sim run --tag smoke
@@ -57,6 +58,7 @@ tuner sim run --tag smoke --noise cafe --noise-intensity high
 tuner sim run --tag smoke --timeout 30m --output json
 tuner sim run --tag smoke --meta commit=abc123 --meta env=staging
 tuner sim run --suite smoke --meta commit=abc123
+tuner sim run --tag smoke --max-concurrent-calls 3
 ```
 
 How it behaves:

@@ -189,6 +189,28 @@ describe("sim run: results and exit codes", () => {
     expect(api.calls("POST", SELECT)[0]!.body).toEqual({ selected_scenario_ids: [311, 312, 400] });
   });
 
+  it.each([
+    [["--tag", "smoke"], { tag: "smoke" }],
+    [["--scenario", "311"], { selected_scenario_ids: [311] }],
+    [["--suite", "smoke"], { suite: "smoke" }],
+  ])("sends --max-concurrent-calls with %j", async (argv, body) => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", ...argv, "--max-concurrent-calls", "3")).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).toEqual({ ...body, max_concurrent_calls: 3 });
+  });
+
+  it.each([
+    ["--tag", "smoke"],
+    ["--scenario", "311"],
+    ["--suite", "smoke"],
+  ])("leaves max_concurrent_calls out without the flag (%s)", async (...argv) => {
+    const api = happyApi();
+    const rt = makeRuntime(api);
+    expect(await run(rt, "sim", "run", ...argv)).toBe(0);
+    expect(api.calls("POST", SELECT)[0]!.body).not.toHaveProperty("max_concurrent_calls");
+  });
+
   it("exits 1 when the agent failed and names the failed evals", async () => {
     const rt = makeRuntime(happyApi(failedRun()));
     expect(await run(rt, "sim", "run", "--tag", "smoke")).toBe(1);
@@ -354,6 +376,14 @@ describe("sim run: usage errors exit 2", () => {
     [["sim", "run", "--tag", "a", "--timeout", "soon"], "Invalid duration 'soon'"],
     [["sim", "run", "--tag", "a", "--base-url", "ftp://x"], "Base URL must be http or https"],
     [["sim", "run", "--tag", "a", "--noise-intensity", "high"], "--noise-intensity needs --noise"],
+    ...["0", "11", "2.5", "abc", "-1", ""].map((n) => [
+      ["sim", "run", "--tag", "a", "--max-concurrent-calls", n],
+      `Invalid --max-concurrent-calls '${n}'. Use a whole number from 1 to 10.`,
+    ]),
+    [
+      ["sim", "run", "--suite", "s", "--max-concurrent-calls", "0"],
+      "Invalid --max-concurrent-calls '0'. Use a whole number from 1 to 10.",
+    ],
     [["sim", "run", "--tag", "a", "--meta", "bad"], "Invalid --meta 'bad'. Use key=value."],
     [["sim", "run", "--tag", "a", "--meta", "=x"], "Invalid --meta '=x': the key is empty."],
     [

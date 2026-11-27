@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `tuner sim run --max-concurrent-calls <n>` (1-10) caps how many calls of the run are in progress at once, with `--tag`, `--scenario` or `--suite`. Tuner saves it on the agent, so later runs without the flag use the same value.
+
 ## [0.3.0]
 
 ### Added
